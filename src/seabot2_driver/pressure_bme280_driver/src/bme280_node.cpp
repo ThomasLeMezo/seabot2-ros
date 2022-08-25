@@ -2,44 +2,23 @@
 #include <chrono>
 #include <functional>
 #include <memory>
-#include <string>
 
-#include <cstdio>
-#include <cstdarg>
-#include <cstdint>
 #include <cstdlib>
-#include <cctype>
-#include <poll.h>
 #include <unistd.h>
-#include <cerrno>
 #include <cstring>
-#include <ctime>
 #include <fcntl.h>
-#include <pthread.h>
-#include <sys/time.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
 #include <sys/ioctl.h>
-#include <asm/ioctl.h>
-#include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
 
 extern "C" {
-#include "pressure_bme280_driver/bme280.h"
-#include "pressure_bme280_driver/bme280_defs.h"
+    #include "pressure_bme280_driver/bme280.h"
+    #include "pressure_bme280_driver/bme280_defs.h"
+    #include <linux/i2c-dev.h>
+    #include <i2c/smbus.h>
 }
-extern "C" {
-#include <linux/i2c-dev.h>
-}
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0)
-extern "C" {
-#include <i2c/smbus.h>
-}
-#endif
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -61,7 +40,14 @@ void user_delay_ms(uint32_t period) {
 class Bme280Node : public rclcpp::Node {
 public:
     Bme280Node()
-            : Node("bme280_node"), count_(0) {
+            : Node("bme280_node") {
+
+        this->declare_parameter<std::string>("i2c_periph", i2c_periph_);
+        this->declare_parameter<bool>("primary_i2c_address", primary_i2c_address_);
+
+        this->get_parameter("i2c_periph", i2c_periph_);
+        this->get_parameter("primary_i2c_address", primary_i2c_address_);
+
         publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("sensor_internal", 10);
         timer_ = this->create_wall_timer(
                 200ms, std::bind(&Bme280Node::timer_callback, this));
@@ -74,7 +60,6 @@ private:
     /// Variables
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<pressure_bme280_driver::msg::Bme280Data>::SharedPtr publisher_sensor_;
-    size_t count_;
 
     double pressure_ = 0.0;
     double temperature_ = 0.0;
@@ -82,7 +67,6 @@ private:
 
     string i2c_periph_ = "/dev/i2c-1";
     bool primary_i2c_address_ = true;
-    struct bme280_data comp_data_;
     struct bme280_dev dev_;
 
     /// Functions
@@ -105,10 +89,11 @@ int main(int argc, char *argv[]) {
 
 void Bme280Node::timer_callback() {
     auto msg = pressure_bme280_driver::msg::Bme280Data();
-    int8_t rslt = bme280_get_sensor_data(BME280_ALL, &comp_data_, &dev_);
-    pressure_ = comp_data_.pressure/100.0;
-    humidity_ = comp_data_.humidity;
-    temperature_ = comp_data_.temperature;
+    struct bme280_data comp_data;
+    int8_t rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev_);
+    pressure_ = comp_data.pressure/100.0;
+    humidity_ = comp_data.humidity;
+    temperature_ = comp_data.temperature;
 
     msg.temperature = temperature_;
     msg.pressure = pressure_;
@@ -144,11 +129,11 @@ void Bme280Node::sensor_init() {
     rslt = bme280_init(&dev_); // Get Calib data
     print_calib_settings();
 
-/* Recommended mode of operation: Indoor navigation */
+/** Recommended mode of operation: Indoor navigation **/
     dev_.settings.osr_h = BME280_OVERSAMPLING_1X;
-    dev_.settings.osr_p = BME280_OVERSAMPLING_2X; // 16X
-    dev_.settings.osr_t = BME280_OVERSAMPLING_2X; // 2X
-    dev_.settings.filter = BME280_FILTER_COEFF_2; // 16
+    dev_.settings.osr_p = BME280_OVERSAMPLING_2X; /// 16X
+    dev_.settings.osr_t = BME280_OVERSAMPLING_2X; /// 2X
+    dev_.settings.filter = BME280_FILTER_COEFF_2; /// 16
     dev_.settings.standby_time = BME280_STANDBY_TIME_125_MS;
 
     uint8_t settings_sel;
@@ -164,7 +149,6 @@ void Bme280Node::sensor_init() {
     rslt = bme280_set_sensor_mode(BME280_NORMAL_MODE, &dev_);
     print_sensor_mode();
 
-    // ToDo
     user_delay_ms(1500);
     RCLCPP_INFO(this->get_logger(), "[Pressure_BME280] Start Ok");
 }
