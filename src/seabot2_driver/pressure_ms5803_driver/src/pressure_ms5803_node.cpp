@@ -14,8 +14,8 @@ public:
         this->declare_parameter<std::string>("i2c_periph", pressure_sensor_.getI2CPeriph());
         this->declare_parameter<bool>("primary_i2c_address", pressure_sensor_.getI2CAddr());
 
-        pressure_sensor_.setI2CPeriph(this->get_parameter("i2c_periph").as_string());
-        pressure_sensor_.setI2CAddr(this->get_parameter("i2c_address").as_int());
+        pressure_sensor_.setI2CPeriph(this->get_parameter_or("i2c_periph", pressure_sensor_.getI2CPeriph()));
+        pressure_sensor_.setI2CAddr(this->get_parameter_or("i2c_address", pressure_sensor_.getI2CAddr()));
 
         publisher_sensor_ = this->create_publisher<pressure_ms5803_driver::msg::PressureSensorData>("sensor_external", 10);
         timer_ = this->create_wall_timer(

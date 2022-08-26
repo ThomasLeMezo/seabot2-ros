@@ -20,8 +20,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 
 ### Executable
 add_executable(pressure_ms5803_node src/pressure_ms5803_node.cpp src/pressure_ms5803.cpp)
-ament_target_dependencies(
-  pressure_ms5803_node
+ament_target_dependencies(pressure_ms5803_node
   rclcpp
   rosidl_default_generators
 )
