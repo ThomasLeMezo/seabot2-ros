@@ -29,6 +29,8 @@ public:
     Thruster(rclcpp::Node *n){
         n_ = n;
         i2c_open();
+        if(get_version()!=code_version_)
+            RCLCPP_WARN(n->get_logger(), "[Thruster_driver] Wrong PIC code version");
     }
 
     ~Thruster();
@@ -47,8 +49,9 @@ public:
      *  - Max reverse     111 \n
      * @param left
      * @param right
+     * @return 0 if success
      */
-    void write_cmd(const uint8_t &left, const uint8_t &right) const;
+    int write_cmd(const uint8_t &left, const uint8_t &right) const;
 
     /**
      * Enable/Disable the left & right motor
@@ -80,11 +83,18 @@ public:
 
     void setI2CPeriph(const std::string &i2CPeriph);
 
+    /**
+     * Get the code version of the hardware
+     * @return
+     */
+    int getCodeVersion() const;
+
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
 
     int file_ = 0; /// File to the i2c port
     int i2c_addr_ = 0x20;
+    const int code_version_ = 0x01; /// Code version of the hardware
 
 private:
     std::string i2c_periph_ = "/dev/i2c-1";

@@ -18,26 +18,28 @@ public:
 private:
     /// Values
     bool state_enable_ = true;
-    float velocity_linear = 0.0;
+    float velocity_linear_ = 0.0;
     float velocity_angular_ = 0.0;
     rclcpp::Time velocity_time_last;
     float manual_velocity_linear_ = 0.0;
     float manual_velocity_angular_ = 0.0;
     rclcpp::Time manual_velocity_time_last_;
 
-    bool stop_sent_ = false;
-    bool send_cmd_ = true;
+    /// I2C send
+    uint8_t cmd_left_last_ = MOTOR_PWM_STOP;
+    uint8_t cmd_right_last_ = MOTOR_PWM_STOP;
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::microseconds dt_ = 100ms; /// loop dt
 
     /// Thrusters regulation
-    float coeff_cmd_to_pwm_ = 9.0;
+    double coeff_cmd_to_pwm_ = 9.0;
     std::chrono::microseconds delay_stop_ = 500ms;
     double max_angular_velocity_ = 1.0;
     double max_linear_velocity_ = 1.0;
-    double max_velocity_pwm_ = 100.0; /// velocity of pwm command (per seconds)
+    double max_velocity_pwm_ = 5.0; /// velocity of pwm command (per seconds) pwn in [MAX_PWM=190, MIN_PWM=110]
+    rclcpp::Time last_regulation_time_;
 
     /// Thrusters configuration
     bool allow_backward_ = false;
@@ -59,6 +61,8 @@ private:
     void topic_velocity_callback(const seabot2_thruster_driver::msg::Velocity &msg);
     void topic_manual_velocity_callback(const geometry_msgs::msg::Twist &msg);
 
+    uint8_t convert_to_pwm(const double &u) const;
+
     /**
      *  Init and get parameters of the Node
      */
@@ -68,6 +72,16 @@ private:
      * Init topics to this node (publishers & subscribers)
      */
     void init_topics();
+
+    /**
+     * Invert the pwm cmd wrt MOTOR_PWM_STOP
+     * @param cmd
+     * @return
+     */
+    inline uint8_t invert_cmd(const uint8_t &cmd){
+        int tmp = -(static_cast<int>(cmd) - MOTOR_PWM_STOP);
+        return static_cast<uint8_t>(MOTOR_PWM_STOP + tmp);
+    }
 };
 
 #endif //BUILD_THRUSTER_NODE_H

@@ -22,13 +22,14 @@ int Thruster::i2c_open(){
     return 0;
 }
 
-void Thruster::write_cmd(const uint8_t &left, const uint8_t &right) const{
+int Thruster::write_cmd(const uint8_t &left, const uint8_t &right) const{
     /// reverse order if reverse_thruster_order_ is true
     uint8_t data[2] = {reverse_thruster_order_ ? left : right, reverse_thruster_order_ ? right : left};
 
-    if(i2c_smbus_write_i2c_block_data(file_, 0x00, 2, data) < 0){
+    int r = i2c_smbus_write_i2c_block_data(file_, 0x00, 2, data);
+    if(r < 0)
         RCLCPP_WARN(n_->get_logger(),"[Thruster_driver] I2C Bus Failure - Write cmd");
-    }
+    return r;
 }
 
 uint8_t& Thruster::get_version(){
@@ -60,4 +61,8 @@ const std::string &Thruster::getI2CPeriph() const {
 
 void Thruster::setI2CPeriph(const std::string &i2CPeriph) {
     i2c_periph_ = i2CPeriph;
+}
+
+int Thruster::getCodeVersion() const {
+    return code_version_;
 }
