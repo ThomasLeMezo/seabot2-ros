@@ -62,7 +62,3 @@ const std::string &Thruster::getI2CPeriph() const {
 void Thruster::setI2CPeriph(const std::string &i2CPeriph) {
     i2c_periph_ = i2CPeriph;
 }
-
-int Thruster::getCodeVersion() const {
-    return code_version_;
-}

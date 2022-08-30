@@ -83,25 +83,20 @@ public:
 
     void setI2CPeriph(const std::string &i2CPeriph);
 
-    /**
-     * Get the code version of the hardware
-     * @return
-     */
-    int getCodeVersion() const;
-
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
 
     int file_ = 0; /// File to the i2c port
     int i2c_addr_ = 0x20;
-    const int code_version_ = 0x01; /// Code version of the hardware
+    const int code_version_ = 0x01; /// Code version of the expected hardware
+    uint8_t pic_code_version_=0; /// Code version read from the hardware
 
 private:
     std::string i2c_periph_ = "/dev/i2c-1";
 
     bool reverse_thruster_order_ = false;
 
-    uint8_t pic_code_version_=0;
+
 };
 
 #endif // THRUSTER_H
