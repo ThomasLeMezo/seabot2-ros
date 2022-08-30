@@ -128,7 +128,7 @@ private:
     int file_ = 0; /// File to the i2c port
 
     int i2c_addr_ = 0x76; /// I2C add of the sensor
-    std::string i2c_periph_ = "/dev/i2c-1";
+    std::string i2c_periph_ = "/dev/i2c-0";
 
     /// I2C port
 
@@ -141,8 +141,8 @@ private:
 
     u_int32_t D1_, D2_; /// Digital pressure and temperature value
 
-    float pressure_ = 1.0;
-    float temperature_ = 10.0;
+    float pressure_ = 1.0; /// in bar
+    float temperature_ = 10.0; // in degree
 
 };
 

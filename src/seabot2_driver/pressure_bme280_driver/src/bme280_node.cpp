@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <cstring>
 #include <fcntl.h>
-#include <sys/mman.h>
 #include <sys/ioctl.h>
 
 #include "rclcpp/rclcpp.hpp"
@@ -65,8 +64,8 @@ private:
     double temperature_ = 0.0;
     double humidity_ = 0.0;
 
-    string i2c_periph_ = "/dev/i2c-1";
-    bool primary_i2c_address_ = true;
+    string i2c_periph_ = "/dev/i2c-0";
+    bool primary_i2c_address_ = false;
     struct bme280_dev dev_;
 
     /// Functions
@@ -89,16 +88,20 @@ int main(int argc, char *argv[]) {
 
 void Bme280Node::timer_callback() {
     auto msg = pressure_bme280_driver::msg::Bme280Data();
-    struct bme280_data comp_data;
+    struct bme280_data comp_data{};
     int8_t rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev_);
-    pressure_ = comp_data.pressure/100.0;
-    humidity_ = comp_data.humidity;
-    temperature_ = comp_data.temperature;
+    if(rslt==0) {
+        pressure_ = comp_data.pressure / 100.0;
+        humidity_ = comp_data.humidity;
+        temperature_ = comp_data.temperature;
 
-    msg.temperature = temperature_;
-    msg.pressure = pressure_;
-    msg.humidity = humidity_;
-    publisher_sensor_->publish(msg);
+        msg.temperature = static_cast<float>(temperature_);
+        msg.pressure = static_cast<float>(pressure_);
+        msg.humidity = static_cast<float>(humidity_);
+        publisher_sensor_->publish(msg);
+    }
+    else
+        RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error reading data (%i)", rslt);
 }
 
 void Bme280Node::sensor_init() {
@@ -127,6 +130,8 @@ void Bme280Node::sensor_init() {
     dev_.delay_ms = user_delay_ms;
 
     rslt = bme280_init(&dev_); // Get Calib data
+    if(rslt!=0)
+        RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error init the sensor : wrong device add ?");
     print_calib_settings();
 
 /** Recommended mode of operation: Indoor navigation **/
@@ -144,13 +149,18 @@ void Bme280Node::sensor_init() {
     settings_sel |= BME280_FILTER_SEL;
 
     rslt = bme280_set_sensor_settings(settings_sel, &dev_);
+    if(rslt!=0)
+        RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error reading the settings");
     print_settings();
 
     rslt = bme280_set_sensor_mode(BME280_NORMAL_MODE, &dev_);
+    if(rslt!=0)
+        RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error setting the sensor mode");
     print_sensor_mode();
 
     user_delay_ms(1500);
-    RCLCPP_INFO(this->get_logger(), "[Pressure_BME280] Start Ok");
+    if(rslt==0)
+        RCLCPP_INFO(this->get_logger(), "[Pressure_BME280] Start Ok");
 }
 
 void Bme280Node::print_calib_settings() {

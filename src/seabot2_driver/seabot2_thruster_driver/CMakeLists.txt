@@ -52,4 +52,8 @@ if(BUILD_TESTING)
 #          $<INSTALL_INTERFACE:include>)
 endif()
 
+### Install
+install(TARGETS thruster_node
+        DESTINATION lib/${PROJECT_NAME})
+
 ament_package()

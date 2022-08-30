@@ -12,6 +12,9 @@ ThrusterNode::ThrusterNode()
             200ms, std::bind(&ThrusterNode::timer_callback, this));
 
     last_regulation_time_ = this->now();
+    manual_velocity_time_last_ = this->now();
+    velocity_time_last = this->now();
+    rclcpp::sleep_for(std::chrono::duration_cast<std::chrono::nanoseconds >(delay_stop_));
     RCLCPP_INFO(this->get_logger(), "[Thruster_node] Start Ok");
 }
 
@@ -22,7 +25,6 @@ void ThrusterNode::timer_callback() {
     last_regulation_time_ = new_regulation_time;
 
     double max_pwm_dt_change = max_velocity_pwm_ * dt;
-
     /// Choose input source
     double linear, angular;
     if((new_regulation_time - manual_velocity_time_last_)<delay_stop_){ /// Case manual cmd send in the last delay_stop_
@@ -37,11 +39,10 @@ void ThrusterNode::timer_callback() {
         linear = 0.0;
         angular = 0.0;
     }
-
     /// Thrusters allocation
     double left, right;
-    left = manual_velocity_linear_ + manual_velocity_angular_;
-    right = manual_velocity_linear_ - manual_velocity_angular_;
+    left = linear + angular;
+    right = linear - angular;
 
     if(!allow_backward_){ /// Remove backward propulsion if defined
         left = std::max(0., left);
@@ -73,6 +74,12 @@ void ThrusterNode::timer_callback() {
             /// Save previous values
             cmd_left_last_ = cmd_left;
             cmd_right_last_ = cmd_right;
+
+            /// Publish cmd for log
+            seabot2_thruster_driver::msg::Engine msg;
+            msg.left = cmd_left;
+            msg.right = cmd_right;
+            publisher_engine_->publish(msg);
         }
     }
 }
@@ -117,9 +124,9 @@ void ThrusterNode::init_topics() {
     publisher_engine_ = this->create_publisher<seabot2_thruster_driver::msg::Engine>("engine", 1);
 
     subscription_velocity_ = this->create_subscription<seabot2_thruster_driver::msg::Velocity>(
-            "topic", 10, std::bind(&ThrusterNode::topic_velocity_callback, this, _1));
+            "cmd_engine", 10, std::bind(&ThrusterNode::topic_velocity_callback, this, _1));
     subscription_manual_velocity_ = this->create_subscription<geometry_msgs::msg::Twist>(
-            "topic", 10, std::bind(&ThrusterNode::topic_manual_velocity_callback, this, _1));
+            "cmd_vel", 10, std::bind(&ThrusterNode::topic_manual_velocity_callback, this, _1));
 }
 
 void ThrusterNode::topic_velocity_callback(const seabot2_thruster_driver::msg::Velocity &msg) {

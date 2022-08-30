@@ -29,7 +29,7 @@ int Pressure_ms5803::reset(){
     if (res < 0)
         RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5803] Error reseting sensor");
     else
-        RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5803] Reset ok");
+        RCLCPP_INFO(n_->get_logger(), "[Pressure_ms5803] Reset ok");
     return 0;
 }
 
@@ -110,7 +110,7 @@ bool Pressure_ms5803::compute() {
     int32_t P = (((D1_ * SENS) >> 21) - OFF) >> 15;
 
     temperature_ = TEMP / 100.;
-    pressure_ = P / 10.;
+    pressure_ = P / 10000.; /// in bar (/10 if in mbar)
 
     if(temperature_ < t_min_out_range_ || temperature_ > t_max_out_range_ || pressure_ < p_min_out_range_ || pressure_ > p_max_out_range_){
         if(n_ != nullptr)
