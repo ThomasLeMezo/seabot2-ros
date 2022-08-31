@@ -79,7 +79,7 @@ public:
 
     /**
      * Write the name of the robot
-     * @param name (max of 9 characters)
+     * @param name (max of 16 characters)
      */
     void write_robot_name(const std::string &name);
 

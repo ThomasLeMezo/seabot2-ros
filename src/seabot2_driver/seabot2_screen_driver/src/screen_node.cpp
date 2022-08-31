@@ -26,13 +26,14 @@ void ScreenNode::timer_callback() {
     if(depth_<depth_no_update_) {
         get_ip();
 
-        screen_.write_ip(ip_);
-        screen_.write_pressure(round(pressure_));
-        screen_.write_temperature(round(temperature_));
-        screen_.write_hygro(round(hygro_));
-        screen_.write_voltage(round(voltage_));
         screen_.write_robot_name(robot_name_);
         screen_.write_mission_name(mission_name_);
+        screen_.write_ip(ip_);
+        screen_.write_pressure(round(pressure_)); /// in mbar
+        screen_.write_temperature(round(temperature_*10.));
+        screen_.write_hygro(round(hygro_));
+        screen_.write_voltage(round(voltage_*10.));
+
         screen_.write_current_waypoint(wp_id_);
         screen_.write_number_waypoints(wp_max_);
 
@@ -42,7 +43,7 @@ void ScreenNode::timer_callback() {
 
         int t_remain = (time_next_wp - this->now()).seconds();
 
-        screen_.write_remaining_time(t_remain / 60, t_remain % 60);
+        screen_.write_remaining_time(min(t_remain / 60, 99), t_remain % 60);
 
         screen_.write_robot_status(status_);
     }
@@ -68,8 +69,8 @@ void ScreenNode::init_topics() {
 }
 
 void ScreenNode::get_hostname() {
-    char hostname[9];
-    gethostname(hostname, 9);
+    char hostname[16];
+    gethostname(hostname, 16);
     robot_name_ = hostname;
     RCLCPP_INFO(this->get_logger(), "[Screen_node] Hostname = %s", robot_name_.c_str());
 }
@@ -77,20 +78,25 @@ void ScreenNode::get_hostname() {
 #include <cstring>
 
 void ScreenNode::get_ip() {
+    /// Reset IP
+    for (auto &n:ip_){
+        n = 0;
+    }
+
     /// https://stackoverflow.com/questions/2283494/get-ip-address-of-an-interface-on-linux
     struct ifaddrs *ifaddr, *ifa;
-    int family, s;
+    int s;
     char host[NI_MAXHOST];
 
     if (getifaddrs(&ifaddr) == -1)
         return;
 
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next){
-        if (ifa->ifa_addr == NULL)
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
+        if (ifa->ifa_addr == nullptr)
             continue;
-        s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+        s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
         if((strcmp(ifa->ifa_name,"wlan0")==0)&&(ifa->ifa_addr->sa_family==AF_INET)){
-            if (s != 0){
+            if (s != 0) {
                 return;
             }
 

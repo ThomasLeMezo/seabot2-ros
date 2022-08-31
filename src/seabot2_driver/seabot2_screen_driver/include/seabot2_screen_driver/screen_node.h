@@ -24,15 +24,15 @@ private:
 
     /// Variable
     std::array<unsigned char, 4> ip_ = {0, 0, 0, 0};
-    double pressure_ = 0;
-    double temperature_ = 0;
-    double hygro_ = 0;
-    double voltage_ = 0;
-    string robot_name_;
-    string mission_name_;
+    double pressure_ = 9999.;
+    double temperature_ = 99.9;
+    double hygro_ = 99;
+    double voltage_ = 99.9;
+    string robot_name_ = "NoName";
+    string mission_name_ = "NoMission";
     unsigned int wp_id_ = 0;
     unsigned int wp_max_ = 0;
-    rclcpp::Time time_next_wp;
+    rclcpp::Time time_next_wp = this->now();
     Screen::Robot_Status status_ = Screen::Robot_Status::ERROR;
 
     double depth_ = 0.0;
