@@ -52,14 +52,15 @@ void ScreenNode::timer_callback() {
 void ScreenNode::init_parameters() {
     /// I2C
     this->declare_parameter<std::string>("i2c_periph", screen_.getI2CPeriph());
-    this->declare_parameter<bool>("primary_i2c_address", screen_.getI2CAddr());
-    this->declare_parameter<int>("loop_dt", loop_dt_.count());
-    this->declare_parameter<double>("depth_no_update_", depth_no_update_);
-
+    this->declare_parameter<int>("i2c_address", screen_.getI2CAddr());
     screen_.setI2CPeriph(this->get_parameter_or("i2c_periph", screen_.getI2CPeriph()));
     screen_.setI2CAddr(this->get_parameter_or("i2c_address", screen_.getI2CAddr()));
-    loop_dt_ = std::chrono::microseconds(this->get_parameter_or("dt", loop_dt_.count()));
-    depth_no_update_ = this->get_parameter_or("depth_no_update_", depth_no_update_);
+
+    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
+
+    this->declare_parameter<double>("depth_no_update", depth_no_update_);
+    depth_no_update_ = this->get_parameter_or("depth_no_update", depth_no_update_);
 }
 
 void ScreenNode::init_topics() {

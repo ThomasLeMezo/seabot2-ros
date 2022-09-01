@@ -17,7 +17,7 @@ private:
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::microseconds dt_ = 100ms; /// loop dt
+    std::chrono::milliseconds loop_dt_ = 500ms; /// loop dt
 
     /// I2C configuration
     Power power_;

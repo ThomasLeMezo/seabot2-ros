@@ -24,7 +24,7 @@ private:
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::microseconds  loop_dt_ = 100ms; // loop dt
+    std::chrono::milliseconds loop_dt_ = 100ms; // loop dt
 
     /// Topics / Services
     rclcpp::Publisher<gpsd_client::msg::GpsFix>::SharedPtr publisher_fix_;

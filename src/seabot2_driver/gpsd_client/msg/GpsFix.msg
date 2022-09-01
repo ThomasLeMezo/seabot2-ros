@@ -2,10 +2,27 @@
 std_msgs/Header header
 
 # Measurement status
-int16 MODE_NOT_SEEN=0	# mode update not seen yet
-int16 STATUS_MODE_NO_FIX=1	# none
-int16 STATUS_MODE_2D=2	# good for latitude/longitude
-int16 STATUS_MODE_3D=3	# good for altitude/climb too
+# MODE_NOT_SEEN   0       /* mode update not seen yet */
+# MODE_NO_FIX     1       /* none */
+# MODE_2D         2       /* good for latitude/longitude */
+# MODE_3D         3       /* good for altitude/climb too */
+int16 mode
+
+# STATUS_NO_FIX   0       // no, or unknown
+# - yes, plain GPS (SPS Mode), without DGPS, PPS, RTK, DR, etc.
+# STATUS_FIX      1
+# STATUS_DGPS_FIX 2       /* yes, with DGPS */
+# STATUS_RTK_FIX  3       /* yes, with RTK Fixed */
+# STATUS_RTK_FLT  4       /* yes, with RTK Float */
+# STATUS_DR       5       /* yes, with dead reckoning */
+# STATUS_GNSSDR   6       /* yes, with GNSS + dead reckoning */
+# STATUS_TIME     7       /* yes, time only (surveyed in, manual) */
+# Note that STATUS_SIM and MODE_NO_FIX can go together.
+# STATUS_SIM      8       /* yes, simulated */
+# - yes, Precise Positioning Service (PPS)
+# - Not to be confused with Pulse per Second (PPS)
+# - PPS is the encrypted military P(Y)-code
+# STATUS_PPS_FIX  9
 int16 status
 
 # Latitude (degrees). Positive is north of equator; negative is south.

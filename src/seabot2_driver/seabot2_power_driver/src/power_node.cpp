@@ -27,12 +27,12 @@ void PowerNode::timer_callback() {
 }
 
 void PowerNode::init_parameters() {
-    this->declare_parameter<int>("dt", dt_.count());
-    dt_ = std::chrono::microseconds(this->get_parameter_or("dt", dt_.count()));
+    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
     /// I2C
     this->declare_parameter<std::string>("i2c_periph", power_.getI2CPeriph());
-    this->declare_parameter<bool>("primary_i2c_address", power_.getI2CAddr());
+    this->declare_parameter<int>("i2c_address", power_.getI2CAddr());
 
     power_.setI2CPeriph(this->get_parameter_or("i2c_periph", power_.getI2CPeriph()));
     power_.setI2CAddr(this->get_parameter_or("i2c_address", power_.getI2CAddr()));

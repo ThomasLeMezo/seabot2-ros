@@ -45,11 +45,11 @@ void Light::set_pattern(const std::array<__u8, NB_PATTERN> &pattern) const {
 void Light::set_flash_number(const unsigned int &nb_flash) const {
     std::array<__u8, NB_PATTERN> pattern{};
     for(unsigned int i=0; i<std::min(nb_flash*2, static_cast<unsigned int>(NB_PATTERN)); i+=2){
-        pattern[i] = 1;
+        pattern[i] = flash_duration_;
         if(i/2==nb_flash)
-            pattern[i+1] = 40; /// in 0.1s ?
+            pattern[i+1] = flash_pause_end_; /// in 0.1s ?
         else
-            pattern[i+1] = 5;
+            pattern[i+1] = flash_pause_between_flash_;
     }
     set_pattern(pattern);
 }

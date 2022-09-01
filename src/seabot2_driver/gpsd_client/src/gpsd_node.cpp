@@ -33,7 +33,7 @@ GpsdNode::~GpsdNode() {
 
 void GpsdNode::init_parameters() {
     this->declare_parameter<int>("loop_dt", loop_dt_.count());
-    loop_dt_ = std::chrono::microseconds(this->get_parameter_or("dt", loop_dt_.count()));
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 
     this->declare_parameter<string>("frame_id", frame_id_);
     frame_id_ = this->get_parameter_or("frame_id", frame_id_);
@@ -61,7 +61,8 @@ void GpsdNode::process_data(struct gps_data_t* p) {
 
     msg.header.frame_id = frame_id_;
 
-    msg.status = p->fix.mode;
+    msg.status = p->fix.status;
+    msg.mode = p->fix.mode;
     msg.time = p->fix.time.tv_sec+p->fix.time.tv_nsec*1e-9;
 
     if(p->fix.mode >= MODE_2D) {

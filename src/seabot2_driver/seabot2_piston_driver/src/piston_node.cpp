@@ -40,19 +40,19 @@ void PistonNode::timer_callback() {
 }
 
 void PistonNode::init_parameters() {
-    this->declare_parameter<int>("dt", dt_.count());
-    dt_ = std::chrono::microseconds(this->get_parameter_or("dt", dt_.count()));
+    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
     /// I2C
     this->declare_parameter<std::string>("i2c_periph", piston_.getI2CPeriph());
-    this->declare_parameter<bool>("primary_i2c_address", piston_.getI2CAddr());
+    this->declare_parameter<int>("i2c_address", piston_.getI2CAddr());
 
     piston_.setI2CPeriph(this->get_parameter_or("i2c_periph", piston_.getI2CPeriph()));
     piston_.setI2CAddr(this->get_parameter_or("i2c_address", piston_.getI2CAddr()));
 
     /// Piston
-     this->declare_parameter<int>("delay_no_data_", delay_no_data_.count());
-    delay_no_data_ = std::chrono::seconds(this->get_parameter_or("delay_no_data_",
+     this->declare_parameter<int>("delay_reset_if_no_data", delay_no_data_.count());
+    delay_no_data_ = std::chrono::seconds(this->get_parameter_or("delay_reset_if_no_data",
                                                       std::chrono::duration_cast<std::chrono::seconds>(delay_no_data_).count()));
 }
 

@@ -18,13 +18,13 @@ private:
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::microseconds dt_ = 100ms; /// loop dt
+    std::chrono::milliseconds loop_dt_ = 100ms; /// loop dt
 
     /// I2C configuration
     Piston piston_;
 
     /// Piston
-    std::chrono::microseconds delay_no_data_ = 30s;
+    std::chrono::seconds delay_no_data_ = 30s;
     rclcpp::Time time_last_cmd_received_ = this->now();
     int last_cmd_ = -1;
 

@@ -24,14 +24,23 @@ void LightNode::timer_callback() {
 
 void LightNode::init_parameters() {
     this->declare_parameter<int>("dt", dt_.count());
-    dt_ = std::chrono::microseconds(this->get_parameter_or("dt", dt_.count()));
+    dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", dt_.count()));
 
     /// I2C
     this->declare_parameter<std::string>("i2c_periph", light_.getI2CPeriph());
-    this->declare_parameter<bool>("primary_i2c_address", light_.getI2CAddr());
+    this->declare_parameter<int>("i2c_address", light_.getI2CAddr());
 
     light_.setI2CPeriph(this->get_parameter_or("i2c_periph", light_.getI2CPeriph()));
     light_.setI2CAddr(this->get_parameter_or("i2c_address", light_.getI2CAddr()));
+
+    /// Light
+    this->declare_parameter<int>("flash_duration_", light_.flash_duration_);
+    this->declare_parameter<int>("flash_pause_between_flash_", light_.flash_pause_between_flash_);
+    this->declare_parameter<int>("flash_pause_end_", light_.flash_pause_end_);
+
+    light_.flash_duration_ = this->get_parameter_or("flash_duration", light_.flash_duration_);
+    light_.flash_pause_between_flash_ = this->get_parameter_or("flash_pause_between_flash", light_.flash_pause_between_flash_);
+    light_.flash_pause_end_ = this->get_parameter_or("flash_pause_end", light_.flash_pause_end_);
 }
 
 void LightNode::init_topics() {

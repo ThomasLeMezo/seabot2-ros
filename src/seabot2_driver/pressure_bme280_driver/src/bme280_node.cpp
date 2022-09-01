@@ -1,28 +1,13 @@
+#include "pressure_bme280_driver/bme280_node.hpp"
 #include <cstdio>
-#include <chrono>
-#include <functional>
 #include <memory>
-
 #include <cstdlib>
 #include <unistd.h>
-#include <cstring>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#include "rclcpp/rclcpp.hpp"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
-
-extern "C" {
-    #include "pressure_bme280_driver/bme280.h"
-    #include "pressure_bme280_driver/bme280_defs.h"
-    #include <linux/i2c-dev.h>
-    #include <i2c/smbus.h>
-}
-
 using namespace std::chrono_literals;
 using namespace std;
-
-int file;
 
 int8_t user_i2c_read(uint8_t dev_id, uint8_t reg_addr, uint8_t *reg_data, uint16_t len) {
     return i2c_smbus_read_i2c_block_data(file, reg_addr, len, reg_data) != len;
@@ -36,54 +21,15 @@ void user_delay_ms(uint32_t period) {
     usleep(period * 1000);
 }
 
-class Bme280Node : public rclcpp::Node {
-public:
-    Bme280Node()
-            : Node("bme280_node") {
+void Bme280Node::init_parameters() {
+    /// I2C
+    this->declare_parameter<std::string>("i2c_periph", i2c_periph_);
+    this->declare_parameter<bool>("primary_i2c_address", primary_i2c_address_);
+    this->get_parameter("i2c_periph", i2c_periph_);
+    this->get_parameter("primary_i2c_address", primary_i2c_address_);
 
-        this->declare_parameter<std::string>("i2c_periph", i2c_periph_);
-        this->declare_parameter<bool>("primary_i2c_address", primary_i2c_address_);
-
-        this->get_parameter("i2c_periph", i2c_periph_);
-        this->get_parameter("primary_i2c_address", primary_i2c_address_);
-
-        publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("sensor_internal", 10);
-        timer_ = this->create_wall_timer(
-                200ms, std::bind(&Bme280Node::timer_callback, this));
-
-        sensor_init();
-    }
-
-private:
-
-    /// Variables
-    rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<pressure_bme280_driver::msg::Bme280Data>::SharedPtr publisher_sensor_;
-
-    double pressure_ = 0.0;
-    double temperature_ = 0.0;
-    double humidity_ = 0.0;
-
-    string i2c_periph_ = "/dev/i2c-0";
-    bool primary_i2c_address_ = false;
-    struct bme280_dev dev_;
-
-    /// Functions
-    void timer_callback();
-
-    void print_sensor_mode();
-
-    void sensor_init();
-    void print_calib_settings();
-    void print_settings();
-
-};
-
-int main(int argc, char *argv[]) {
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<Bme280Node>());
-    rclcpp::shutdown();
-    return 0;
+    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 }
 
 void Bme280Node::timer_callback() {
@@ -200,4 +146,11 @@ void Bme280Node::print_sensor_mode() {
     uint8_t sensor_mode;
     bme280_get_sensor_mode(&sensor_mode, &dev_);
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] Sensor Mode = %i", sensor_mode);
+}
+
+int main(int argc, char *argv[]) {
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<Bme280Node>());
+    rclcpp::shutdown();
+    return 0;
 }

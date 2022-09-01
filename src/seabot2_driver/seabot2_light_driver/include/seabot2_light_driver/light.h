@@ -68,6 +68,11 @@ private:
     uint8_t pic_code_version_=0; /// Code version read from the hardware
 
 public:
+    int flash_duration_ = 1;
+    int flash_pause_end_ = 40;
+    int flash_pause_between_flash_ = 5;
+
+public:
 
     /**
      * Enable the light of the seabot2

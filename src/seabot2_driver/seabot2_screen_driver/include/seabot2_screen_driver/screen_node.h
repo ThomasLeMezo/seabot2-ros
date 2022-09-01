@@ -20,7 +20,7 @@ private:
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::microseconds  loop_dt_ = 2s; // loop dt
+    std::chrono::milliseconds loop_dt_ = 2s; // loop dt
 
     /// Variable
     std::array<unsigned char, 4> ip_ = {0, 0, 0, 0};

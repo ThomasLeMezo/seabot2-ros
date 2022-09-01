@@ -31,11 +31,11 @@ private:
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::microseconds dt_ = 100ms; /// loop dt
+    std::chrono::milliseconds loop_dt_ = 100ms; /// loop dt
 
     /// Thrusters regulation
     double coeff_cmd_to_pwm_ = 9.0;
-    std::chrono::microseconds delay_stop_ = 500ms;
+    std::chrono::milliseconds delay_stop_ = 500ms;
     double max_angular_velocity_ = 1.0;
     double max_linear_velocity_ = 1.0;
     double max_velocity_pwm_ = 5.0; /// velocity of pwm command (per seconds) pwn in [MAX_PWM=190, MIN_PWM=110]

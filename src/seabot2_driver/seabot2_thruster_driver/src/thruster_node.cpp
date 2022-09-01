@@ -90,22 +90,22 @@ uint8_t ThrusterNode::convert_to_pwm(const double &u) const{
 }
 
 void ThrusterNode::init_parameters() {
-    this->declare_parameter<int>("dt", dt_.count());
+    this->declare_parameter<int>("loop_dt", loop_dt_.count());
     this->declare_parameter<double>("coeff_cmd_to_pwm", coeff_cmd_to_pwm_);
     this->declare_parameter<int>("delay_stop", delay_stop_.count());
     this->declare_parameter<double>("max_angular_velocity", max_angular_velocity_);
-    this->declare_parameter<double>("max_linear_velocity_", max_linear_velocity_);
+    this->declare_parameter<double>("max_linear_velocity", max_linear_velocity_);
     this->declare_parameter<double>("max_velocity_pwm", max_velocity_pwm_);
     this->declare_parameter<bool>("allow_backward", allow_backward_);
     this->declare_parameter<bool>("reverse_thruster_order", reverse_thruster_order_);
     this->declare_parameter<bool>("reverse_left", reverse_left_);
     this->declare_parameter<bool>("reverse_right", reverse_right_);
 
-    dt_ = std::chrono::microseconds(this->get_parameter_or("dt", dt_.count()));
+    loop_dt_ = std::chrono::milliseconds (this->get_parameter_or("loop_dt", loop_dt_.count()));
     this->get_parameter("coeff_cmd_to_pwm", coeff_cmd_to_pwm_);
-    delay_stop_ = std::chrono::microseconds(this->get_parameter_or("delay_stop", delay_stop_.count()));
+    delay_stop_ = std::chrono::milliseconds (this->get_parameter_or("delay_stop", delay_stop_.count()));
     this->get_parameter("max_angular_velocity", max_angular_velocity_);
-    this->get_parameter("max_linear_velocity_", max_linear_velocity_);
+    this->get_parameter("max_linear_velocity", max_linear_velocity_);
     this->get_parameter("max_velocity_pwm", max_velocity_pwm_);
     this->get_parameter("allow_backward", allow_backward_);
     this->get_parameter("reverse_thruster_order", reverse_thruster_order_);
@@ -114,7 +114,7 @@ void ThrusterNode::init_parameters() {
 
     /// I2C
     this->declare_parameter<std::string>("i2c_periph", thruster_.getI2CPeriph());
-    this->declare_parameter<bool>("primary_i2c_address", thruster_.getI2CAddr());
+    this->declare_parameter<int>("i2c_address", thruster_.getI2CAddr());
 
     thruster_.setI2CPeriph(this->get_parameter_or("i2c_periph", thruster_.getI2CPeriph()));
     thruster_.setI2CAddr(this->get_parameter_or("i2c_address", thruster_.getI2CAddr()));
