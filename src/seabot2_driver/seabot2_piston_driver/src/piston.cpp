@@ -17,6 +17,10 @@ int Piston::i2c_open(){
         RCLCPP_WARN(n_->get_logger(),"[Piston_driver] Failed to acquire bus access and/or talk to slave (0x%X) - %s", I2C_SLAVE, strerror(result));
         exit(1);
     }
+
+    if(get_version()!=code_version_)
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Wrong PIC code version");
+
     usleep(100000);
     return 0;
 }
@@ -51,8 +55,8 @@ int Piston::set_position(const int32_t &val) const{
 }
 
 int Piston::get_all_data(){
-    __u8 buff[REGISTER_DATA_READ];
-    if (i2c_smbus_read_i2c_block_data(file_, REGISTER_DATA_READ, REGISTER_DATA_READ, buff) != REGISTER_DATA_READ) {
+    __u8 buff[REGISTER_DATA_SIZE];
+    if (i2c_smbus_read_i2c_block_data(file_, REGISTER_DATA_READ, REGISTER_DATA_SIZE, buff) != REGISTER_DATA_SIZE) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Error Reading data");
         return EXIT_FAILURE;
     }

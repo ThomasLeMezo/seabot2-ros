@@ -11,7 +11,7 @@ public:
             : Node("pressure_ms5803_node"), pressure_sensor_(this){
 
         this->declare_parameter<std::string>("i2c_periph", pressure_sensor_.getI2CPeriph());
-        this->declare_parameter<bool>("i2c_address", pressure_sensor_.getI2CAddr());
+        this->declare_parameter<int>("i2c_address", pressure_sensor_.getI2CAddr());
         this->declare_parameter<int>("loop_dt", loop_dt_.count());
 
         pressure_sensor_.setI2CPeriph(this->get_parameter_or("i2c_periph", pressure_sensor_.getI2CPeriph()));
@@ -19,10 +19,12 @@ public:
         loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 
         publisher_sensor_ = this->create_publisher<pressure_ms5803_driver::msg::PressureSensorData>("sensor_external", 10);
+
+        pressure_sensor_.init_sensor();
+
         timer_ = this->create_wall_timer(
                 loop_dt_, std::bind(&PressureMS5803Node::timer_callback, this));
 
-        pressure_sensor_.init_sensor();
         RCLCPP_INFO(this->get_logger(), "[Pressure_ms5803] Start Ok");
     }
 

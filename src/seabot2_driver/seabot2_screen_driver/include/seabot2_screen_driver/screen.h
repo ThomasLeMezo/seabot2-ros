@@ -36,7 +36,6 @@ public:
      */
     Screen(rclcpp::Node *n){
         n_ = n;
-        i2c_open();
     }
 
     ~Screen();

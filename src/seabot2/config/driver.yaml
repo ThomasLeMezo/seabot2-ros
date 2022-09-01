@@ -1,37 +1,46 @@
-/driver/gpsd_node:
-  frame_id: "gps"
+driver:
+  gpsd_node:
+    ros__parameters:
+      frame_id: "gps"
 
-/driver/bme280_node:
-  loop_dt: 200 #ms
+  bme280_node:
+    ros__parameters:
+      loop_dt: 200 #ms
 
-/driver/pressure_ms5803_node:
-  loop_dt: 200 #ms
+  pressure_ms5803_node:
+    ros__parameters:
+      loop_dt: 200 #ms
 
-/driver/light_node:
-  flash_duration: 1
-  flash_pause_between_flash: 5
-  flash_pause_end: 40
+  light_node:
+    ros__parameters:
+      flash_duration: 1
+      flash_pause_between_flash: 5
+      flash_pause_end: 40
 
-/driver/piston_node:
-  loop_dt: 100 #ms
-  delay_reset_if_no_data: 30
+  piston_node:
+    ros__parameters:
+      loop_dt: 100 #ms
+      delay_reset_if_no_data: 30
 
-/driver/power_node:
-  loop_dt: 100
+  power_node:
+    ros__parameters:
+      loop_dt: 100
 
-/driver/screen_node:
-  loop_dt: 2000
-  depth_no_update: 1.0 # meter
+  screen_node:
+    ros__parameters:
+      loop_dt: 2000
+      depth_no_update: 1.0 # meter
 
-/driver/thruster_node:
-  loop_dt: 100
-  coeff_cmd_to_pwm: 9.0
-  delay_stop: 500 #ms
-  max_angular_velocity: 1.0
-  max_linear_velocity: 1.0
-  max_velocity_pwm: 5.0
-  allow_backward: false
-  reverse_thruster_order: false
-  reverse_left: false
-  reverse_right: false
+  thruster_node:
+    ros__parameters:
+      loop_dt: 100
+      coeff_cmd_to_pwm: 9.0
+      delay_stop: 500 #ms
+      max_angular_velocity: 1.0
+      max_linear_velocity: 1.0
+      max_velocity_pwm: 5.0
+      allow_backward: false
+      reverse_thruster_order: false
+      reverse_left: false
+      reverse_right: false
 

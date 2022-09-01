@@ -17,6 +17,10 @@ int Light::i2c_open(){
         RCLCPP_WARN(n_->get_logger(),"[Light_driver] Failed to acquire bus access and/or talk to slave (0x%X) - %s", I2C_SLAVE, strerror(result));
         exit(1);
     }
+
+    if(get_version()!=code_version_)
+        RCLCPP_WARN(n_->get_logger(), "[Light_driver] Wrong PIC code version");
+
     usleep(100000);
     return 0;
 }

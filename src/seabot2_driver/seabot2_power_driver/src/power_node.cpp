@@ -9,6 +9,8 @@ PowerNode::PowerNode()
     init_topics();
     init_services();
 
+    power_.i2c_open();
+
     timer_ = this->create_wall_timer(
             500ms, std::bind(&PowerNode::timer_callback, this));
 

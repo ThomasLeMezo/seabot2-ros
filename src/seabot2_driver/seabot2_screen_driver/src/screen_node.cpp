@@ -15,6 +15,8 @@ ScreenNode::ScreenNode()
     init_parameters();
     init_topics();
 
+    screen_.i2c_open();
+
     timer_ = this->create_wall_timer(
             loop_dt_, std::bind(&ScreenNode::timer_callback, this));
 

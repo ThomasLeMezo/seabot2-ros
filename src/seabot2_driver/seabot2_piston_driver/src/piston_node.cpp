@@ -8,6 +8,8 @@ PistonNode::PistonNode()
     init_parameters();
     init_topics();
 
+    piston_.i2c_open();
+
     timer_ = this->create_wall_timer(
             200ms, std::bind(&PistonNode::timer_callback, this));
 

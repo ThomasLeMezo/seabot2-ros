@@ -9,6 +9,8 @@ LightNode::LightNode()
     init_topics();
     init_services();
 
+    light_.i2c_open();
+
     timer_ = this->create_wall_timer(
             500ms, std::bind(&LightNode::timer_callback, this));
 

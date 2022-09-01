@@ -27,10 +27,11 @@ public:
         init_parameters();
 
         publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("sensor_internal", 10);
-        timer_ = this->create_wall_timer(
-                loop_dt_, std::bind(&Bme280Node::timer_callback, this));
 
         sensor_init();
+
+        timer_ = this->create_wall_timer(
+                loop_dt_, std::bind(&Bme280Node::timer_callback, this));
     }
 
 private:

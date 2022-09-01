@@ -8,6 +8,8 @@ ThrusterNode::ThrusterNode()
     init_parameters();
     init_topics();
 
+    thruster_.i2c_open();
+
     timer_ = this->create_wall_timer(
             200ms, std::bind(&ThrusterNode::timer_callback, this));
 

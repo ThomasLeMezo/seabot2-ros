@@ -28,9 +28,6 @@ public:
      */
     Piston(rclcpp::Node *n){
         n_ = n;
-        i2c_open();
-        if(get_version()!=code_version_)
-            RCLCPP_WARN(n->get_logger(), "[Piston_driver] Wrong PIC code version");
     }
 
     ~Piston();
