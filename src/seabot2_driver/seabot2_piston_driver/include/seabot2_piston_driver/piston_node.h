@@ -23,6 +23,11 @@ private:
     /// I2C configuration
     Piston piston_;
 
+    /// Piston
+    std::chrono::microseconds delay_no_data_ = 30s;
+    rclcpp::Time time_last_cmd_received_ = this->now();
+    int last_cmd_ = -1;
+
     /// Topics
     rclcpp::Publisher<seabot2_piston_driver::msg::PistonState>::SharedPtr publisher_piston_state_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr subscription_position_set_point_;

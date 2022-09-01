@@ -81,13 +81,29 @@ public:
     bool motor_sens_ = false;
 
 public:
+    /**
+     * Reset the piston to position 0
+     */
     void set_piston_reset() const;
 
+    /**
+     * Set the regulation dead zone
+     * @param val interval of ticks
+     */
     void set_regulation_dead_zone(const __u16 &val) const;
 
+    /**
+     * Set the coefficient Kp of the regulator
+     * @param val
+     */
     void set_regulation_proportional(const __u16 &val) const;
 
-    void set_position(const int32_t &val) const;
+    /**
+     * Set the position of the piston
+     * @param val
+     * @return
+     */
+    int set_position(const int32_t &val) const;
 
     /**
      * Get data from dspic

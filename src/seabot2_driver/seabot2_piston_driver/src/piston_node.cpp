@@ -1,6 +1,6 @@
 #include "seabot2_piston_driver/piston_node.h"
 
-using std::placeholders::_1;
+using namespace placeholders;
 
 PistonNode::PistonNode()
         : Node("piston_node"), piston_(this){
@@ -33,6 +33,10 @@ void PistonNode::timer_callback() {
 
         publisher_piston_state_->publish(state_msg);
     }
+    if(last_cmd_ !=0 && (this->now()-time_last_cmd_received_)>delay_no_data_){
+        if(piston_.set_position(0)==EXIT_SUCCESS)
+            last_cmd_ = 0;
+    }
 }
 
 void PistonNode::init_parameters() {
@@ -45,10 +49,20 @@ void PistonNode::init_parameters() {
 
     piston_.setI2CPeriph(this->get_parameter_or("i2c_periph", piston_.getI2CPeriph()));
     piston_.setI2CAddr(this->get_parameter_or("i2c_address", piston_.getI2CAddr()));
+
+    /// Piston
+     this->declare_parameter<int>("delay_no_data_", delay_no_data_.count());
+    delay_no_data_ = std::chrono::seconds(this->get_parameter_or("delay_no_data_",
+                                                      std::chrono::duration_cast<std::chrono::seconds>(delay_no_data_).count()));
 }
 
 void PistonNode::topic_position_set_point_callback(const std_msgs::msg::Int32 &msg){
-    piston_.set_position(msg.data);
+    time_last_cmd_received_ = this->now();
+    if(last_cmd_ != msg.data) {
+        if(piston_.set_position(msg.data) == EXIT_SUCCESS) {
+            last_cmd_ = msg.data;
+        }
+    }
 }
 
 void PistonNode::init_topics() {

@@ -37,13 +37,17 @@ void Piston::set_regulation_proportional(const __u16 &val) const{
         RCLCPP_WARN(n_->get_logger(),"[Piston_driver] I2C bus Failure - Set proportional");
 }
 
-void Piston::set_position(const int32_t &val) const{
+int Piston::set_position(const int32_t &val) const{
     __u8 data[4];
     for(int i=0; i<4; i++){
         data[i] = val>>(8*i); /// ToDo : check LSB/MSB ?
     }
-    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_REGULATION_PROPORTIONAL, 4, data)<0)
-        RCLCPP_WARN(n_->get_logger(),"[Piston_driver] I2C bus Failure - Set proportional");
+    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_REGULATION_PROPORTIONAL, 4, data)<0) {
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Set proportional");
+        return EXIT_FAILURE;
+    }
+    else
+        return EXIT_SUCCESS;
 }
 
 int Piston::get_all_data(){

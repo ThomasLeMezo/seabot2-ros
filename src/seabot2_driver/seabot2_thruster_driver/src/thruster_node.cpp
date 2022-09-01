@@ -1,6 +1,6 @@
 #include "seabot2_thruster_driver/thruster_node.h"
 
-using std::placeholders::_1;
+using namespace placeholders;
 
 ThrusterNode::ThrusterNode()
         : Node("thruster_node"), thruster_(this){

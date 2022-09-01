@@ -1,0 +1,8 @@
+
+### Duration of the flash in seconds
+### no duration if negative value
+int32 duration
+
+### Number of flash in the pattern
+uint8 number_of_flash
+---

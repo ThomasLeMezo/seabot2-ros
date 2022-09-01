@@ -6,7 +6,7 @@
 #include <ifaddrs.h>
 #include <unistd.h>
 
-using std::placeholders::_1;
+using namespace placeholders;
 
 ScreenNode::ScreenNode()
         : Node("screen_node"), screen_(this){
