@@ -3,7 +3,7 @@
 using namespace placeholders;
 
 PowerNode::PowerNode()
-        : Node("Power_node"), power_(this){
+        : Node("power_node"), power_(this){
 
     init_parameters();
     init_topics();
