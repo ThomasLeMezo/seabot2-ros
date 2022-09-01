@@ -12,7 +12,7 @@ LightNode::LightNode()
     timer_ = this->create_wall_timer(
             500ms, std::bind(&LightNode::timer_callback, this));
 
-    RCLCPP_INFO(this->get_logger(), "[Thruster_node] Start Ok");
+    RCLCPP_INFO(this->get_logger(), "[Light_node] Start Ok");
 }
 
 void LightNode::timer_callback() {

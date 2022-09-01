@@ -1,5 +1,5 @@
-#ifndef LIGHT_H
-#define LIGHT_H
+#ifndef POWER_H
+#define POWER_H
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -14,25 +14,25 @@ extern "C" {
 #include <i2c/smbus.h>
 }
 
-#define REGISTER_LIGHT_ENABLE 0x00
-#define REGISTER_LIGHT_POWER 0x01
-#define REGISTER_LIGHT_PATTERN 0x02
-#define NB_PATTERN 10
+#define REGISTER_DATA_READ 0x00
+#define REGISTER_DATA_SIZE 14
+#define CONVERT_BRIDGE_BATTERY 1.0
+#define CONVERT_BRIDGE_CURRENT 1.0
 
-class Light
+class Power
 {
 public:
     /**
-     * @brief Light
+     * @brief Power
      */
-    Light(rclcpp::Node *n){
+    Power(rclcpp::Node *n){
         n_ = n;
         i2c_open();
         if(get_version()!=code_version_)
-            RCLCPP_WARN(n->get_logger(), "[Light_driver] Wrong PIC code version");
+            RCLCPP_WARN(n->get_logger(), "[Power_driver] Wrong PIC code version");
     }
 
-    ~Light();
+    ~Power();
 
     /**
      * @brief Open the I2C device
@@ -64,34 +64,31 @@ private:
     int file_ = 0; /// File to the i2c port
     std::string i2c_periph_ = "/dev/i2c-0";
     int i2c_addr_ = 0x28;
-    const int code_version_ = 0x01; /// Code version of the expected hardware
+    const int code_version_ = 0x02; /// Code version of the expected hardware
     uint8_t pic_code_version_=0; /// Code version read from the hardware
+
+public:
+    /// Variables
+    std::array<float, 4> batteries_volt_{};
+    std::array<float, 2> esc_current_{};
+    float motor_current_ = 0.0;
+    int power_state_=0;
 
 public:
 
     /**
-     * Enable the light of the seabot2
-     * @param enable
+     * Get all the data from the pic
+     * @return
      */
-    int set_light_enable(const bool &enable) const;
+    int get_all_data();
 
     /**
-     * Set Power of the led
-     * @param val in 0 to 199
+     * Set the seabot2 to sleep
+     * (default delay of 60s before going to sleep)
+     * @return
      */
-    void set_power(const __u8 &val) const;
+    int set_sleep();
 
-    /**
-     * Set the pattern of the light
-     * @param pattern
-     */
-    void set_pattern(const std::array<__u8, NB_PATTERN> &pattern) const;
-
-    /**
-     * Set a pattern with nb_flash
-     * @param nb_flash
-     */
-    void set_flash_number(const unsigned int &nb_flash) const;
 };
 
-#endif // LIGHT_H
+#endif // POWER_H

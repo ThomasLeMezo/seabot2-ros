@@ -1,17 +1,17 @@
-#ifndef BUILD_LIGHT_NODE_H
-#define BUILD_LIGHT_NODE_H
+#ifndef BUILD_POWER_NODE_H
+#define BUILD_POWER_NODE_H
 
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
-#include "seabot2_light_driver/light.h"
-#include "seabot2_light_driver/srv/light.hpp"
+#include "seabot2_power_driver/power.h"
+#include "seabot2_power_driver/msg/power_state.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class LightNode : public rclcpp::Node {
+class PowerNode : public rclcpp::Node {
 public:
-    LightNode();
+    PowerNode();
 
 private:
 
@@ -20,10 +20,10 @@ private:
     std::chrono::microseconds dt_ = 100ms; /// loop dt
 
     /// I2C configuration
-    Light light_;
+    Power power_;
 
     /// Topics / Services
-    rclcpp::Service<seabot2_light_driver::srv::Light>::SharedPtr service_light_ ;
+    rclcpp::Publisher<seabot2_power_driver::msg::PowerState>::SharedPtr publisher_power_state_;
 
     /// Variables
     rclcpp::Time time_turn_off_light_ = this->now();
@@ -47,15 +47,6 @@ private:
      */
     void init_services();
 
-    /**
-     *
-     * @param request
-     * @param response
-     */
-    void service_light_callback(const std::shared_ptr<rmw_request_id_t> request_header,
-                                const std::shared_ptr<seabot2_light_driver::srv::Light::Request> request,
-                                           std::shared_ptr<seabot2_light_driver::srv::Light::Response> response);
-
 };
 
-#endif //BUILD_LIGHT_NODE_H
+#endif //BUILD_POWER_NODE_H

@@ -43,7 +43,7 @@ int Piston::set_position(const int32_t &val) const{
         data[i] = val>>(8*i); /// ToDo : check LSB/MSB ?
     }
     if(i2c_smbus_write_i2c_block_data(file_, REGISTER_REGULATION_PROPORTIONAL, 4, data)<0) {
-        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Set proportional");
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Set position");
         return EXIT_FAILURE;
     }
     else
@@ -51,9 +51,9 @@ int Piston::set_position(const int32_t &val) const{
 }
 
 int Piston::get_all_data(){
-    __u8 buff[18];
-    if (i2c_smbus_read_i2c_block_data(file_, REGISTER_DATA_READ, 18, buff) != 16) {
-        RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5803] Error Reading data");
+    __u8 buff[REGISTER_DATA_READ];
+    if (i2c_smbus_read_i2c_block_data(file_, REGISTER_DATA_READ, REGISTER_DATA_READ, buff) != REGISTER_DATA_READ) {
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Error Reading data");
         return EXIT_FAILURE;
     }
     else{
