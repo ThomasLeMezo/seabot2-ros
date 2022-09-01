@@ -1,0 +1,3 @@
+[submodule "src/seabot2_driver/raspicam2_node"]
+	path = src/seabot2_driver/raspicam2_node
+	url = https://github.com/christianrauch/raspicam2_node.git
