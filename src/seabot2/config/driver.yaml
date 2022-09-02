@@ -24,12 +24,12 @@ driver:
 
   power_node:
     ros__parameters:
-      loop_dt: 100
+      loop_dt: 100 #ms
 
   screen_node:
     ros__parameters:
-      loop_dt: 2000
-      depth_no_update: 1.0 # meter
+      loop_dt: 500
+      depth_no_update: 3.0 # meter
 
   thruster_node:
     ros__parameters:

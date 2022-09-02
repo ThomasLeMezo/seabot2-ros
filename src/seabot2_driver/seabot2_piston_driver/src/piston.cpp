@@ -46,7 +46,7 @@ int Piston::set_position(const int32_t &val) const{
     for(int i=0; i<4; i++){
         data[i] = val>>(8*i); /// ToDo : check LSB/MSB ?
     }
-    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_REGULATION_PROPORTIONAL, 4, data)<0) {
+    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_SET_POINT, 4, data)<0) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Set position");
         return EXIT_FAILURE;
     }
@@ -73,7 +73,7 @@ int Piston::get_all_data(){
         state_ = buff[5];
 
         for(int i=6; i<=9; i++)
-            u_position_set_point |= buff[i]<<(i*8);
+            u_position_set_point |= buff[i]<<((i-6)*8);
         position_set_point_ = static_cast<int32_t>(u_position_set_point);
 
         __u16 measured_battery_voltage = (__u16)buff[10] + ((__u16)buff[11]<<8);

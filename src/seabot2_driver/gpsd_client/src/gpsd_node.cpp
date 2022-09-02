@@ -28,7 +28,9 @@ GpsdNode::~GpsdNode() {
     if(gps_!=nullptr) {
         gps_->stream(WATCH_DISABLE);
         gps_->~gpsmm();
+        free(gps_);
     }
+
 }
 
 void GpsdNode::init_parameters() {
@@ -45,10 +47,10 @@ void GpsdNode::init_topics() {
 
 void GpsdNode::timer_callback(){
     struct gps_data_t *p;
-    if (!gps_->waiting(50000000)) // us ? => 1s
+    if (!gps_->waiting(2000000)) // us ? => 2s
         return;
 
-    if((p = gps_->read())==NULL)
+    if((p = gps_->read()) == nullptr)
         RCLCPP_WARN(this->get_logger(), "[gpsd_node] Error reading gpsd");
     else
         process_data(p);

@@ -25,8 +25,8 @@ void LightNode::timer_callback() {
 }
 
 void LightNode::init_parameters() {
-    this->declare_parameter<int>("dt", dt_.count());
-    dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", dt_.count()));
+    this->declare_parameter<int>("loop_dt_", loop_dt_.count());
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 
     /// I2C
     this->declare_parameter<std::string>("i2c_periph", light_.getI2CPeriph());

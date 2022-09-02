@@ -19,6 +19,7 @@ extern "C" {
 #define REGISTER_REGULATION_PROPORTIONAL 0x32
 #define REGISTER_DATA_READ 0x00
 #define REGISTER_DATA_SIZE 16
+#define REGISTER_SET_POINT 0x00
 
 class Piston
 {

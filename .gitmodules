@@ -2,3 +2,7 @@
 	path = src/seabot2_driver/raspicam2_node
 	url = https://github.com/ThomasLeMezo/raspicam2_node.git
 	branch = seabot2
+[submodule "src/seabot2_driver/bluerobotics_ping_driver/ping-cpp"]
+	path = src/seabot2_driver/bluerobotics_ping_driver/ping-cpp
+	url = https://github.com/ThomasLeMezo/ping-cpp.git
+	branch = master

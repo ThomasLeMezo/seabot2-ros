@@ -71,7 +71,7 @@ void PistonNode::init_topics() {
     publisher_piston_state_ = this->create_publisher<seabot2_piston_driver::msg::PistonState>("state", 1);
 
     subscription_position_set_point_ = this->create_subscription<std_msgs::msg::Int32>(
-            "cmd_engine", 10, std::bind(&PistonNode::topic_position_set_point_callback, this, _1));
+            "piston_set_point", 10, std::bind(&PistonNode::topic_position_set_point_callback, this, _1));
 }
 
 int main(int argc, char *argv[]) {

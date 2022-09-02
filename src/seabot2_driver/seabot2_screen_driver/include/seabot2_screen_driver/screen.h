@@ -28,6 +28,9 @@ extern "C" {
 #define REGISTER_TIME_REMAINING 12
 #define REGISTER_STATUS 13
 
+#define SCREEN_MISSION_NAME_SIZE 16
+#define SCREEN_ROBOT_NAME_SIZE 16
+
 class Screen
 {
 public:

@@ -30,6 +30,7 @@ void ScreenNode::timer_callback() {
 
         screen_.write_robot_name(robot_name_);
         screen_.write_mission_name(mission_name_);
+
         screen_.write_ip(ip_);
         screen_.write_pressure(round(pressure_)); /// in mbar
         screen_.write_temperature(round(temperature_*10.));
