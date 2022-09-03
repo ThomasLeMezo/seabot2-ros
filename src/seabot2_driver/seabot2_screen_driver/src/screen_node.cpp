@@ -59,7 +59,7 @@ void ScreenNode::init_parameters() {
     screen_.setI2CPeriph(this->get_parameter_or("i2c_periph", screen_.getI2CPeriph()));
     screen_.setI2CAddr(this->get_parameter_or("i2c_address", screen_.getI2CAddr()));
 
-    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    this->declare_parameter<long>("loop_dt", loop_dt_.count());
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
     this->declare_parameter<double>("depth_no_update", depth_no_update_);

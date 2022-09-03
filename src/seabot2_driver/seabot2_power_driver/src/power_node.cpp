@@ -29,7 +29,7 @@ void PowerNode::timer_callback() {
 }
 
 void PowerNode::init_parameters() {
-    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    this->declare_parameter<long>("loop_dt", loop_dt_.count());
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
     /// I2C

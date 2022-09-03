@@ -12,7 +12,7 @@ public:
 
         this->declare_parameter<std::string>("i2c_periph", pressure_sensor_.getI2CPeriph());
         this->declare_parameter<int>("i2c_address", pressure_sensor_.getI2CAddr());
-        this->declare_parameter<int>("loop_dt", loop_dt_.count());
+        this->declare_parameter<long>("loop_dt", loop_dt_.count());
 
         pressure_sensor_.setI2CPeriph(this->get_parameter_or("i2c_periph", pressure_sensor_.getI2CPeriph()));
         pressure_sensor_.setI2CAddr(this->get_parameter_or("i2c_address", pressure_sensor_.getI2CAddr()));

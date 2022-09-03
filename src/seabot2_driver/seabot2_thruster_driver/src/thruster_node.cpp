@@ -92,7 +92,7 @@ uint8_t ThrusterNode::convert_to_pwm(const double &u) const{
 }
 
 void ThrusterNode::init_parameters() {
-    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    this->declare_parameter<long>("loop_dt", loop_dt_.count());
     this->declare_parameter<double>("coeff_cmd_to_pwm", coeff_cmd_to_pwm_);
     this->declare_parameter<int>("delay_stop", delay_stop_.count());
     this->declare_parameter<double>("max_angular_velocity", max_angular_velocity_);

@@ -28,7 +28,7 @@ void Bme280Node::init_parameters() {
     this->get_parameter("i2c_periph", i2c_periph_);
     this->get_parameter("primary_i2c_address", primary_i2c_address_);
 
-    this->declare_parameter<int>("loop_dt", loop_dt_.count());
+    this->declare_parameter<long>("loop_dt", loop_dt_.count());
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 }
 

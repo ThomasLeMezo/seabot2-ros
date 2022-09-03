@@ -5,6 +5,7 @@
 #include <memory>
 #include <ping-device-ping1d.h>
 #include <abstract-link.h>
+#include <bluerobotics_ping_driver/msg/profile.hpp>
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -20,11 +21,18 @@ private:
     std::chrono::milliseconds loop_dt_ = 100ms; /// loop dt
 
     /// Topics / Services
+    rclcpp::Publisher<bluerobotics_ping_driver::msg::Profile>::SharedPtr publisher_profile_;
 
     /// Variables
     string uart_port_ = "/dev/ttyAMA0";
     std::unique_ptr<Ping1d> device_;
     std::shared_ptr<AbstractLink> port_;
+
+    bool enable_ping_ = true;
+    bool mode_auto_ = false; /// mode
+        int speed_of_sound_ = 1550000; /// speed of sound [mm/s]
+    int ping_interval_ = 200; /// interval [ms]
+    int gain_setting_ = 1; /// gain [1, 2, 3, 4, 5, 6]
 
 
     /// Functions
