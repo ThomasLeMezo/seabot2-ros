@@ -49,6 +49,8 @@ void ScreenNode::timer_callback() {
         screen_.write_remaining_time(min(t_remain / 60, 99), t_remain % 60);
 
         screen_.write_robot_status(status_);
+
+        screen_.write_screen();
     }
 }
 

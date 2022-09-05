@@ -17,6 +17,7 @@ extern "C" {
 #define REGISTER_LIGHT_ENABLE 0x00
 #define REGISTER_LIGHT_POWER 0x01
 #define REGISTER_LIGHT_PATTERN 0x02
+#define CODE_VERSION 0xC0
 #define NB_PATTERN 10
 
 class Light

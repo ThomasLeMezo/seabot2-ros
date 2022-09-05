@@ -50,7 +50,7 @@ void Light::set_flash_number(const unsigned int &nb_flash) const {
     std::array<__u8, NB_PATTERN> pattern{};
     for(unsigned int i=0; i<std::min(nb_flash*2, static_cast<unsigned int>(NB_PATTERN)); i+=2){
         pattern[i] = flash_duration_;
-        if(i/2==nb_flash)
+        if(i/2==(nb_flash-1))
             pattern[i+1] = flash_pause_end_; /// in 0.1s ?
         else
             pattern[i+1] = flash_pause_between_flash_;
@@ -59,7 +59,7 @@ void Light::set_flash_number(const unsigned int &nb_flash) const {
 }
 
 uint8_t& Light::get_version(){
-    pic_code_version_ = i2c_smbus_read_byte_data(file_, 0xC0);
+    pic_code_version_ = i2c_smbus_read_byte_data(file_, CODE_VERSION);
     return pic_code_version_;
 }
 
