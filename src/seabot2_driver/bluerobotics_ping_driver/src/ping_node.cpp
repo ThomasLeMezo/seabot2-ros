@@ -68,15 +68,17 @@ void PingNode::timer_callback() {
 }
 
 void PingNode::init_parameters() {
-    this->declare_parameter<long>("loop_dt_", loop_dt_.count());
-    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
+    this->declare_parameter<long>("loop_dt", loop_dt_.count());
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
+    this->declare_parameter<string>("serial_port", uart_port_);
     this->declare_parameter<bool>("enable_ping", enable_ping_);
     this->declare_parameter<bool>("mode_auto", mode_auto_);
     this->declare_parameter<int>("speed_of_sound", speed_of_sound_);
     this->declare_parameter<int>("mode_auto", ping_interval_);
     this->declare_parameter<int>("gain_setting", gain_setting_);
 
+    uart_port_ = this->get_parameter_or("serial_port", uart_port_);
     enable_ping_ = this->get_parameter_or("enable_ping", enable_ping_);
     mode_auto_ = this->get_parameter_or("mode_auto", mode_auto_);
     speed_of_sound_ = this->get_parameter_or("speed_of_sound", speed_of_sound_);

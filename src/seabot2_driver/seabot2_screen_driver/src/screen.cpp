@@ -114,7 +114,7 @@ void Screen::write_robot_status(const Screen::Robot_Status &status) {
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write status");
 }
 
-void Screen::write_reset_screen() {
-    if(i2c_smbus_write_byte_data(file_, REGISTER_RESET_SCREEN, 0x00)<0)
+void Screen::write_screen() {
+    if(i2c_smbus_write_byte_data(file_, REGISTER_WRITE_SCREEN, 0x00) < 0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write reset screen");
 }

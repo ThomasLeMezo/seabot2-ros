@@ -75,6 +75,14 @@ def generate_launch_description():
         parameters=[config_driver]
     )
 
+    ping_node = Node(
+        package='bluerobotics_ping_driver',
+        executable='bluerobotics_ping_node',
+        namespace='driver',
+        name='ping_node',
+        parameters=[config_driver]
+    )
+
     return LaunchDescription([
         gpsd_node,
         bme280_node,

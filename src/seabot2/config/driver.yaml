@@ -44,3 +44,11 @@ driver:
       reverse_left: false
       reverse_right: false
 
+  ping_node:
+    ros__parameters:
+      loop_dt: 100 #ms
+      enable_ping: false
+      mode_auto: true
+      speed_of_sound: 1500000
+
+

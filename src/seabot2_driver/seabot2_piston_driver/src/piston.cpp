@@ -79,8 +79,8 @@ int Piston::get_all_data(){
         __u16 measured_battery_voltage = (__u16)buff[10] + ((__u16)buff[11]<<8);
         __u16 measured_motor_current = (__u16)buff[12] + ((__u16)buff[13] << 8);
 
-        battery_voltage_ = ((float)(measured_battery_voltage)*3.3/4096.0) / (180.0/(180.0+820.0));
-        motor_current_ = ((float)(measured_motor_current)-2048.0)*(1.65/2048*0.264);
+        battery_voltage_ = measured_battery_voltage; //((float)(measured_battery_voltage)*3.3/4096.0) / (180.0/(180.0+820.0));
+        motor_current_ = measured_motor_current; // ((float)(measured_motor_current)-2048.0)*(1.65/2048*0.264);
         motor_set_point_ = (__u16)buff[14] + ((__u16)buff[15] << 8);
         motor_cmd_ = (__u16)buff[16] + ((__u16)buff[17] << 8);
         return EXIT_SUCCESS;

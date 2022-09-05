@@ -30,7 +30,7 @@ private:
 
     bool enable_ping_ = true;
     bool mode_auto_ = false; /// mode
-        int speed_of_sound_ = 1550000; /// speed of sound [mm/s]
+    int speed_of_sound_ = 1550000; /// speed of sound [mm/s]
     int ping_interval_ = 200; /// interval [ms]
     int gain_setting_ = 1; /// gain [1, 2, 3, 4, 5, 6]
 

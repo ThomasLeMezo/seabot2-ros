@@ -14,7 +14,7 @@ extern "C" {
 #include <i2c/smbus.h>
 }
 
-#define  REGISTER_RESET_SCREEN 0
+#define  REGISTER_WRITE_SCREEN 0
 #define REGISTER_ROBOT_NAME 1
 #define REGISTER_IP 2
 #define REGISTER_PRESSURE 3
@@ -129,9 +129,9 @@ public:
     void write_robot_status(const Robot_Status &status);
 
     /**
-     * Reset the screen
+     * Write the screen with data sent
      */
-    void write_reset_screen();
+    void write_screen();
 
     /**
      *

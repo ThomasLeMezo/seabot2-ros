@@ -11,7 +11,7 @@ PistonNode::PistonNode()
     piston_.i2c_open();
 
     timer_ = this->create_wall_timer(
-            200ms, std::bind(&PistonNode::timer_callback, this));
+            loop_dt_, std::bind(&PistonNode::timer_callback, this));
 
     RCLCPP_INFO(this->get_logger(), "[Thruster_node] Start Ok");
 }
