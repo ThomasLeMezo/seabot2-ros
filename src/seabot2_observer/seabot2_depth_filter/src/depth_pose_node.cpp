@@ -1,5 +1,3 @@
-#include "rclcpp/rclcpp.hpp"
-#include "pressure_ms5803_driver/msg/pressure_sensor_data.hpp"
 #include "seabot2_depth_filter/depth_pose_node.hpp"
 #include <algorithm>    // std::sort
 
@@ -15,8 +13,6 @@ DepthPoseNode::DepthPoseNode()
 }
 
 void DepthPoseNode::init_parameters() {
-    this->declare_parameter<long>("loop_dt", loop_dt_.count());
-    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
     this->declare_parameter<double>("physics_rho_", rho_);
     this->declare_parameter<double>("physics_g_", g_);

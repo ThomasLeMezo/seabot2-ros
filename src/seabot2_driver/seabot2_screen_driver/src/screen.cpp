@@ -55,7 +55,7 @@ void Screen::write_temperature(const short &temperature) {
 }
 
 void Screen::write_hygro(const short &hygro) {
-    if(i2c_smbus_write_word_data(file_, REGISTER_HYGRO, hygro)<0)
+    if(i2c_smbus_write_byte_data(file_, REGISTER_HYGRO, hygro)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write hygro");
 }
 
@@ -65,24 +65,24 @@ void Screen::write_voltage(const char &volt) {
 }
 
 void Screen::write_robot_name(const std::string &name) {
-    unsigned char name_c[SCREEN_ROBOT_NAME_SIZE];
+    unsigned char name_c[SCREEN_ROBOT_NAME_SIZE+1];
     fill(begin(name_c), end(name_c), ' ');
-    for(int i=0; i<min((int)name.length(), SCREEN_MISSION_NAME_SIZE); i++)
+    for(int i=0; i<min((int)name.length(), SCREEN_ROBOT_NAME_SIZE); i++)
         name_c[i] = name[i];
-    name_c[15] = '\n';
+    name_c[SCREEN_ROBOT_NAME_SIZE] = '\n';
 
-    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_ROBOT_NAME, SCREEN_ROBOT_NAME_SIZE, name_c)<0)
+    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_ROBOT_NAME, SCREEN_ROBOT_NAME_SIZE+1, name_c)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write name");
 }
 
 void Screen::write_mission_name(const std::string &mission_name) {
-    unsigned char mission_name_c[SCREEN_MISSION_NAME_SIZE];
+    unsigned char mission_name_c[SCREEN_MISSION_NAME_SIZE+1];
     fill(begin(mission_name_c), end(mission_name_c), ' ');
     for(int i=0; i<min((int)mission_name.length(), SCREEN_MISSION_NAME_SIZE); i++)
         mission_name_c[i] = mission_name[i];
-    mission_name_c[15] = '\n';
+    mission_name_c[SCREEN_MISSION_NAME_SIZE] = '\n';
 
-    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_MISSION_NAME, SCREEN_MISSION_NAME_SIZE,
+    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_MISSION_NAME, SCREEN_MISSION_NAME_SIZE+1,
                                       mission_name_c)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write name");
 }
@@ -98,14 +98,16 @@ void Screen::write_number_waypoints(const unsigned char &id_max) {
 }
 
 void Screen::write_time(const char &hour, const char &minute) {
-    uint16_t data = ((uint16_t)hour<<8) + ((uint16_t)minute); /// ToDo : check lsb or msb ?
-    if(i2c_smbus_write_word_data(file_, REGISTER_TIME, data)<0)
-    RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write time");
+    __u8 data[2] = {static_cast<__u8>(hour), static_cast<__u8>(minute)};
+    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_TIME, 2,
+                                      data)<0)
+        RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write remaining time");
 }
 
 void Screen::write_remaining_time(const char &minute, const char &second) {
-    uint16_t data = ((uint16_t)second<<8) + ((uint16_t)minute); /// ToDo : check lsb or msb ?
-    if(i2c_smbus_write_word_data(file_, REGISTER_TIME_REMAINING, data)<0)
+    __u8 data[2] = {static_cast<__u8>(minute), static_cast<__u8>(second)};
+    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_TIME_REMAINING, 2,
+                                      data)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write remaining time");
 }
 
@@ -115,6 +117,6 @@ void Screen::write_robot_status(const Screen::Robot_Status &status) {
 }
 
 void Screen::write_screen() {
-    if(i2c_smbus_write_byte_data(file_, REGISTER_WRITE_SCREEN, 0x00) < 0)
+    if(i2c_smbus_write_byte_data(file_, REGISTER_WRITE_SCREEN, 0x01) < 0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write reset screen");
 }

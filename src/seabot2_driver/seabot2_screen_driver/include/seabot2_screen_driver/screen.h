@@ -14,7 +14,7 @@ extern "C" {
 #include <i2c/smbus.h>
 }
 
-#define  REGISTER_WRITE_SCREEN 0
+#define REGISTER_WRITE_SCREEN 0
 #define REGISTER_ROBOT_NAME 1
 #define REGISTER_IP 2
 #define REGISTER_PRESSURE 3

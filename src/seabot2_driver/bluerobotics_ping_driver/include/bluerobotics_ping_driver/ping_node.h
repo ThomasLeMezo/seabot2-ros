@@ -24,7 +24,7 @@ private:
     rclcpp::Publisher<bluerobotics_ping_driver::msg::Profile>::SharedPtr publisher_profile_;
 
     /// Variables
-    string uart_port_ = "/dev/ttyAMA0";
+    string uart_port_ = "/dev/ttyAMA1";
     std::unique_ptr<Ping1d> device_;
     std::shared_ptr<AbstractLink> port_;
 

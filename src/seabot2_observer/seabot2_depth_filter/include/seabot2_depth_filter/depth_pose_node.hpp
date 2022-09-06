@@ -8,6 +8,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
+#include "pressure_ms5803_driver/msg/pressure_sensor_data.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include <deque>
 
@@ -19,10 +20,6 @@ public:
     DepthPoseNode();
 
 private:
-
-    /// Rclcpp
-    rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::milliseconds loop_dt_ = 100ms; // loop dt
 
     /// Variable
     double rho_ = 1025.0;
@@ -54,7 +51,6 @@ private:
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_zero_depth_ ;
 
     /// Functions
-    void timer_callback();
 
     /**
      *  Init and get parameters of the Node

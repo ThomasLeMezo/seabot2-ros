@@ -32,7 +32,7 @@ private:
     string mission_name_ = "NoMission";
     unsigned int wp_id_ = 0;
     unsigned int wp_max_ = 0;
-    rclcpp::Time time_next_wp = this->now();
+    rclcpp::Time time_next_wp = this->now() + rclcpp::Duration(5, 0);
     Screen::Robot_Status status_ = Screen::Robot_Status::ERROR;
 
     double depth_ = 0.0;
