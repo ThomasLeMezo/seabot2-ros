@@ -66,7 +66,8 @@ private:
 
 public:
     /// Variables
-    std::array<float, 4> batteries_volt_{};
+    std::array<float, 4> cell_volt_{};
+    double battery_volt_;
     std::array<float, 2> esc_current_{};
     float motor_current_ = 0.0;
     int power_state_=0;

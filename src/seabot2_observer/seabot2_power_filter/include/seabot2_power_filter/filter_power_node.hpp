@@ -2,33 +2,36 @@
 // Created by lemezoth on 05/09/22.
 //
 
-#ifndef BUILD_INTERNAL_SENSOR_FILTER_NODE_HPP
-#define BUILD_INTERNAL_SENSOR_FILTER_NODE_HPP
+#ifndef BUILD_FILTER_POWER_NODE_HPP
+#define BUILD_FILTER_POWER_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
+#include "seabot2_power_driver/msg/power_state.hpp"
 #include <deque>
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class InternalSensorFilterNode : public rclcpp::Node {
+class FilterPowerNode : public rclcpp::Node {
 public:
-    InternalSensorFilterNode();
+    FilterPowerNode();
 
 private:
+
+    /// Rclcpp
     size_t filter_window_size_ = 5;
     size_t filter_median_remove_side_samples_ = 1;
 
     /// Variable
-    deque<double> pressure_memory_;
-    deque<double> temperature_memory_;
-    deque<double> humidity_memory_;
+    deque<double> battery_volt_memory_;
+    deque<double> motor_current_memory_;
+    array<deque<double>,2> esc_current_memory_;
+    array<deque<double>, 4> cell_volt_memory_;
 
     /// Interfaces
-    rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_pressure_data_;
-    rclcpp::Publisher<pressure_bme280_driver::msg::Bme280Data>::SharedPtr publisher_pressure_data_;
+    rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
+    rclcpp::Publisher<seabot2_power_driver::msg::PowerState>::SharedPtr publisher_power_data_;
 
     /// Functions
 
@@ -43,10 +46,10 @@ private:
     void init_interfaces();
 
     /**
-     * Callback of the external pressure
+     * Callback of the power data
      * @param msg
      */
-    void pressure_callback(const pressure_bme280_driver::msg::Bme280Data &msg);
+    void power_callback(const seabot2_power_driver::msg::PowerState &msg);
 
     /**
      * Compute the median and mean filter
@@ -58,4 +61,4 @@ private:
 private:
 
 };
-#endif //BUILD_INTERNAL_SENSOR_FILTER_NODE_HPP
+#endif //BUILD_FILTER_POWER_NODE_HPP

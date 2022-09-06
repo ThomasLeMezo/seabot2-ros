@@ -4,12 +4,12 @@
 using namespace placeholders;
 
 InternalSensorFilterNode::InternalSensorFilterNode()
-        : Node("depth_pose_node"){
+        : Node("filter_internal_sensor_node"){
 
     init_parameters();
     init_interfaces();
 
-    RCLCPP_INFO(this->get_logger(), "[Depth_pose_node] Start Ok");
+    RCLCPP_INFO(this->get_logger(), "[Filter_internal_sensor_node] Start Ok");
 }
 
 void InternalSensorFilterNode::init_parameters() {

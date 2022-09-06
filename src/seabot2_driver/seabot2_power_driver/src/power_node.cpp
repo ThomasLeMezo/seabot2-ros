@@ -20,7 +20,8 @@ PowerNode::PowerNode()
 void PowerNode::timer_callback() {
     if(power_.get_all_data()==EXIT_SUCCESS){
         seabot2_power_driver::msg::PowerState state_msg;
-        state_msg.batteries_volt = power_.batteries_volt_;
+        state_msg.battery_volt = power_.battery_volt_;
+        state_msg.cell_volt = power_.cell_volt_;
         state_msg.esc_current = power_.esc_current_;
         state_msg.motor_current = power_.motor_current_;
 

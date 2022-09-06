@@ -33,8 +33,14 @@ int Power::get_all_data(){
     }
     else{
         for(int i=0; i<4; i++){
-            batteries_volt_[i] = ((int)buff[2*i] + ((int)buff[2*i+1]<<8)) * CONVERT_BRIDGE_BATTERY;
+            cell_volt_[i] = ((int)buff[2*i] + ((int)buff[2*i+1]<<8)) * CONVERT_BRIDGE_BATTERY;
         }
+
+        /// Cells are a cumulative sum, restore here the value of each cell
+        battery_volt_ = cell_volt_[4];
+        for(size_t i=1; i<4; i++)
+            cell_volt_[i] -= cell_volt_[i-1];
+
         for(int i=4; i<6; i++){
             esc_current_[i - 4] = ((int)buff[2 * i] + ((int)buff[2 * i + 1] << 8)) * CONVERT_BRIDGE_CURRENT;
         }
