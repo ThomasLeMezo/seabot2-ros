@@ -2,10 +2,10 @@
 std_msgs/Header header
 
 # Measurement status
-# MODE_NOT_SEEN   0       /* mode update not seen yet */
-# MODE_NO_FIX     1       /* none */
-# MODE_2D         2       /* good for latitude/longitude */
-# MODE_3D         3       /* good for altitude/climb too */
+int16 MODE_NOT_SEEN=0	# mode update not seen yet
+int16 MODE_NO_FIX=1	# none
+int16 MODE_2D=2	# good for latitude/longitude
+int16 MODE_3D=3	# good for altitude/climb too
 int16 mode
 
 # STATUS_NO_FIX   0       // no, or unknown
