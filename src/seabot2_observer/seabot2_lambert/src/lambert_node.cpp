@@ -45,25 +45,25 @@ void LambertNode::init_parameters() {
 
 void LambertNode::compute_mean(){
     seabot2_lambert::msg::GnssPose msg_data;
-    double east_start_mean, north_start_mean;
-    double east_end_mean, north_end_mean;
+    double east_start_mean=0., north_start_mean=0.;
+    double east_end_mean=0., north_end_mean=0.;
     size_t start_pose_max_idx = lower_bound(time_memory_.begin(), time_memory_.end(),
                                             time_memory_.front()+filter_position_mean_) - time_memory_.begin();
     size_t end_pose_min_idx = lower_bound(time_memory_.begin(), time_memory_.end(),
                                             time_memory_.back()-filter_position_mean_) - time_memory_.begin();
 
-    if(start_pose_max_idx!=0 && end_pose_min_idx!=time_memory_.size()-1) {
-        std::accumulate(east_memory_.begin(), east_memory_.begin()+start_pose_max_idx, east_start_mean);
-        east_start_mean/=start_pose_max_idx;
+    if(start_pose_max_idx!=time_memory_.size() && end_pose_min_idx!=0) {
+        east_start_mean = std::accumulate(east_memory_.begin(), east_memory_.begin()+start_pose_max_idx, 0.);
+        east_start_mean/=static_cast<double>(start_pose_max_idx);
 
-        std::accumulate(north_memory_.begin(), north_memory_.begin()+start_pose_max_idx, north_start_mean);
-        east_start_mean/=start_pose_max_idx;
+        north_start_mean = std::accumulate(north_memory_.begin(), north_memory_.begin()+start_pose_max_idx, 0.);
+        north_start_mean/=static_cast<double>(start_pose_max_idx);
 
-        std::accumulate(east_memory_.end()-end_pose_min_idx, east_memory_.end(), east_end_mean);
-        east_start_mean/=end_pose_min_idx;
+        east_end_mean = std::accumulate(east_memory_.end()-end_pose_min_idx, east_memory_.end(), 0.);
+        east_end_mean/=static_cast<double>(end_pose_min_idx);
 
-        std::accumulate(north_memory_.end()-end_pose_min_idx, north_memory_.end(), north_end_mean);
-        east_start_mean/=end_pose_min_idx;
+        north_end_mean = std::accumulate(north_memory_.end()-end_pose_min_idx, north_memory_.end(), 0.);
+        north_end_mean/=static_cast<double>(end_pose_min_idx);
 
         msg_data.east = east_end_mean;
         msg_data.north = north_end_mean;
@@ -92,7 +92,7 @@ void LambertNode::gnss_callback(const gpsd_client::msg::GpsFix &msg) {
 
         seabot2_lambert::msg::GnssPose msg_data;
         msg_data.east = coord_target.xyz.x;
-        msg_data.north = coord_source.xyz.y;
+        msg_data.north = coord_target.xyz.y;
         msg_data.heading = msg.track;
         msg_data.header.stamp = msg.header.stamp;
 
@@ -100,7 +100,7 @@ void LambertNode::gnss_callback(const gpsd_client::msg::GpsFix &msg) {
 
         /// Compute mean
         east_memory_.push_back(coord_target.xyz.x);
-        north_memory_.push_back(coord_source.xyz.y);
+        north_memory_.push_back(coord_target.xyz.y);
         time_memory_.emplace_back(msg.header.stamp);
 
         if(time_memory_.back()-time_memory_.front() > filter_dt_heading_computation_){
@@ -108,9 +108,7 @@ void LambertNode::gnss_callback(const gpsd_client::msg::GpsFix &msg) {
             north_memory_.pop_front();
             time_memory_.pop_front();
         }
-
         compute_mean();
-
     }
     else{
         east_memory_.clear();
