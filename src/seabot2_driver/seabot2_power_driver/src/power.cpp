@@ -37,7 +37,7 @@ int Power::get_all_data(){
         }
 
         /// Cells are a cumulative sum, restore here the value of each cell
-        battery_volt_ = cell_volt_[4];
+        battery_volt_ = cell_volt_.back();
         for(size_t i=1; i<4; i++)
             cell_volt_[i] -= cell_volt_[i-1];
 

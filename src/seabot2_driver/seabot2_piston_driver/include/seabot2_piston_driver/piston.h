@@ -21,6 +21,10 @@ extern "C" {
 #define REGISTER_DATA_SIZE 16
 #define REGISTER_SET_POINT 0x00
 
+#define CONVERSION_BRIDGE (3.3/4096.)
+#define CONVERSION_BATT (CONVERSION_BRIDGE * ((18.+3.9)/(3.9)))
+#define CONVERSION_CURRENT (CONVERSION_BRIDGE * 1000.0/264.0)
+
 class Piston
 {
 public:
