@@ -28,9 +28,6 @@ void ScreenNode::timer_callback() {
     if(depth_<depth_no_update_) {
         get_ip();
 
-        screen_.write_robot_name(robot_name_);
-        screen_.write_mission_name(mission_name_);
-
         screen_.write_ip(ip_);
         screen_.write_pressure(round(pressure_)); /// in mbar
         screen_.write_temperature(round(temperature_*10.));
@@ -39,10 +36,6 @@ void ScreenNode::timer_callback() {
 
         screen_.write_current_waypoint(wp_id_);
         screen_.write_number_waypoints(wp_max_);
-
-        std::time_t t = std::time(0);   // get time now
-        std::tm *now = std::localtime(&t);
-        screen_.write_time(now->tm_hour, now->tm_min);
 
         int t_remain = (time_next_wp - this->now()).seconds();
         if(t_remain > 99*60)
@@ -53,6 +46,13 @@ void ScreenNode::timer_callback() {
             screen_.write_remaining_time(floor(t_remain / 60.0), t_remain % 60);
 
         screen_.write_robot_status(status_);
+
+        std::time_t t = std::time(0);   // get time now
+        std::tm *now = std::localtime(&t);
+        screen_.write_time(now->tm_hour, now->tm_min);
+
+        screen_.write_mission_name(mission_name_);
+        screen_.write_robot_name(robot_name_);
 
         screen_.write_screen();
     }

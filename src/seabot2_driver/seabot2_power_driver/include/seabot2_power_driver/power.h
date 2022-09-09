@@ -15,8 +15,8 @@ extern "C" {
 }
 
 #define REGISTER_DATA_READ 0x00
-#define REGISTER_DATA_SIZE 14
-#define CONVERT_BRIDGE_BATTERY 1.0
+#define REGISTER_DATA_SIZE 15
+#define CONVERT_BRIDGE_BATTERY (3.3/1024.)
 #define CONVERT_BRIDGE_CURRENT 1.0
 
 class Power
@@ -59,10 +59,13 @@ private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
 
     int file_ = 0; /// File to the i2c port
-    std::string i2c_periph_ = "/dev/i2c-0";
-    int i2c_addr_ = 0x28;
+    std::string i2c_periph_ = "/dev/i2c-1";
+    int i2c_addr_ = 0x39;
     const int code_version_ = 0x02; /// Code version of the expected hardware
     uint8_t pic_code_version_=0; /// Code version read from the hardware
+
+    std::array<double, 4> R1_= {820, 220, 330, 180};
+    std::array<double, 4> R2_= {330, 680, 560, 820};
 
 public:
     /// Variables

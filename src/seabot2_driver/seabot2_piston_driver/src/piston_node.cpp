@@ -13,7 +13,7 @@ PistonNode::PistonNode()
     timer_ = this->create_wall_timer(
             loop_dt_, std::bind(&PistonNode::timer_callback, this));
 
-    RCLCPP_INFO(this->get_logger(), "[Thruster_node] Start Ok");
+    RCLCPP_INFO(this->get_logger(), "[Piston_node] Start Ok");
 }
 
 void PistonNode::timer_callback() {
@@ -56,6 +56,11 @@ void PistonNode::init_parameters() {
      this->declare_parameter<int>("delay_reset_if_no_data", delay_no_data_.count());
     delay_no_data_ = std::chrono::seconds(this->get_parameter_or("delay_reset_if_no_data",
                                                       std::chrono::duration_cast<std::chrono::seconds>(delay_no_data_).count()));
+
+    this->declare_parameter<double>("bridge_R1", piston_.R1_);
+    this->declare_parameter<double>("bridge_R2", piston_.R2_);
+    piston_.R1_ = this->get_parameter_or("bridge_R1", piston_.R1_);
+    piston_.R2_ = this->get_parameter_or("bridge_R2", piston_.R2_);
 }
 
 void PistonNode::topic_position_set_point_callback(const std_msgs::msg::Int32 &msg){

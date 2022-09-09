@@ -33,7 +33,7 @@ private:
     unsigned int wp_id_ = 0;
     unsigned int wp_max_ = 0;
     rclcpp::Time time_next_wp = this->now() + rclcpp::Duration(5, 0);
-    Screen::Robot_Status status_ = Screen::Robot_Status::ERROR;
+    Screen::Robot_Status status_ = Screen::Robot_Status::WARNING;
 
     double depth_ = 0.0;
     double depth_no_update_ = 1.0;

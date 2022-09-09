@@ -12,7 +12,7 @@ PowerNode::PowerNode()
     power_.i2c_open();
 
     timer_ = this->create_wall_timer(
-            500ms, std::bind(&PowerNode::timer_callback, this));
+            loop_dt_, std::bind(&PowerNode::timer_callback, this));
 
     RCLCPP_INFO(this->get_logger(), "[Power_node] Start Ok");
 }
@@ -24,6 +24,7 @@ void PowerNode::timer_callback() {
         state_msg.cell_volt = power_.cell_volt_;
         state_msg.esc_current = power_.esc_current_;
         state_msg.motor_current = power_.motor_current_;
+        state_msg.power_state = power_.power_state_;
 
         publisher_power_state_->publish(state_msg);
     }

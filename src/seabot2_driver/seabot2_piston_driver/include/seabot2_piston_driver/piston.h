@@ -22,7 +22,6 @@ extern "C" {
 #define REGISTER_SET_POINT 0x00
 
 #define CONVERSION_BRIDGE (3.3/4096.)
-#define CONVERSION_BATT (CONVERSION_BRIDGE * ((18.+3.9)/(3.9)))
 #define CONVERSION_CURRENT (CONVERSION_BRIDGE * 1000.0/264.0)
 
 class Piston
@@ -69,6 +68,11 @@ private:
     int i2c_addr_ = 0x1E;
     const int code_version_ = 0x02; /// Code version of the expected hardware
     uint8_t pic_code_version_=0; /// Code version read from the hardware
+
+public:
+    /// Bridge
+    double R1_ = 3.9; // kOhms
+    double R2_ = 18.0; // kOhms
 
 public:
     int position_ = 0;

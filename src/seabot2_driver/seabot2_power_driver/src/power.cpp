@@ -33,7 +33,7 @@ int Power::get_all_data(){
     }
     else{
         for(int i=0; i<4; i++){
-            cell_volt_[i] = ((int)buff[2*i] + ((int)buff[2*i+1]<<8)) * CONVERT_BRIDGE_BATTERY;
+            cell_volt_[i] = ((int)buff[2*i] + ((int)buff[2*i+1]<<8)) * CONVERT_BRIDGE_BATTERY * ((R1_[i]+R2_[i])/R1_[i]);
         }
 
         /// Cells are a cumulative sum, restore here the value of each cell

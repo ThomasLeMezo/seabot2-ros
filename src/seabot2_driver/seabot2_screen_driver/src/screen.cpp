@@ -19,7 +19,7 @@ int Screen::i2c_open(){
         RCLCPP_WARN(n_->get_logger(),"[Piston_driver] Failed to acquire bus access and/or talk to slave (0x%X) - %s", I2C_SLAVE, strerror(result));
         exit(1);
     }
-    usleep(100000);
+    usleep(DELAY_SLEEP_US);
     return 0;
 }
 
@@ -42,26 +42,31 @@ void Screen::setI2CPeriph(const std::string &i2CPeriph) {
 void Screen::write_ip(const std::array<unsigned char, 4> &data) {
     if(i2c_smbus_write_i2c_block_data(file_, REGISTER_IP, 4, data.data())<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write IP");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_pressure(const short &pressure) {
     if(i2c_smbus_write_word_data(file_, REGISTER_PRESSURE, pressure)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write pressure");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_temperature(const short &temperature) {
     if(i2c_smbus_write_word_data(file_, REGISTER_TEMPERATURE, temperature)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write temperature");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_hygro(const short &hygro) {
     if(i2c_smbus_write_byte_data(file_, REGISTER_HYGRO, hygro)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write hygro");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_voltage(const char &volt) {
     if(i2c_smbus_write_byte_data(file_, REGISTER_VOLTAGE, volt)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write voltage");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_robot_name(const std::string &name) {
@@ -69,10 +74,11 @@ void Screen::write_robot_name(const std::string &name) {
     fill(begin(name_c), end(name_c), ' ');
     for(int i=0; i<min((int)name.length(), SCREEN_ROBOT_NAME_SIZE); i++)
         name_c[i] = name[i];
-    name_c[SCREEN_ROBOT_NAME_SIZE] = '\n';
+    name_c[SCREEN_ROBOT_NAME_SIZE] = 0x0A; /// = \n
 
     if(i2c_smbus_write_i2c_block_data(file_, REGISTER_ROBOT_NAME, SCREEN_ROBOT_NAME_SIZE+1, name_c)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write name");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_mission_name(const std::string &mission_name) {
@@ -80,21 +86,24 @@ void Screen::write_mission_name(const std::string &mission_name) {
     fill(begin(mission_name_c), end(mission_name_c), ' ');
     for(int i=0; i<min((int)mission_name.length(), SCREEN_MISSION_NAME_SIZE); i++)
         mission_name_c[i] = mission_name[i];
-    mission_name_c[SCREEN_MISSION_NAME_SIZE] = '\n';
+    mission_name_c[SCREEN_MISSION_NAME_SIZE] = 0x0A; /// = \n
 
     if(i2c_smbus_write_i2c_block_data(file_, REGISTER_MISSION_NAME, SCREEN_MISSION_NAME_SIZE+1,
                                       mission_name_c)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write name");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_current_waypoint(const unsigned char &wp_id) {
     if(i2c_smbus_write_byte_data(file_, REGISTER_WAYPOINT_ID, wp_id)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write waypoint id");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_number_waypoints(const unsigned char &id_max) {
     if(i2c_smbus_write_byte_data(file_, REGISTER_NB_WAYPOINT, id_max)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write waypoint max id");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_time(const char &hour, const char &minute) {
@@ -102,6 +111,7 @@ void Screen::write_time(const char &hour, const char &minute) {
     if(i2c_smbus_write_i2c_block_data(file_, REGISTER_TIME, 2,
                                       data)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write remaining time");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_remaining_time(const char &minute, const char &second) {
@@ -109,14 +119,17 @@ void Screen::write_remaining_time(const char &minute, const char &second) {
     if(i2c_smbus_write_i2c_block_data(file_, REGISTER_TIME_REMAINING, 2,
                                       data)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write remaining time");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_robot_status(const Screen::Robot_Status &status) {
     if(i2c_smbus_write_byte_data(file_, REGISTER_STATUS, status)<0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write status");
+    usleep(DELAY_SLEEP_US);
 }
 
 void Screen::write_screen() {
     if(i2c_smbus_write_byte_data(file_, REGISTER_WRITE_SCREEN, 0x01) < 0)
         RCLCPP_WARN(n_->get_logger(),"[Screen_driver] I2C Bus Failure - Write reset screen");
+    usleep(DELAY_SLEEP_US);
 }
