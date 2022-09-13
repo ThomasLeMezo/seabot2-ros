@@ -16,7 +16,8 @@ def generate_launch_description():
         executable='gpsd_node',
         namespace='driver',
         name='gpsd_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     bme280_node = Node(
@@ -24,7 +25,8 @@ def generate_launch_description():
         executable='bme280_node',
         namespace='driver',
         name='bme280_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     ms5803_node = Node(
@@ -32,7 +34,8 @@ def generate_launch_description():
         executable='pressure_ms5803_node',
         namespace='driver',
         name='pressure_ms5803_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     light_node = Node(
@@ -40,7 +43,8 @@ def generate_launch_description():
         executable='light_node',
         namespace='driver',
         name='light_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     piston_node = Node(
@@ -48,7 +52,8 @@ def generate_launch_description():
         executable='piston_node',
         namespace='driver',
         name='piston_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     power_node = Node(
@@ -56,7 +61,8 @@ def generate_launch_description():
         executable='power_node',
         namespace='driver',
         name='power_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     screen_node = Node(
@@ -64,7 +70,8 @@ def generate_launch_description():
         executable='screen_node',
         namespace='driver',
         name='screen_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     thruster_node = Node(
@@ -72,7 +79,8 @@ def generate_launch_description():
         executable='thruster_node',
         namespace='driver',
         name='thruster_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     ping_node = Node(
@@ -80,7 +88,8 @@ def generate_launch_description():
         executable='bluerobotics_ping_node',
         namespace='driver',
         name='ping_node',
-        parameters=[config_driver]
+        parameters=[config_driver],
+        respawn=True
     )
 
     return LaunchDescription([

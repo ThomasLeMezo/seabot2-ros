@@ -21,7 +21,8 @@ def generate_launch_description():
         executable='depth_pose_node',
         namespace='observer',
         name='depth_pose_node',
-        parameters=[config_observer, config_physics]
+        parameters=[config_observer, config_physics],
+        respawn=True
     )
 
     internal_sensor_filter = Node(
@@ -29,7 +30,8 @@ def generate_launch_description():
         executable='filter_internal_sensor_node',
         namespace='observer',
         name='filter_internal_sensor_node',
-        parameters=[config_observer]
+        parameters=[config_observer],
+        respawn=True
     )
 
     kalmann_node = Node(
@@ -37,7 +39,8 @@ def generate_launch_description():
         executable='kalmann_node',
         namespace='observer',
         name='kalmann_node',
-        parameters=[config_observer]
+        parameters=[config_observer],
+        respawn=True
     )
 
     lambert_node = Node(
@@ -45,7 +48,8 @@ def generate_launch_description():
         executable='lambert_node',
         namespace='observer',
         name='lambert_node',
-        parameters=[config_observer]
+        parameters=[config_observer],
+        respawn=True
     )
 
     power_filter_node = Node(
@@ -53,7 +57,8 @@ def generate_launch_description():
         executable='filter_power_node',
         namespace='observer',
         name='filter_power_node',
-        parameters=[config_observer]
+        parameters=[config_observer],
+        respawn=True
     )
 
     return LaunchDescription([

@@ -4,3 +4,8 @@
     physics_g_: 9.807 #  g-force (m/s2)
 
     physics_velocity_limit: 0.5 # maximum velocity of the seabot (m/s)
+
+    screw_thread: 1e-3 # m
+    tick_per_turn: 8192 # CUI ATM10 2048*4
+    piston_diameter: 0.045 # m
+    robot_diameter: 0.125 # m
