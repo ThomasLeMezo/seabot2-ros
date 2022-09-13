@@ -37,7 +37,7 @@ void ScreenNode::timer_callback() {
         screen_.write_current_waypoint(wp_id_);
         screen_.write_number_waypoints(wp_max_);
 
-        int t_remain = (time_next_wp - this->now()).seconds();
+        int t_remain = (time_next_wp_ - this->now()).seconds();
         if(t_remain > 99*60)
             screen_.write_remaining_time(99,59);
         else if(t_remain <0)
@@ -76,6 +76,9 @@ void ScreenNode::init_topics() {
 
     subscriber_sensor_internal_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
             "sensor_internal", 10, std::bind(&ScreenNode::topic_internal_pressure_callback, this, _1));
+
+    subscriber_mission_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
+            "/mission/waypoint", 10, std::bind(&ScreenNode::waypoint_callback, this, _1));
 }
 
 void ScreenNode::get_hostname() {
@@ -133,4 +136,10 @@ int main(int argc, char *argv[]) {
     rclcpp::spin(std::make_shared<ScreenNode>());
     rclcpp::shutdown();
     return 0;
+}
+
+void ScreenNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
+    wp_id_ = msg.waypoint_id;
+    wp_max_ = msg.waypoint_length;
+    time_next_wp_ = this->now() + rclcpp::Duration::from_seconds(msg.time_to_next_waypoint);
 }

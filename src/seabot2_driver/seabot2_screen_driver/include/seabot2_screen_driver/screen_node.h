@@ -5,6 +5,7 @@
 #include <memory>
 #include "seabot2_screen_driver/screen.h"
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
+#include "seabot2_mission/msg/waypoint.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -32,7 +33,7 @@ private:
     string mission_name_ = "NoMission";
     unsigned int wp_id_ = 0;
     unsigned int wp_max_ = 0;
-    rclcpp::Time time_next_wp = this->now() + rclcpp::Duration(5, 0);
+    rclcpp::Time time_next_wp_ = this->now() + rclcpp::Duration(5, 0);
     Screen::Robot_Status status_ = Screen::Robot_Status::WARNING;
 
     double depth_ = 0.0;
@@ -40,6 +41,7 @@ private:
 
     /// Topics
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_sensor_internal_;
+    rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_;
 
     /// Functions
     void timer_callback();
@@ -70,6 +72,12 @@ private:
      * @param msg
      */
     void topic_internal_pressure_callback(const pressure_bme280_driver::msg::Bme280Data &msg);
+
+    /**
+     * Callback for waypoints
+     * @param msg
+     */
+    void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
 };
 
 #endif //BUILD_SCREEN_NODE_H

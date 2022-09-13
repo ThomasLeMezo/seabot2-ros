@@ -18,6 +18,7 @@ extern "C" {
 #define REGISTER_DATA_SIZE 15
 #define CONVERT_BRIDGE_BATTERY (3.3/1024.)
 #define CONVERT_BRIDGE_CURRENT 1.0
+#define CONVERT_CURRENT_V_A 66
 
 class Power
 {
@@ -61,11 +62,11 @@ private:
     int file_ = 0; /// File to the i2c port
     std::string i2c_periph_ = "/dev/i2c-1";
     int i2c_addr_ = 0x39;
-    const int code_version_ = 0x02; /// Code version of the expected hardware
+    const int code_version_ = 0x03; /// Code version of the expected hardware
     uint8_t pic_code_version_=0; /// Code version read from the hardware
 
-    std::array<double, 4> R1_= {820, 220, 330, 180};
-    std::array<double, 4> R2_= {330, 680, 560, 820};
+    std::array<double, 4> R1_= {820, 330, 220, 180};
+    std::array<double, 4> R2_= {330, 560, 680, 820};
 
 public:
     /// Variables

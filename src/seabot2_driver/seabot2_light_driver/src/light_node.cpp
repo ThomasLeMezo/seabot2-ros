@@ -12,7 +12,7 @@ LightNode::LightNode()
     light_.i2c_open();
 
     timer_ = this->create_wall_timer(
-            500ms, std::bind(&LightNode::timer_callback, this));
+            loop_dt_, std::bind(&LightNode::timer_callback, this));
 
     RCLCPP_INFO(this->get_logger(), "[Light_node] Start Ok");
 }
@@ -36,9 +36,9 @@ void LightNode::init_parameters() {
     light_.setI2CAddr(this->get_parameter_or("i2c_address", light_.getI2CAddr()));
 
     /// Light
-    this->declare_parameter<int>("flash_duration_", light_.flash_duration_);
-    this->declare_parameter<int>("flash_pause_between_flash_", light_.flash_pause_between_flash_);
-    this->declare_parameter<int>("flash_pause_end_", light_.flash_pause_end_);
+    this->declare_parameter<int>("flash_duration", light_.flash_duration_);
+    this->declare_parameter<int>("flash_pause_between_flash", light_.flash_pause_between_flash_);
+    this->declare_parameter<int>("flash_pause_end", light_.flash_pause_end_);
 
     light_.flash_duration_ = this->get_parameter_or("flash_duration", light_.flash_duration_);
     light_.flash_pause_between_flash_ = this->get_parameter_or("flash_pause_between_flash", light_.flash_pause_between_flash_);

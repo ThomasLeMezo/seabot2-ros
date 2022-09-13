@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(pressure_bme280_driver REQUIRED)
+find_package(seabot2_mission REQUIRED)
 
 #find_package(rosidl_default_generators REQUIRED)
 
@@ -24,6 +25,7 @@ add_executable(screen_node src/screen_node.cpp src/screen.cpp)
 ament_target_dependencies(screen_node
         rclcpp
         pressure_bme280_driver
+        seabot2_mission
 #        rosidl_default_generators
         )
 target_link_libraries(screen_node "${cpp_typesupport_target}" i2c)
