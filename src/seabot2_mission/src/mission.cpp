@@ -91,6 +91,7 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
         duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
     }
 
+    wp.mission_enable = mission_enable_;
     wp.waypoint_id = current_waypoint_;
     wp.waypoint_length = waypoints_.size();
     wp.time_to_next_waypoint = duration_next_waypoint_.seconds();

@@ -37,7 +37,7 @@ private:
     /// Physical characteristics
     double physics_rho_ =  1025.0;
     double physics_g_ =  9.81;
-    double physics_mass_ =  12.0;
+    double robot_mass_ =  12.0;
     double robot_diameter_ =  0.125;
     double screw_thread_ =  1.e-3;
     double tick_per_turn_ =  2048*4;
@@ -46,8 +46,8 @@ private:
 
     double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    double coeff_A_ = physics_g_*physics_rho_/physics_mass_;
-    double coeff_B_ = 0.5*physics_rho_*Cf_/physics_mass_;
+    double coeff_A_ = physics_g_ * physics_rho_ / robot_mass_;
+    double coeff_B_ = 0.5 * physics_rho_ * Cf_ / robot_mass_;
 
     /// Compute regulation constant
     double root_regulation_ = -1.0;

@@ -21,7 +21,7 @@ void DepthControlNode::init_parameters() {
 
     this->declare_parameter<double>("physics_rho", physics_rho_);
     this->declare_parameter<double>("physics_g", physics_g_);
-    this->declare_parameter<double>("physics_mass", physics_mass_);
+    this->declare_parameter<double>("robot_mass", robot_mass_);
     this->declare_parameter<double>("robot_diameter", robot_diameter_);
     this->declare_parameter<double>("screw_thread", screw_thread_);
     this->declare_parameter<double>("tick_per_turn", tick_per_turn_);
@@ -44,7 +44,7 @@ void DepthControlNode::init_parameters() {
 
     physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
     physics_g_ = this->get_parameter_or("physics_g", physics_g_);
-    physics_mass_ = this->get_parameter_or("physics_mass", physics_mass_);
+    robot_mass_ = this->get_parameter_or("physics_mass", robot_mass_);
     robot_diameter_ = this->get_parameter_or("robot_diameter", robot_diameter_);
     screw_thread_ = this->get_parameter_or("screw_thread", screw_thread_);
     tick_per_turn_ = this->get_parameter_or("tick_per_turn", tick_per_turn_);
@@ -67,8 +67,8 @@ void DepthControlNode::init_parameters() {
     /// Computed parameters
     Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
     tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    coeff_A_ = physics_g_*physics_rho_/physics_mass_;
-    coeff_B_ = 0.5*physics_rho_*Cf_/physics_mass_;
+    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
+    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
 }
 
 void DepthControlNode::kalmann_callback(const seabot2_kalmann::msg::KalmannState &msg) {

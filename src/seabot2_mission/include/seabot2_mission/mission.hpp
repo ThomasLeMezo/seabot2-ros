@@ -114,7 +114,7 @@ private:
     int decode_waypoint(boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset);
 
 private:
-    std::string file_name_;
+    std::string file_name_ = "mission_empty.xml";
     std::vector<Waypoint> waypoints_;
     size_t current_waypoint_ = 0;
     int old_waypoint_ = -1;
