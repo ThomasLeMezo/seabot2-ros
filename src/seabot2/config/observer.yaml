@@ -1,0 +1,23 @@
+observer:
+
+  depth_filter_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  internal_sensor_filter:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  kalmann_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  lmabert_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  power_filter_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+
