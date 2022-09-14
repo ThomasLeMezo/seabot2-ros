@@ -7,6 +7,7 @@
 
     screw_thread: 1e-3 # m
     tick_per_turn: 8192.0 # CUI ATM10 2048*4
+    motor_max_rpm: 38 # rotation per minute
     piston_diameter: 0.045 # m
     robot_diameter: 0.125 # m
     piston_max_value: 1146880.0 # ticks
