@@ -51,11 +51,13 @@ private:
 
     /// Compute regulation constant
     double root_regulation_ = -1.0;
-    double limit_depth_regulation_ = 0.5; /// m
-    double flow_piston_sink_ = 1e-6; /// m3/s
+    double limit_depth_control_ = 0.5; /// m
+    double flow_piston_sink_ = -0.5e-6; /// m3/s
 
+    double piston_reach_position_dead_zone_ = 50.;
     double piston_hysteresis_ = 0.6;
-    double piston_max_velocity_ = 30*tick_to_volume_; /// in m3/sec
+    double motor_max_rpm_ = 38.0;
+    double flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_; /// in m3/sec (0.6
 
     /// Hold depth parameters
     bool hold_depth_enable_ = false;
@@ -73,9 +75,13 @@ private:
     long piston_position_ = 0;
     bool piston_switch_top_ = false;
     bool piston_switch_bottom_ = false;
+    int piston_state_ = 0;
+    double piston_set_point_ = 0.;
+    double piston_set_point_old_ = 0.;
 
     /// Callback data
     rclcpp::Time time_last_kalmann_callback_ = this->now();
+    rclcpp::Time time_last_piston_callback_ = this->now();
     // [Velocity; Depth; Volume; Offset, chi, chi2, Cz]
     Matrix<double, NB_STATES, 1> x = Matrix<double, NB_STATES, 1>::Zero();
     double depth_fusion_ = 0.0;
@@ -84,7 +90,7 @@ private:
     double approach_velocity_ = 1.0;
 
     /// State machine
-    enum STATE_MACHINE {STATE_SURFACE, STATE_SINK, STATE_REGULATION, STATE_STATIONARY, STATE_EMERGENCY, STATE_PISTON_ISSUE, STATE_HOLD_DEPTH};
+    enum STATE_MACHINE {STATE_IDLE, STATE_SURFACE, STATE_SINK, STATE_CONTROL, STATE_STATIONARY, STATE_EMERGENCY, STATE_PISTON_ISSUE, STATE_HOLD_DEPTH};
     STATE_MACHINE regulation_state_ = STATE_SURFACE;
 
     /// Debug
