@@ -15,7 +15,7 @@
   <buildtool_depend>seabot2_piston_driver</buildtool_depend>
   <buildtool_depend>seabot2_mission</buildtool_depend>
   <buildtool_depend>seabot2_depth_filter</buildtool_depend>
-  <buildtool_depend>seabot2_kalmann</buildtool_depend>
+  <buildtool_depend>seabot2_kalman</buildtool_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
@@ -24,7 +24,7 @@
   <exec_depend>seabot2_piston_driver</exec_depend>
   <exec_depend>seabot2_mission</exec_depend>
   <exec_depend>seabot2_depth_filter</exec_depend>
-  <exec_depend>seabot2_kalmann</exec_depend>
+  <exec_depend>seabot2_kalman</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

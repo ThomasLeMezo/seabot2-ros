@@ -19,7 +19,7 @@ PingNode::PingNode()
     init_driver();
 
     timer_ = this->create_wall_timer(
-            500ms, std::bind(&PingNode::timer_callback, this));
+            loop_dt_, std::bind(&PingNode::timer_callback, this));
 
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Start Ok");
 }
@@ -27,7 +27,7 @@ PingNode::PingNode()
 void PingNode::init_driver(){
     port_ = AbstractLink::openUrl(uart_port_);
     device_ = std::make_unique<Ping1d>(*port_.get());
-    device_->initialize(100);
+    device_->initialize(loop_dt_.count());
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device Type = %ui", device_->device_information.device_type);
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device Id = %ui", device_->device_id);
 
