@@ -27,6 +27,7 @@ private:
 
     /// Variables
     rclcpp::Time time_turn_off_light_ = this->now();
+    bool time_turn_off_light_enable_ = true;
     bool light_is_on_ = false;
 
     /// Functions

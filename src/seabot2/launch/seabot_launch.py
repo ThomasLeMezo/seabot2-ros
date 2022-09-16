@@ -3,13 +3,14 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
+from launch.actions import ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
-    config_observer = os.path.join(
+    config_control = os.path.join(
         get_package_share_directory('seabot2'),
         'config',  # Directory where yaml are
-        'observer.yaml'  # Name of the file
+        'control.yaml'  # Name of the file
     )
     config_physics = os.path.join(
         get_package_share_directory('seabot2'),
@@ -17,13 +18,23 @@ def generate_launch_description():
         'physics.yaml'  # Name of the file
     )
 
-    mission = Node(
+    mission_path = os.path.join(
+        get_package_share_directory('seabot2'),
+        'mission',  # Directory where yaml are
+    )
+
+    seabot2_mission = Node(
         package='seabot2_mission',
         executable='mission_node',
         namespace='mission',
         name='mission_node',
-        parameters=[config_observer, config_physics],
+        parameters=[config_control, {"mission_path": mission_path}],
         respawn=True
+    )
+
+    bag = ExecuteProcess(
+        cmd=['ros2', 'bag', 'record', '-a'],
+        output='screen'
     )
 
     drivers = IncludeLaunchDescription(
@@ -45,8 +56,9 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        bag,
         drivers,
         control,
         observer,
-        mission
+        seabot2_mission
     ])

@@ -28,16 +28,6 @@ def generate_launch_description():
         respawn=True
     )
 
-    seabot2_mission = Node(
-        package='seabot2_mission',
-        executable='mission_node',
-        namespace='mission',
-        name='mission_node',
-        parameters=[config_control, {"mission_path": mission_path}],
-        respawn=True
-    )
-
     return LaunchDescription([
-        seabot2_depth_control,
-        seabot2_mission
+        seabot2_depth_control
     ])

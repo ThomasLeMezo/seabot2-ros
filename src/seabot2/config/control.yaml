@@ -18,8 +18,8 @@ mission:
   mission_node:
     ros__parameters:
       loop_dt: 1000 #ms
-      mission_file_name: "mission_empty.xml"
-      flash_next_waypoint_time: 5.0 # s
+      mission_file_name: "mission_depth_only.xml"
+      flash_next_waypoint_time: 10.0 # s
       flash_number: 2
       limit_velocity_default: 0.02 # m/s
       approach_velocity_default: 1.0

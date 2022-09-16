@@ -18,7 +18,7 @@ LightNode::LightNode()
 }
 
 void LightNode::timer_callback() {
-    if(light_is_on_ && (this->now()>time_turn_off_light_)){
+    if(light_is_on_ && time_turn_off_light_enable_ && (this->now()>time_turn_off_light_)){
         if(light_.set_light_enable(false)==EXIT_SUCCESS)
             light_is_on_ = false;
     }
@@ -52,12 +52,23 @@ void LightNode::init_topics() {
 void LightNode::service_light_callback(const std::shared_ptr<rmw_request_id_t> request_header,
                                        const std::shared_ptr<seabot2_light_driver::srv::Light::Request> request,
                                        std::shared_ptr<seabot2_light_driver::srv::Light::Response> response){
-    time_turn_off_light_ = this->now() + rclcpp::Duration::from_seconds(request->duration);
+    if(request->flash_enable) {
+        if (request->duration == 0) {
+            time_turn_off_light_enable_ = false;
+        } else {
+            time_turn_off_light_ = this->now() + rclcpp::Duration::from_seconds(request->duration);
+            time_turn_off_light_enable_ = true;
+        }
 
-    light_.set_flash_number(request->number_of_flash);
-    if(light_.set_light_enable(true)==EXIT_SUCCESS)
-        light_is_on_ = true;
+        light_.set_flash_number(request->number_of_flash);
+        if (light_.set_light_enable(true) == EXIT_SUCCESS)
+            light_is_on_ = true;
+    }
+    else{
+        if (light_.set_light_enable(false) == EXIT_SUCCESS)
+            light_is_on_ = false;
 
+    }
 }
 
 void LightNode::init_services(){

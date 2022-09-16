@@ -42,6 +42,7 @@ private:
     /// Topics
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_sensor_internal_;
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_;
+    /// ToDo : add power driver
 
     /// Functions
     void timer_callback();

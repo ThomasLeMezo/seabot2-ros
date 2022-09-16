@@ -180,14 +180,14 @@ void DepthControlNode::timer_callback() {
 
     /// Analyze specific cases
     if(emergency_)
-        regulation_state_ = STATE_EMERGENCY;
-    if(piston_state_!=1)
+        regulation_state_ = STATE_SURFACE;
+    if(piston_state_!=PISTON_STATE_OK)
         regulation_state_ = STATE_PISTON_ISSUE;
 
     switch(regulation_state_){
         case STATE_SURFACE:
             /// Wait at surface until the waypoint is under the limit depth of regulation
-            if(depth_set_point_ >= limit_depth_control_)
+            if(depth_set_point_ >= limit_depth_control_ && !emergency_)
                 regulation_state_ = STATE_SINK;
             u = 0.;
             piston_set_point_ = 0;
@@ -199,10 +199,10 @@ void DepthControlNode::timer_callback() {
                 u = flow_piston_sink_;
 
                 /// Compute the position of the piston to be at equilibrium
-                double position_eq = -x(4) / tick_to_volume_; /// Assuming no compressibility effect
+                double position_eq = x(3) / tick_to_volume_; /// Assuming no compressibility effect
 
                 /// First move to position_eq and the slowly decrease piston volume by flow_piston_sink_
-                if(abs(piston_position_ - position_eq) > 2.*piston_reach_position_dead_zone_) { /// position reached
+                if(position_eq - piston_position_ > 2.*piston_reach_position_dead_zone_) { /// position reached
                     piston_set_point_ = position_eq;
                 }
                 else{
@@ -269,7 +269,7 @@ void DepthControlNode::timer_callback() {
             u = 0.0;
             piston_set_point_ = 0;
 
-            if(!emergency_)
+            if(!emergency_ && piston_state_ == PISTON_STATE_OK)
                 regulation_state_ = STATE_SURFACE;
             break;
         default:
@@ -280,15 +280,14 @@ void DepthControlNode::timer_callback() {
 
     piston_set_point_ = std::clamp(piston_set_point_, 0., piston_max_tick_value_);
 
-    if(abs(piston_set_point_old_ - piston_set_point_)>piston_hysteresis_){
-        piston_set_point_old_ = piston_set_point_;
+//    if(abs(piston_set_point_old_ - piston_set_point_)>piston_hysteresis_){
+//        piston_set_point_old_ = piston_set_point_;
 
-        seabot2_depth_control::msg::DepthControlDebug msg_debug;
         std_msgs::msg::Int32  msg_piston;
 
         msg_piston.data = round(piston_set_point_);
         publisher_piston_->publish(msg_piston);
-    }
+//    }
 
     /// Limit debug messages to changes
     //if(debug_msg_.u != u || debug_msg_.piston_set_point != piston_set_point_ || debug_msg_.mode != regulation_state_) {

@@ -16,6 +16,7 @@
 #include <eigen3/Eigen/Dense>
 
 #define NB_STATES 7
+#define PISTON_STATE_OK 2
 
 using namespace std::chrono_literals;
 using namespace std;

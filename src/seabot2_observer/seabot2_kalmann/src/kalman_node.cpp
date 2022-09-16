@@ -9,6 +9,8 @@ KalmanNode::KalmanNode()
     init_parameters();
     init_interfaces();
 
+    init_kalman(xhat_);
+
     RCLCPP_INFO(this->get_logger(), "[Kalman_node] Start Ok");
 }
 
@@ -175,6 +177,7 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     xhat(3) = init_chi_*tick_to_volume_; // chi
     xhat(4) = init_chi2_*tick_to_volume_; // chi2
     xhat(5) = 1.0; // Cz
+    x_forcast_ = xhat;
 
     gamma_ = Matrix<double,NB_STATES,NB_STATES>::Zero();
     gamma_(0,0) = pow(gamma_init_velocity_, 2); // velocity
