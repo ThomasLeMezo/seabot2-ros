@@ -6,6 +6,7 @@ float64 offset
 float64 chi
 float64 chi2
 float64 cz
+float64 offset_total
 
 float64[6] variance
 

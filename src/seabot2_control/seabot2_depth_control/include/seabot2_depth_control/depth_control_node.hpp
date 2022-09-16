@@ -7,8 +7,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "seabot2_mission/msg/waypoint.hpp"
-#include "seabot2_kalmann/msg/kalmann_state.hpp"
-#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_kalman/msg/kalman_state.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
 #include "std_msgs/msg/int32.hpp"
@@ -42,7 +41,7 @@ private:
     double screw_thread_ =  1.e-3;
     double tick_per_turn_ =  2048*4;
     double piston_diameter_ =  0.045;
-    double piston_max_value_ =  1146880;
+    double piston_max_tick_value_ =  1146880;
 
     double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
@@ -80,7 +79,7 @@ private:
     double piston_set_point_old_ = 0.;
 
     /// Callback data
-    rclcpp::Time time_last_kalmann_callback_ = this->now();
+    rclcpp::Time time_last_kalman_callback_ = this->now();
     rclcpp::Time time_last_piston_callback_ = this->now();
     // [Velocity; Depth; Volume; Offset, chi, chi2, Cz]
     Matrix<double, NB_STATES, 1> x = Matrix<double, NB_STATES, 1>::Zero();
@@ -97,7 +96,7 @@ private:
     seabot2_depth_control::msg::DepthControlDebug debug_msg_;
 
     /// Interfaces
-    rclcpp::Subscription<seabot2_kalmann::msg::KalmannState>::SharedPtr subscriber_kalman_data_;
+    rclcpp::Subscription<seabot2_kalman::msg::KalmanState>::SharedPtr subscriber_kalman_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_state_data_;
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_data_;
@@ -124,7 +123,7 @@ private:
      *
      * @param msg
      */
-    void kalmann_callback(const seabot2_kalmann::msg::KalmannState &msg);
+    void kalman_callback(const seabot2_kalman::msg::KalmanState &msg);
 
     /**
      *

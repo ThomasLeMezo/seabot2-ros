@@ -27,7 +27,7 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("tick_per_turn", tick_per_turn_);
     this->declare_parameter<double>("motor_max_rpm_", motor_max_rpm_);
     this->declare_parameter<double>("piston_diameter", piston_diameter_);
-    this->declare_parameter<double>("piston_max_value", piston_max_value_);
+    this->declare_parameter<double>("piston_max_tick_value", piston_max_tick_value_);
     this->declare_parameter<double>("root_regulation", root_regulation_);
     this->declare_parameter<double>("limit_depth_regulation", limit_depth_control_);
     this->declare_parameter<double>("flow_piston_sink", flow_piston_sink_);
@@ -51,7 +51,7 @@ void DepthControlNode::init_parameters() {
     tick_per_turn_ = this->get_parameter_or("tick_per_turn", tick_per_turn_);
     motor_max_rpm_ = this->get_parameter_or("motor_max_rpm_", motor_max_rpm_);
     piston_diameter_ = this->get_parameter_or("piston_diameter", piston_diameter_);
-    piston_max_value_ = this->get_parameter_or("piston_max_value", piston_max_value_);
+    piston_max_tick_value_ = this->get_parameter_or("piston_max_tick_value", piston_max_tick_value_);
     root_regulation_ = this->get_parameter_or("root_regulation", root_regulation_);
     limit_depth_control_ = this->get_parameter_or("limit_depth_control", limit_depth_control_);
     flow_piston_sink_ = this->get_parameter_or("flow_piston_sink", flow_piston_sink_);
@@ -74,14 +74,14 @@ void DepthControlNode::init_parameters() {
     flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_;
 }
 
-void DepthControlNode::kalmann_callback(const seabot2_kalmann::msg::KalmannState &msg) {
+void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &msg) {
     x(0) = msg.velocity;
     x(1) = msg.depth;
     x(3) = msg.offset;
     x(4) = msg.chi;
     x(5) = msg.chi2;
     x(6) = msg.cz;
-    time_last_kalmann_callback_ = this->now();
+    time_last_kalman_callback_ = this->now();
 }
 
 void DepthControlNode::state_callback(const seabot2_piston_driver::msg::PistonState &msg){
@@ -116,8 +116,8 @@ void DepthControlNode::depth_control_emergency(const std::shared_ptr<rmw_request
 
 void DepthControlNode::init_interfaces() {
 
-    subscriber_kalman_data_ = this->create_subscription<seabot2_kalmann::msg::KalmannState>(
-            "/observer/kalmann", 10, std::bind(&DepthControlNode::kalmann_callback, this, _1));
+    subscriber_kalman_data_ = this->create_subscription<seabot2_kalman::msg::KalmanState>(
+            "/observer/kalman", 10, std::bind(&DepthControlNode::kalman_callback, this, _1));
     subscriber_state_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
             "/driver/state", 10, std::bind(&DepthControlNode::state_callback, this, _1));
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
@@ -220,7 +220,7 @@ void DepthControlNode::timer_callback() {
                 regulation_state_ = STATE_SURFACE;
             else if(depth_fusion_>=limit_depth_control_){
                 /// Test if data is too old
-                if((this->now()-time_last_kalmann_callback_)<safety_time_no_data_
+                if((this->now()-time_last_kalman_callback_)<safety_time_no_data_
                    && (this->now()-time_last_piston_callback_)<safety_time_no_data_){
 
                     /// Compute several commands according to velocity acceptable bounds
@@ -278,7 +278,7 @@ void DepthControlNode::timer_callback() {
 
     /// Publish data to piston & debug
 
-    piston_set_point_ = std::clamp(piston_set_point_, 0., piston_max_value_);
+    piston_set_point_ = std::clamp(piston_set_point_, 0., piston_max_tick_value_);
 
     if(abs(piston_set_point_old_ - piston_set_point_)>piston_hysteresis_){
         piston_set_point_old_ = piston_set_point_;

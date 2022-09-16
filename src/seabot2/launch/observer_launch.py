@@ -34,12 +34,12 @@ def generate_launch_description():
         respawn=True
     )
 
-    kalmann_node = Node(
-        package='seabot2_kalmann',
-        executable='kalmann_node',
+    kalman_node = Node(
+        package='seabot2_kalman',
+        executable='kalman_node',
         namespace='observer',
-        name='kalmann_node',
-        parameters=[config_observer],
+        name='kalman_node',
+        parameters=[config_observer, config_physics],
         respawn=True
     )
 
@@ -64,7 +64,7 @@ def generate_launch_description():
     return LaunchDescription([
         depth_filter_node,
         internal_sensor_filter,
-        kalmann_node,
+        kalman_node,
         lambert_node,
         power_filter_node
     ])
