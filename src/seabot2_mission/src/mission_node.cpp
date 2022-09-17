@@ -82,7 +82,6 @@ void MissionNode::timer_callback() {
 
     if(is_new_waypoint)
         call_light();
-
 }
 
 void MissionNode::service_mission_reload_callback(const std::shared_ptr<rmw_request_id_t> request_header,

@@ -57,7 +57,7 @@ private:
     double piston_reach_position_dead_zone_ = 50.;
     double piston_hysteresis_ = 0.6;
     double motor_max_rpm_ = 38.0;
-    double flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_; /// in m3/sec (0.6
+    double flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_; /// in m3/sec
 
     /// Hold depth parameters
     bool hold_depth_enable_ = false;

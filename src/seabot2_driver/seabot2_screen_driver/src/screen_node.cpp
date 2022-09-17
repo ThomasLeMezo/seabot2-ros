@@ -75,10 +75,13 @@ void ScreenNode::init_parameters() {
 void ScreenNode::init_topics() {
 
     subscriber_sensor_internal_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
-            "sensor_internal", 10, std::bind(&ScreenNode::topic_internal_pressure_callback, this, _1));
+            "/driver/sensor_internal", 10, std::bind(&ScreenNode::topic_internal_pressure_callback, this, _1));
 
     subscriber_mission_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
             "/mission/waypoint", 10, std::bind(&ScreenNode::waypoint_callback, this, _1));
+
+    subscriber_power_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
+            "/driver/power", 10, std::bind(&ScreenNode::power_callback, this, _1));
 }
 
 void ScreenNode::get_hostname() {
@@ -143,3 +146,8 @@ void ScreenNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
     wp_max_ = msg.waypoint_length;
     time_next_wp_ = this->now() + rclcpp::Duration::from_seconds(msg.time_to_next_waypoint);
 }
+
+void ScreenNode::power_callback(const seabot2_power_driver::msg::PowerState &msg){
+    voltage_ = msg.battery_volt;
+}
+

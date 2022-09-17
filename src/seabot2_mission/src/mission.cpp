@@ -20,9 +20,10 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
     // Test if last waypoint
     bool is_new_waypoint = false;
     if(current_waypoint_ < waypoints_.size()){
-        // Test if next time
+        /// Test if next time
         rclcpp::Time t_now = n_->now();
 
+        /// Wait before mission start
         if(t_now < time_start_){
             mission_enable_ = false;
             wp.depth = 0.0;
@@ -35,16 +36,18 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
             wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
             duration_next_waypoint_ = time_start_ - t_now;
         }
+        /// Mission is started
         else{
             mission_enable_ = true;
             if(t_now >= waypoints_[current_waypoint_].time_end){
                 current_waypoint_++;
-                is_new_waypoint = true;
             }
+            /// To return new waypoint the first time => Todo : change to a state machine ?
             if(old_waypoint_ != static_cast<int>(current_waypoint_)){
                 old_waypoint_ = static_cast<int>(current_waypoint_);
                 RCLCPP_INFO(n_->get_logger(), "[Mission] Start following waypoint %lu (ending at %f)",
                             current_waypoint_, round(waypoints_[current_waypoint_].time_end.seconds()));
+                is_new_waypoint = true;
             }
 
             wp.depth = waypoints_[current_waypoint_].depth;
@@ -77,12 +80,13 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
             duration_next_waypoint_ = waypoints_[current_waypoint_].time_end - t_now;
         }
     }
+    /// Last waypoint was reached
     else{
         if(mission_enable_)
             RCLCPP_INFO(n_->get_logger(),"[Mission] End of waypoints");
         wp.depth = 0.0;
-        wp.limit_velocity = 0.0;
-        wp.approach_velocity = 1.0;
+        wp.limit_velocity = limit_velocity_default_;
+        wp.approach_velocity = approach_velocity_default_;
         wp.north = waypoints_[waypoints_.size() - 1].north + offset_north_;
         wp.east = waypoints_[waypoints_.size() - 1].east + offset_east_;
         wp.enable_thrusters = false;
