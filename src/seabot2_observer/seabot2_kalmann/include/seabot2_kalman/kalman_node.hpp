@@ -60,7 +60,7 @@ private:
     double gamma_init_chi_ =  30.0*tick_to_volume_; // 20
     double gamma_init_chi2_ =  30.0*tick_to_volume_; // 1e-1
     double gamma_init_cz_ =  0.1;
-    double gamma_beta_depth_ =  1.0e-3; // 5e-4
+    double gamma_beta_depth_ =  1.0e-3; // 5e-4 (m)
 
     /// Callback data
     double fusion_depth_ = 0.;
@@ -77,6 +77,15 @@ private:
     Matrix<double, NB_MESURES, NB_MESURES> gamma_beta_ = Matrix<double, NB_MESURES, NB_MESURES>::Zero();
     Matrix<double, NB_MESURES, NB_STATES> Ck_ = Matrix<double, NB_MESURES, NB_STATES>::Zero();
 
+/*
+ *  xhat_ definition
+ *  xhat_(0) velocity
+ *  xhat_(1) depth
+ *  xhat_(2) Piston volume to equilibrium
+ *  xhat_(3) chi (chi*z)
+ *  xhat_(4) chi2 (chi2*z²)
+ *  xhat_(5) Cz
+ */
     Matrix<double, NB_STATES, 1> xhat_ = Matrix<double, NB_STATES, 1>::Zero();
     Matrix<double,NB_STATES, 1> x_forcast_ = Matrix<double, NB_STATES, 1>::Zero();
     Matrix<double,NB_STATES,NB_STATES> gamma_ = Matrix<double,NB_STATES,NB_STATES>::Zero();

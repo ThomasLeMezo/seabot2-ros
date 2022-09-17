@@ -82,8 +82,9 @@ void KalmanNode::init_parameters() {
 void KalmanNode::state_callback(const seabot2_piston_driver::msg::PistonState &msg){
     piston_position_last_ = piston_position_;
     piston_position_ = msg.position;
-    piston_stamp_ = this->now();
     piston_set_point_ = msg.position_set_point;
+    piston_stamp_ = msg.header.stamp;
+
     compute_kalman(false, true);
 }
 
@@ -91,6 +92,7 @@ void KalmanNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg)
     fusion_depth_ = msg.depth;
     fusion_velocity_ = msg.velocity;
     fusion_stamp_ = msg.header.stamp;
+
     compute_kalman(true, false);
 }
 
@@ -205,31 +207,35 @@ void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
     seabot2_kalman::msg::KalmanState msg;
 
     if(fusion_depth_>enable_kalman_depth_ && enable_kalman_) {
-        Matrix<double,NB_MESURES, 1> y = Matrix<double,NB_MESURES, 1>::Zero();
         Matrix<double,NB_COMMAND, 1> u = Matrix<double,NB_COMMAND, 1>::Zero();
+        u(0) = -piston_position_ * tick_to_volume_; // u
 
         if (new_depth_data) {
-            u(0) = -piston_position_ * tick_to_volume_; // u
+            Matrix<double,NB_MESURES, 1> y = Matrix<double,NB_MESURES, 1>::Zero();
+            y(0) = fusion_depth_;
+
             double dt = (fusion_stamp_ - time_last_predict_).seconds();
             if(dt<0){
                 RCLCPP_WARN(this->get_logger(), "[Kalman_node] depth data received late %f", dt);
-                return ;
+                kalman_predict(xhat_, gamma_, u, gamma_alpha_, dt);
+                kalman_correc(xhat_, gamma_, y, gamma_beta_, Ck_);
+                kalman_predict(xhat_, gamma_, u, gamma_alpha_, -dt);
             }
-            kalman_predict(xhat_, gamma_, u, gamma_alpha_, dt);
-            kalman_correc(xhat_, gamma_, y, gamma_beta_, Ck_);
-            time_last_predict_ = fusion_stamp_;
+            else {
+                kalman_predict(xhat_, gamma_, u, gamma_alpha_, dt);
+                kalman_correc(xhat_, gamma_, y, gamma_beta_, Ck_);
+                time_last_predict_ = fusion_stamp_;
+            }
 
             /// Forecast
             x_forcast_ = xhat_;
             gamma_forcast_ = gamma_;
             if(forecast_dt_ != 0ms){
-                u(0) = -piston_position_*tick_to_volume_;
                 kalman_predict(x_forcast_, gamma_forcast_, u, gamma_alpha_,
                                (std::chrono::duration<double>(forecast_dt_)).count());
             }
 
         } else if (new_piston_data) {
-            u(0) = - piston_position_last_ * tick_to_volume_; // u
             double dt = (piston_stamp_ - time_last_predict_).seconds();
             if(dt<0){
                 RCLCPP_WARN(this->get_logger(), "[Kalman_node] piston data received late %f", dt);
@@ -249,6 +255,7 @@ void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
     }
     /// Case where kalman is not enable, then follow fusion data
     else if(new_depth_data){
+            time_last_predict_ = fusion_stamp_;
             xhat_(0) = fusion_velocity_;
             xhat_(1) = fusion_depth_;
             x_forcast_ = xhat_;
