@@ -10,18 +10,10 @@ public:
     PressureMS5803Node()
             : Node("pressure_ms5803_node"), pressure_sensor_(this){
 
-        this->declare_parameter<std::string>("i2c_periph", pressure_sensor_.getI2CPeriph());
-        this->declare_parameter<int>("i2c_address", pressure_sensor_.getI2CAddr());
-        this->declare_parameter<long>("loop_dt", loop_dt_.count());
-
-        pressure_sensor_.setI2CPeriph(this->get_parameter_or("i2c_periph", pressure_sensor_.getI2CPeriph()));
-        pressure_sensor_.setI2CAddr(this->get_parameter_or("i2c_address", pressure_sensor_.getI2CAddr()));
-        loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
-
-        publisher_sensor_ = this->create_publisher<pressure_ms5803_driver::msg::PressureSensorData>("sensor_external", 10);
+        init_parameters();
+        init_interfaces();
 
         pressure_sensor_.init_sensor();
-
         timer_ = this->create_wall_timer(
                 loop_dt_, std::bind(&PressureMS5803Node::timer_callback, this));
 
@@ -42,7 +34,21 @@ private:
     std::chrono::milliseconds  loop_dt_ = 200ms;
 
     /// Functions
+
+    /**
+     *
+     */
     void timer_callback();
+
+    /**
+     *
+     */
+    void init_parameters();
+
+    /**
+     *
+     */
+    void init_interfaces();
 };
 
 void PressureMS5803Node::timer_callback() {
@@ -54,6 +60,20 @@ void PressureMS5803Node::timer_callback() {
 
         publisher_sensor_->publish(msg);
     }
+}
+
+void PressureMS5803Node::init_parameters() {
+    this->declare_parameter<std::string>("i2c_periph", pressure_sensor_.getI2CPeriph());
+    this->declare_parameter<int>("i2c_address", pressure_sensor_.getI2CAddr());
+    this->declare_parameter<long>("loop_dt", loop_dt_.count());
+
+    pressure_sensor_.setI2CPeriph(this->get_parameter_or("i2c_periph", pressure_sensor_.getI2CPeriph()));
+    pressure_sensor_.setI2CAddr(this->get_parameter_or("i2c_address", pressure_sensor_.getI2CAddr()));
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
+}
+
+void PressureMS5803Node::init_interfaces() {
+    publisher_sensor_ = this->create_publisher<pressure_ms5803_driver::msg::PressureSensorData>("sensor_external", 10);
 }
 
 

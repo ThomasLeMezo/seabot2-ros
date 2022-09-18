@@ -25,8 +25,7 @@ public:
             : Node("bme280_node") {
 
         init_parameters();
-
-        publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("sensor_internal", 10);
+        init_interfaces();
 
         sensor_init();
 
@@ -51,15 +50,41 @@ private:
     struct bme280_dev dev_;
 
     /// Functions
+
+    /**
+     *
+     */
     void timer_callback();
 
+    /**
+     *
+     */
     void print_sensor_mode();
 
+    /**
+     *
+     */
     void sensor_init();
+
+    /**
+     *
+     */
     void print_calib_settings();
+
+    /**
+     *
+     */
     void print_settings();
 
+    /**
+     *
+     */
     void init_parameters();
+
+    /**
+     *
+     */
+    void init_interfaces();
 
 };
 

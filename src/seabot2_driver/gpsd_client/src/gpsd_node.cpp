@@ -7,7 +7,7 @@ GpsdNode::GpsdNode()
         : Node("gpsd_node"){
 
     init_parameters();
-    init_topics();
+    init_interfaces();
 
     gps_ = new gpsmm("localhost", DEFAULT_GPSD_PORT);
 
@@ -41,7 +41,7 @@ void GpsdNode::init_parameters() {
     frame_id_ = this->get_parameter_or("frame_id", frame_id_);
 }
 
-void GpsdNode::init_topics() {
+void GpsdNode::init_interfaces() {
     publisher_fix_ = this->create_publisher<gpsd_client::msg::GpsFix>("fix", 1);
 }
 

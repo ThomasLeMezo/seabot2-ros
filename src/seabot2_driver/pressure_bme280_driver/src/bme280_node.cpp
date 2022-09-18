@@ -148,6 +148,10 @@ void Bme280Node::print_sensor_mode() {
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] Sensor Mode = %i", sensor_mode);
 }
 
+void Bme280Node::init_interfaces() {
+    publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("sensor_internal", 10);
+}
+
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<Bme280Node>());

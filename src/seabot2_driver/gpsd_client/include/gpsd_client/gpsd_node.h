@@ -37,7 +37,7 @@ private:
     /**
      * Init topics to this node (publishers & subscribers)
      */
-    void init_topics();
+    void init_interfaces();
 
     /**
      * Process the data recevied from gpsd to send a ros message

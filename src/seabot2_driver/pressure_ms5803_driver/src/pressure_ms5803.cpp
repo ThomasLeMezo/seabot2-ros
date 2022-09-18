@@ -76,7 +76,6 @@ bool Pressure_ms5803::measure(){
     }
     else
         return false;
-    return true;
 }
 
 bool Pressure_ms5803::compute() {
