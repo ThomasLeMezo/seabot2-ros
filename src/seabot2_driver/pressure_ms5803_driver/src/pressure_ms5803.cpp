@@ -108,8 +108,8 @@ bool Pressure_ms5803::compute() {
 
     int32_t P = (((D1_ * SENS) >> 21) - OFF) >> 15;
 
-    temperature_ = TEMP / 100.;
-    pressure_ = P / 10000.; /// in bar (/10 if in mbar)
+    temperature_ = static_cast<double>(TEMP) / 100.;
+    pressure_ = static_cast<double>(P) / 10000.; /// in bar (/10 if in mbar)
 
     if(temperature_ < t_min_out_range_ || temperature_ > t_max_out_range_ || pressure_ < p_min_out_range_ || pressure_ > p_max_out_range_){
         if(n_ != nullptr)

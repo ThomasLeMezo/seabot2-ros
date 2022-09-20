@@ -60,14 +60,22 @@ void MissionNode::call_light(){
     client_light_->wait_for_service(500ms);
     if (!client_light_->service_is_ready()) {
         RCLCPP_ERROR(this->get_logger(), "[Mission_node] Light service not available");
-        return ;
     }
-
-    auto result = client_light_->async_send_request(request);
-    // Wait for the result.
-    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) !=
-        rclcpp::FutureReturnCode::SUCCESS){
-        RCLCPP_INFO(this->get_logger(), "[Mission_node] Fail calling Light service");
+    else {
+        if(rclcpp::ok()) {
+            auto result = client_light_->async_send_request(request);
+            // Wait for the result.
+//            if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) !=
+//                rclcpp::FutureReturnCode::SUCCESS) {
+//                RCLCPP_INFO(this->get_logger(), "[Mission_node] Fail calling Light service");
+//            }
+//            else{
+//                RCLCPP_INFO(this->get_logger(), "[Mission_node] Call light to flash");
+//            }
+        }
+        else{
+            RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");
+        }
     }
 }
 
@@ -81,8 +89,8 @@ void MissionNode::timer_callback() {
     wp_msg.header.stamp = this->now();
     publisher_waypoint_->publish(wp_msg);
 
-//    if(is_new_waypoint)
-//        call_light();
+    if(is_new_waypoint)
+        call_light();
 }
 
 void MissionNode::service_mission_reload_callback(const std::shared_ptr<rmw_request_id_t> request_header,

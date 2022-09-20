@@ -53,6 +53,7 @@ void LightNode::service_light_callback(const std::shared_ptr<rmw_request_id_t> r
                                        const std::shared_ptr<seabot2_light_driver::srv::Light::Request> request,
                                        std::shared_ptr<seabot2_light_driver::srv::Light::Response> response){
     if(request->flash_enable) {
+        RCLCPP_INFO(this->get_logger(), "[Node_light] Received flash order");
         if (request->duration == 0) {
             time_turn_off_light_enable_ = false;
         } else {
