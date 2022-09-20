@@ -1,7 +1,7 @@
 control:
   depth_control_node:
     ros__parameters:
-      root_regulation: -0.3
+      root_regulation: -0.2
       limit_depth_control: 0.5 # m
       flow_piston_sink: -5e-7 # m3/s
       piston_hysteresis: 0.6

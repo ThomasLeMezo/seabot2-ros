@@ -42,7 +42,7 @@ driver:
       allow_backward: true
       reverse_angular_velocity: false
       reverse_left: true
-      reverse_right: true
+      reverse_right: false
 
   ping_node:
     ros__parameters:

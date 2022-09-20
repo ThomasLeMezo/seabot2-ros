@@ -78,10 +78,11 @@ void MissionNode::timer_callback() {
     if(!mission_enable_) /// Check if mission was disabled by service
         wp_msg.mission_enable = false;
 
+    wp_msg.header.stamp = this->now();
     publisher_waypoint_->publish(wp_msg);
 
-    if(is_new_waypoint)
-        call_light();
+//    if(is_new_waypoint)
+//        call_light();
 }
 
 void MissionNode::service_mission_reload_callback(const std::shared_ptr<rmw_request_id_t> request_header,

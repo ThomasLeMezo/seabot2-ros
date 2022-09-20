@@ -133,7 +133,7 @@ void ThrusterNode::init_topics() {
     subscription_velocity_ = this->create_subscription<seabot2_thruster_driver::msg::Velocity>(
             "cmd_engine", 10, std::bind(&ThrusterNode::topic_velocity_callback, this, _1));
     subscription_manual_velocity_ = this->create_subscription<geometry_msgs::msg::Twist>(
-            "cmd_vel", 10, std::bind(&ThrusterNode::topic_manual_velocity_callback, this, _1));
+            "/cmd_vel", 10, std::bind(&ThrusterNode::topic_manual_velocity_callback, this, _1));
 }
 
 void ThrusterNode::topic_velocity_callback(const seabot2_thruster_driver::msg::Velocity &msg) {

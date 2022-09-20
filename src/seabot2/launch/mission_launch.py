@@ -21,8 +21,8 @@ def generate_launch_description():
         executable='mission_node',
         namespace='mission',
         name='mission_node',
-        parameters=[config_mission, {"mission_path": mission_path}],
-        respawn=True
+        parameters=[config_mission, {"mission_path": mission_path}]
+        # respawn=True
     )
 
     return LaunchDescription([

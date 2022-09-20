@@ -105,6 +105,7 @@ void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &m
 
     limit_velocity_ = msg.limit_velocity;
     approach_velocity_ = msg.approach_velocity;
+    last_waypoint_time_ = msg.header.stamp;
 }
 
 void DepthControlNode::depth_control_emergency(const std::shared_ptr<rmw_request_id_t> request_header,
@@ -183,6 +184,8 @@ void DepthControlNode::timer_callback() {
         regulation_state_ = STATE_SURFACE;
     if(piston_state_!=PISTON_STATE_OK)
         regulation_state_ = STATE_PISTON_ISSUE;
+    if((this->now()-last_waypoint_time_)>last_waypoint_max_delay_)
+        depth_set_point_ = 0.0;
 
     switch(regulation_state_){
         case STATE_SURFACE:

@@ -89,6 +89,9 @@ private:
     double limit_velocity_ = 0.0;
     double approach_velocity_ = 1.0;
 
+    std::chrono::milliseconds last_waypoint_max_delay_ = 5s;
+    rclcpp::Time last_waypoint_time_ = this->now();
+
     /// State machine
     enum STATE_MACHINE {STATE_IDLE, STATE_SURFACE, STATE_SINK, STATE_CONTROL, STATE_STATIONARY, STATE_EMERGENCY, STATE_PISTON_ISSUE, STATE_HOLD_DEPTH};
     STATE_MACHINE regulation_state_ = STATE_SURFACE;
