@@ -82,11 +82,16 @@ void GpsdNode::process_data(struct gps_data_t* p) {
         msg.tdop = p->dop.tdop;
         msg.gdop = p->dop.gdop;
 
-        msg.err = p->fix.eph;
-        msg.err_vert = p->fix.epv;
-        msg.err_track = p->fix.epd;
-        msg.err_speed = p->fix.eps;
-        msg.err_time = p->fix.ept;
+        if(!isnan(p->fix.eph))
+            msg.err = p->fix.eph;
+        if(!isnan(p->fix.epv))
+            msg.err_vert = p->fix.epv;
+        if(!isnan(p->fix.epd))
+            msg.err_track = p->fix.epd;
+        if(!isnan(p->fix.eps))
+            msg.err_speed = p->fix.eps;
+        if(!isnan(p->fix.ept))
+            msg.err_time = p->fix.ept;
     }
 
     if(p->fix.mode >= MODE_2D){

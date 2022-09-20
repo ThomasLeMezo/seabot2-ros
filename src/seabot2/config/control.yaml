@@ -1,7 +1,7 @@
 control:
   depth_control_node:
     ros__parameters:
-      root_regulation: -0.2
+      root_regulation: -0.3
       limit_depth_control: 0.5 # m
       flow_piston_sink: -5e-7 # m3/s
       piston_hysteresis: 0.6
@@ -11,15 +11,5 @@ control:
       hold_velocity_enter: 0.01 # m/s
       delta_velocity_lb: -0.01 # m/s
       delta_velocity_ub: 0.01 # m/s
-      delta_position_lb: -0.001 # m
-      delta_position_ub: 0.001 # m
-
-mission:
-  mission_node:
-    ros__parameters:
-      loop_dt: 1000 #ms
-      mission_file_name: "mission_depth_only.xml"
-      flash_next_waypoint_time: 10.0 # s
-      flash_number: 2
-      limit_velocity_default: 0.02 # m/s
-      approach_velocity_default: 1.0
+      delta_position_lb: -0.005 # m
+      delta_position_ub: 0.005 # m

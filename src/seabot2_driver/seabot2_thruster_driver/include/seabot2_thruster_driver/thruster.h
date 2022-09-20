@@ -65,12 +65,6 @@ public:
     uint8_t& get_version();
 
     /**
-     * @brief reverse thrusters order
-     * @param invert
-     */
-    void reverse_thrusters(bool invert);
-
-    /**
      *
      * @return
      */

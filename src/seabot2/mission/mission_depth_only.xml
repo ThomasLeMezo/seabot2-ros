@@ -13,24 +13,24 @@
 
 <paths>
 	<waypoint>
-		<duration>900</duration>
+		<duration>330</duration>
 		<depth>1.0</depth>
 		<limit_velocity>0.05</limit_velocity>
 		<approach_velocity>1.0</approach_velocity>
 	</waypoint>
 
 	<waypoint>
-		<duration>900</duration>
+		<duration>330</duration>
 		<depth>1.5</depth>
 		<limit_velocity>0.05</limit_velocity>
-		<approach_velocity>1.0</approach_velocity>
+		<approach_velocity>4.0</approach_velocity>
 	</waypoint>
 
 	<waypoint>
-		<duration>900</duration>
+		<duration>330</duration>
 		<depth>1.0</depth>
 		<limit_velocity>0.05</limit_velocity>
-		<approach_velocity>1.0</approach_velocity>
+		<approach_velocity>4.0</approach_velocity>
 	</waypoint>
 
 <!-- 	<waypoint>
@@ -41,12 +41,12 @@
 		<approach_velocity>1.0</approach_velocity>
 	</waypoint> -->
 
-	<waypoint>
+<!--	<waypoint>
 		<duration>900</duration>
 		<depth>1.5</depth>
 		<limit_velocity>0.05</limit_velocity>
 		<approach_velocity>1.0</approach_velocity>
-	</waypoint>
+	</waypoint>-->
 
 </paths>
 

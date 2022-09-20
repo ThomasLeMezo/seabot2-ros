@@ -117,7 +117,7 @@ private:
     std::string file_name_ = "mission_empty.xml";
     std::vector<Waypoint> waypoints_;
     size_t current_waypoint_ = 0;
-    int old_waypoint_ = -1;
+    bool is_first_waypoint_ = true;
     bool mission_enable_ = false;
     bool update_mission_ = true;
     rclcpp::Duration duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
@@ -128,7 +128,15 @@ private:
     double limit_velocity_default_ = 0.02;
     double approach_velocity_default_ = 1.0;
 
+    double default_time_to_start_ = 60.0;
+
     rclcpp::Node *n_= nullptr;
+
+    void waypoint_end(seabot2_mission::msg::Waypoint &wp);
+
+    void waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now);
+
+    void waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now);
 };
 
 inline bool Mission::is_mission_enable() const{

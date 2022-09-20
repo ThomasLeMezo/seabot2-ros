@@ -17,82 +17,37 @@ Mission::Mission(rclcpp::Node *n){
 }
 
 bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
-    // Test if last waypoint
+
     bool is_new_waypoint = false;
     if(current_waypoint_ < waypoints_.size()){
-        /// Test if next time
         rclcpp::Time t_now = n_->now();
 
-        /// Wait before mission start
-        if(t_now < time_start_){
-            mission_enable_ = false;
-            wp.depth = 0.0;
-            wp.north = waypoints_[current_waypoint_].north + offset_north_;
-            wp.east = waypoints_[current_waypoint_].east + offset_east_;
-
-            wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
-            wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
-            wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
-            wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
-            duration_next_waypoint_ = time_start_ - t_now;
+        if(t_now < time_start_){ /// Wait before mission start
+            waypoint_wait_start(wp, t_now);
         }
-        /// Mission is started
-        else{
+        else{ /// Mission started
             mission_enable_ = true;
-            if(t_now >= waypoints_[current_waypoint_].time_end){
+            if(is_first_waypoint_){ /// Tell first waypoint is new
+                is_new_waypoint = true;
+                is_first_waypoint_ = false;
+            }
+            if(t_now >= waypoints_[current_waypoint_].time_end){ /// Test if next waypoint is reached
+                is_new_waypoint = true;
                 current_waypoint_++;
             }
-            /// To return new waypoint the first time => Todo : change to a state machine ?
-            if(old_waypoint_ != static_cast<int>(current_waypoint_)){
-                old_waypoint_ = static_cast<int>(current_waypoint_);
-                RCLCPP_INFO(n_->get_logger(), "[Mission] Start following waypoint %lu (ending at %f)",
-                            current_waypoint_, round(waypoints_[current_waypoint_].time_end.seconds()));
-                is_new_waypoint = true;
+
+            if(current_waypoint_ < waypoints_.size()) { /// Verify end of waypoint list
+                waypoint_current(wp, t_now);
+                if(is_new_waypoint)
+                    RCLCPP_INFO(n_->get_logger(), "[Mission] Start following waypoint %lu (ending at %f)",
+                                current_waypoint_, round(waypoints_[current_waypoint_].time_end.seconds()));
             }
-
-            wp.depth = waypoints_[current_waypoint_].depth;
-
-            wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
-            wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
-            wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
-            wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
-
-            rclcpp::Time t1;
-            if(current_waypoint_ == 0)
-                t1 = time_start_;
             else
-                t1 = waypoints_[current_waypoint_ - 1].time_end;
-            rclcpp::Time t2 = waypoints_[current_waypoint_].time_end;
-            double ratio = (t_now-t1).seconds()/(t2-t1).seconds(); // Should be between [0, 1]
-
-            if(current_waypoint_ > 0){
-                double d_north = waypoints_[current_waypoint_].north - waypoints_[current_waypoint_ - 1].north;
-                double d_east = waypoints_[current_waypoint_].east - waypoints_[current_waypoint_ - 1].east;
-
-                wp.north = waypoints_[current_waypoint_ - 1].north + d_north * ratio + offset_north_;;
-                wp.east = waypoints_[current_waypoint_ - 1].east + d_east * ratio + offset_east_;
-            }
-            else{
-                wp.north = waypoints_[current_waypoint_].north + offset_north_;;
-                wp.east = waypoints_[current_waypoint_].east + offset_east_;
-            }
-
-            duration_next_waypoint_ = waypoints_[current_waypoint_].time_end - t_now;
+                waypoint_end(wp);
         }
     }
-    /// Last waypoint was reached
-    else{
-        if(mission_enable_)
-            RCLCPP_INFO(n_->get_logger(),"[Mission] End of waypoints");
-        wp.depth = 0.0;
-        wp.limit_velocity = limit_velocity_default_;
-        wp.approach_velocity = approach_velocity_default_;
-        wp.north = waypoints_[waypoints_.size() - 1].north + offset_north_;
-        wp.east = waypoints_[waypoints_.size() - 1].east + offset_east_;
-        wp.enable_thrusters = false;
-        wp.seafloor_landing = false;
-        mission_enable_ = false;
-        duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
+    else{ /// Last waypoint was reached
+        waypoint_end(wp);
     }
 
     wp.mission_enable = mission_enable_;
@@ -101,6 +56,66 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
     wp.time_to_next_waypoint = duration_next_waypoint_.seconds();
 
     return is_new_waypoint;
+}
+
+void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
+    wp.depth = waypoints_[current_waypoint_].depth;
+
+    wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
+    wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
+    wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
+    wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
+
+    /// Compute the desired (north, east) set point
+    rclcpp::Time t1;
+    if(current_waypoint_ == 0) /// Case first waypoint
+        t1 = time_start_;
+    else /// After the first waypoint
+        t1 = waypoints_[current_waypoint_ - 1].time_end;
+    rclcpp::Time t2 = waypoints_[current_waypoint_].time_end;
+    double ratio = (t_now-t1).seconds()/(t2-t1).seconds(); // Should be between [0, 1]
+
+    if(current_waypoint_ >= 1){
+        double d_north = waypoints_[current_waypoint_].north - waypoints_[current_waypoint_ - 1].north;
+        double d_east = waypoints_[current_waypoint_].east - waypoints_[current_waypoint_ - 1].east;
+
+        wp.north = waypoints_[current_waypoint_ - 1].north + d_north * ratio + offset_north_;;
+        wp.east = waypoints_[current_waypoint_ - 1].east + d_east * ratio + offset_east_;
+    }
+    else{ /// Case first waypoint
+        wp.north = waypoints_[current_waypoint_].north + offset_north_;;
+        wp.east = waypoints_[current_waypoint_].east + offset_east_;
+    }
+    duration_next_waypoint_ = waypoints_[current_waypoint_].time_end - t_now;
+}
+
+void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
+    mission_enable_ = false;
+    wp.depth = 0.0;
+    wp.north = waypoints_[current_waypoint_].north + offset_north_;
+    wp.east = waypoints_[current_waypoint_].east + offset_east_;
+
+    wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
+    wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
+    wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
+    wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
+    duration_next_waypoint_ = time_start_ - t_now;
+}
+
+void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp){
+    if(mission_enable_)
+        RCLCPP_INFO(n_->get_logger(),"[Mission] End of waypoints");
+    mission_enable_ = false;
+
+    wp.depth = 0.0;
+    wp.limit_velocity = limit_velocity_default_;
+    wp.approach_velocity = approach_velocity_default_;
+    wp.north = waypoints_[waypoints_.size() - 1].north + offset_north_;
+    wp.east = waypoints_[waypoints_.size() - 1].east + offset_east_;
+    wp.enable_thrusters = false;
+    wp.seafloor_landing = false;
+
+    duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
 }
 
 
@@ -132,7 +147,7 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
         RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] No east offset defined %s", ex.what());
     }
 
-    time_start_ = n_->now() + rclcpp::Duration::from_seconds(60);
+    time_start_ = n_->now() + rclcpp::Duration::from_seconds(default_time_to_start_);
     // Read special offset time
     try{
         const int year = tree.get_child("mission.offset.start_time_utc.year").get_value<int>();
@@ -152,7 +167,7 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
         time_start_ = rclcpp::Time(mktime(&time));
         RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Start time = %f", time_start_.seconds());
     } catch (std::exception const&  ex){
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] No time offset defined %s - Set now + 60s", ex.what());
+        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] No time offset defined %s - Set now + %f s", ex.what(), default_time_to_start_);
     }
 
     rclcpp::Time last_time = time_start_;

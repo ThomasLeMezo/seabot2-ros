@@ -14,10 +14,6 @@ def generate_launch_description():
         'config',  # Directory where yaml are
         'physics.yaml'  # Name of the file
     )
-    mission_path = os.path.join(
-        get_package_share_directory('seabot2'),
-        'mission',  # Directory where yaml are
-    )
 
     seabot2_depth_control = Node(
         package='seabot2_depth_control',

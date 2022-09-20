@@ -42,8 +42,8 @@ private:
     rclcpp::Time last_regulation_time_;
 
     /// Thrusters configuration
-    bool allow_backward_ = false;
-    bool reverse_thruster_order_ = false;
+    bool allow_backward_ = true;
+    bool reverse_angular_velocity_ = false;
     bool reverse_left_ = false;
     bool reverse_right_ = false;
 

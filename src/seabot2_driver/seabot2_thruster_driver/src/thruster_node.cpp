@@ -41,6 +41,11 @@ void ThrusterNode::timer_callback() {
         linear = 0.0;
         angular = 0.0;
     }
+
+    /// Reverse angular velocity
+    if(reverse_angular_velocity_)
+        angular = -angular;
+
     /// Thrusters allocation
     double left, right;
     left = linear + angular;
@@ -99,7 +104,7 @@ void ThrusterNode::init_parameters() {
     this->declare_parameter<double>("max_linear_velocity", max_linear_velocity_);
     this->declare_parameter<double>("max_velocity_pwm", max_velocity_pwm_);
     this->declare_parameter<bool>("allow_backward", allow_backward_);
-    this->declare_parameter<bool>("reverse_thruster_order", reverse_thruster_order_);
+    this->declare_parameter<bool>("reverse_angular_velocity", reverse_angular_velocity_);
     this->declare_parameter<bool>("reverse_left", reverse_left_);
     this->declare_parameter<bool>("reverse_right", reverse_right_);
 
@@ -110,7 +115,7 @@ void ThrusterNode::init_parameters() {
     this->get_parameter("max_linear_velocity", max_linear_velocity_);
     this->get_parameter("max_velocity_pwm", max_velocity_pwm_);
     this->get_parameter("allow_backward", allow_backward_);
-    this->get_parameter("reverse_thruster_order", reverse_thruster_order_);
+    this->get_parameter("reverse_angular_velocity", reverse_angular_velocity_);
     this->get_parameter("reverse_left", reverse_left_);
     this->get_parameter("reverse_right", reverse_right_);
 

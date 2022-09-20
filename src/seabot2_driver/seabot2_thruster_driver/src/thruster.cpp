@@ -27,8 +27,7 @@ int Thruster::i2c_open(){
 }
 
 int Thruster::write_cmd(const uint8_t &left, const uint8_t &right) const{
-    /// reverse order if reverse_thruster_order_ is true
-    uint8_t data[2] = {reverse_thruster_order_ ? left : right, reverse_thruster_order_ ? right : left};
+    uint8_t data[2] = {right, left};
 
     int r = i2c_smbus_write_i2c_block_data(file_, 0x00, 2, data);
     if(r < 0)
@@ -40,10 +39,6 @@ uint8_t& Thruster::get_version(){
     pic_code_version_ = i2c_smbus_read_byte_data(file_, 0xC0);
     usleep(100);
     return pic_code_version_;
-}
-
-void Thruster::reverse_thrusters(const bool invert){
-    reverse_thruster_order_ = invert;
 }
 
 void Thruster::write_enable_motors(const bool enable) {

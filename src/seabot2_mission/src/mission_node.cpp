@@ -57,12 +57,12 @@ void MissionNode::call_light(){
     request->duration = flash_next_waypoint_time_;
     request->number_of_flash = flash_number_;
 
-    while (!client_light_->wait_for_service(500ms)) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(this->get_logger(), "[Mission_node] Light service not available");
-            return ;
-        }
+    client_light_->wait_for_service(500ms);
+    if (!client_light_->service_is_ready()) {
+        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Light service not available");
+        return ;
     }
+
     auto result = client_light_->async_send_request(request);
     // Wait for the result.
     if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) !=
