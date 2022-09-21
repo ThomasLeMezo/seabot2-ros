@@ -6,11 +6,16 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/foreach.hpp>
 
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/date_time/gregorian/gregorian.hpp"
+
 #include <ctime>
 #include <utility>
 
 using namespace std;
 namespace pt = boost::property_tree;
+namespace bt = boost::posix_time;
+namespace gt = boost::gregorian;
 
 Mission::Mission(rclcpp::Node *n){
     n_ = n;
@@ -21,7 +26,6 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
     bool is_new_waypoint = false;
     if(current_waypoint_ < waypoints_.size()){
         rclcpp::Time t_now = n_->now();
-
         if(t_now < time_start_){ /// Wait before mission start
             waypoint_wait_start(wp, t_now);
         }
@@ -156,15 +160,9 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
         const int hour = tree.get_child("mission.offset.start_time_utc.hour").get_value<int>();
         const int min = tree.get_child("mission.offset.start_time_utc.min").get_value<int>();
 
-        struct tm time = { 0 };
-        time.tm_year = year - 1900;
-        time.tm_mon  = month - 1;
-        time.tm_mday = day;
-        time.tm_hour = hour;
-        time.tm_min  = min;
-        time.tm_sec  = 0.0;
+        bt::ptime t1(gt::date(year,month,day),bt::time_duration(hour,min,0));
+        time_start_ = rclcpp::Time(to_time_t(t1), 0, RCL_ROS_TIME);
 
-        time_start_ = rclcpp::Time(mktime(&time));
         RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Start time = %f", time_start_.seconds());
     } catch (std::exception const&  ex){
         RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] No time offset defined %s - Set now + %f s", ex.what(), default_time_to_start_);

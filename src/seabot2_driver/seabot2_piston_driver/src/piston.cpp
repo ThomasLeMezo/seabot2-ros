@@ -76,13 +76,13 @@ int Piston::get_all_data(){
             u_position_set_point |= buff[i]<<((i-6)*8);
         position_set_point_ = static_cast<int32_t>(u_position_set_point);
 
-        __u16 measured_battery_voltage = (__u16)buff[10] + ((__u16)buff[11]<<8);
-        __u16 measured_motor_current = (__u16)buff[12] + ((__u16)buff[13] << 8);
+        __u16 measured_battery_voltage = (__u16)buff[0x0A] + ((__u16)buff[0x0B]<<8);
+        __u16 measured_motor_current = (__u16)buff[0x0C] + ((__u16)buff[0x0D] << 8);
 
         battery_voltage_ = (double)measured_battery_voltage * CONVERSION_BRIDGE * ((R2_+R1_)/R1_);
         motor_current_ = (double)(measured_motor_current-2048) * CONVERSION_CURRENT;
-        motor_set_point_ = (__u16)buff[14] + ((__u16)buff[15] << 8);
-        motor_cmd_ = (__u16)buff[16] + ((__u16)buff[17] << 8);
+        motor_set_point_ = (__u16)buff[0x0E] + ((__u16)buff[0x0F] << 8);
+        motor_cmd_ = (__u16)buff[0x10] + ((__u16)buff[0x11] << 8);
         return EXIT_SUCCESS;
     }
 }

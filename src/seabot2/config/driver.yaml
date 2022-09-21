@@ -40,9 +40,9 @@ driver:
       max_linear_velocity: 1.0
       max_velocity_pwm: 5.0
       allow_backward: true
-      reverse_angular_velocity: false
-      reverse_left: true
-      reverse_right: false
+      reverse_angular_velocity: true
+      reverse_left: false
+      reverse_right: true
 
   ping_node:
     ros__parameters:
