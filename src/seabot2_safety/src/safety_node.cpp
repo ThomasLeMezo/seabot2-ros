@@ -18,20 +18,45 @@ SafetyNode::SafetyNode()
 void SafetyNode::init_parameters() {
     this->declare_parameter<int>("loop_dt_", loop_dt_.count());
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
+}
 
+void SafetyNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+    depth_ = msg.depth;
+    velocity_ = msg.velocity;
+    depth_last_received_ = msg.header.stamp;
+}
+
+void SafetyNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg){
+    internal_humidity_ = msg.humidity;
+    internal_pressure_ = msg.pressure;
+    internal_temperature_ = msg.temperature;
+    internal_last_received_ = this->now();
 }
 
 void SafetyNode::init_interfaces() {
 
-//    service_safety_reload_ = this->create_service<std_srvs::srv::Trigger>("safety_reload",
-//                                                                            std::bind(&SafetyNode::service_safety_reload_callback, this, _1, _2, _3));
-//
-//    service_safety_enable_ = this->create_service<std_srvs::srv::SetBool>("safety_enable",
-//                                                                           std::bind(&SafetyNode::service_safety_enable_callback, this, _1, _2, _3));
-//
-//    publisher_waypoint_ = this->create_publisher<seabot2_safety::msg::Waypoint>("waypoint", 10);
-//
-//    client_light_ = this->create_client<seabot2_light_driver::srv::Light>("/driver/light");
+    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+            "/observer/depth", 10, std::bind(&SafetyNode::depth_callback, this, _1));
+
+    subscriber_internal_sensor_filter_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
+            "/observer/sensor_internal", 10, std::bind(&SafetyNode::internal_sensor_callback, this, _1));
+
+}
+
+bool SafetyNode::test_depth(){
+    bool is_valid = true;
+
+    if(this->now()-depth_last_received_>depth_no_data_warning)
+        is_valid = false;
+
+}
+
+bool SafetyNode::test_internal_data() {
+
+}
+
+bool SafetyNode::test_zero_pressure() {
+
 }
 
 void SafetyNode::timer_callback() {
@@ -45,6 +70,16 @@ void SafetyNode::timer_callback() {
 //
 //    if(is_new_waypoint)
 //        call_light();
+
+ /// ToDo :
+ /// * Zero pressure
+ /// * Leak detection
+ /// * Over pressure => overdepth
+ /// * batteries
+ /// * Piston issue (?) / Seafloor
+ /// * Flash for surface
+ /// * CPU data
+ /// * Crash of driver node (piston, depth sensor)
 
 }
 

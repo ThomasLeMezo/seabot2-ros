@@ -10,7 +10,6 @@ extern "C" {
 #include <i2c/smbus.h>
 }
 
-#include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
 

@@ -9,8 +9,10 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-#find_package(seabot2_light_driver REQUIRED)
-#find_package(std_srvs REQUIRED)
+find_package(seabot2_depth_filter REQUIRED)
+find_package(seabot2_light_driver REQUIRED)
+find_package(pressure_bme280_driver REQUIRED)
+find_package(std_srvs REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -25,9 +27,10 @@ add_executable(safety_node src/safety_node.cpp)
 ament_target_dependencies(safety_node
         rclcpp
         rosidl_default_generators
-#        std_srvs
-#        seabot2_light_driver
-        )
+        seabot2_depth_filter
+        pressure_bme280_driver
+        std_srvs
+)
 target_link_libraries(safety_node "${cpp_typesupport_target}")
 
 ### Includes

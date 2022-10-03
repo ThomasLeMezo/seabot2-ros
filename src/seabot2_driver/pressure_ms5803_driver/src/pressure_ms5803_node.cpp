@@ -26,9 +26,6 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<pressure_ms5803_driver::msg::PressureSensorData>::SharedPtr publisher_sensor_;
 
-    double pressure_ = 0.0;
-    double temperature_ = 0.0;
-
     Pressure_ms5803 pressure_sensor_;
 
     std::chrono::milliseconds  loop_dt_ = 200ms;

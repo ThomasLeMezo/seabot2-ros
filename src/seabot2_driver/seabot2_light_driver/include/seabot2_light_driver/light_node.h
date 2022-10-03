@@ -5,6 +5,8 @@
 #include <memory>
 #include "seabot2_light_driver/light.h"
 #include "seabot2_light_driver/srv/light.hpp"
+#include "seabot2_depth_filter/msg/depth_pose.hpp"
+#include "std_srvs/srv/set_bool.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -24,11 +26,15 @@ private:
 
     /// Topics / Services
     rclcpp::Service<seabot2_light_driver::srv::Light>::SharedPtr service_light_ ;
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_flash_surface_ ;
 
     /// Variables
     rclcpp::Time time_turn_off_light_ = this->now();
-    bool time_turn_off_light_enable_ = true;
+    bool special_flash_ = false;
     bool light_is_on_ = false;
+    bool is_surface_ = false;
+    const int nb_surface_flash_ = 1;
+    double depth_flash_enable_ = 0.5;
 
     /// Functions
     void timer_callback();
@@ -39,14 +45,19 @@ private:
     void init_parameters();
 
     /**
-     * Init topics to this node (publishers & subscribers)
+     * Init interfaces of this node
      */
-    void init_topics();
+    void init_interfaces();
 
     /**
-     * Init services od this node
+     * Callback service flash surface
+     * @param request_header
+     * @param request
+     * @param response
      */
-    void init_services();
+    void service_flash_surface_callback(const std::shared_ptr<rmw_request_id_t> request_header,
+                                                   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+                                                   std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
     /**
      *

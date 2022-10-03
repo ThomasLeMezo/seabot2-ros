@@ -227,6 +227,7 @@ void DepthControlNode::timer_callback() {
                    && (this->now()-time_last_piston_callback_)<safety_time_no_data_){
 
                     /// Compute several commands according to velocity acceptable bounds
+                    /// ToDo : modify tolerance wrt distance to set point ?
                     array<double, 4> u_tab;
                     u_tab[0] = compute_u(x, depth_set_point_, limit_velocity_+delta_velocity_lb_, approach_velocity_);
                     u_tab[1] = compute_u(x, depth_set_point_, limit_velocity_+delta_velocity_ub_, approach_velocity_);

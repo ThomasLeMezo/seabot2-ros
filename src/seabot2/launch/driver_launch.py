@@ -92,6 +92,15 @@ def generate_launch_description():
         respawn=True
     )
 
+    temperature_node = Node(
+        package='temperature_tsys01_driver',
+        executable='temperature_tsys01_node',
+        namespace='driver',
+        name='temperature_node',
+        parameters=[config_driver],
+        respawn=True
+    )
+
     return LaunchDescription([
         gpsd_node,
         bme280_node,
@@ -100,5 +109,6 @@ def generate_launch_description():
         piston_node,
         power_node,
         screen_node,
-        thruster_node
+        thruster_node,
+        temperature_node
     ])

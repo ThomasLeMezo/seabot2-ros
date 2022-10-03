@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(seabot2_depth_filter REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -22,9 +23,10 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 ### Executable
 add_executable(light_node src/light_node.cpp src/light.cpp)
 ament_target_dependencies(light_node
-        "rclcpp"
-        "rosidl_default_generators"
-        "std_srvs"
+        rclcpp
+        rosidl_default_generators
+        std_srvs
+        seabot2_depth_filter
         )
 target_link_libraries(light_node "${cpp_typesupport_target}" i2c)
 
