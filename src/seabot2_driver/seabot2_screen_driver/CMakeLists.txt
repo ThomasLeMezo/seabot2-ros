@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(pressure_bme280_driver REQUIRED)
 find_package(seabot2_mission REQUIRED)
 find_package(seabot2_power_driver REQUIRED)
+find_package(seabot2_safety REQUIRED)
 
 #find_package(rosidl_default_generators REQUIRED)
 
@@ -28,6 +29,7 @@ ament_target_dependencies(screen_node
         pressure_bme280_driver
         seabot2_mission
         seabot2_power_driver
+        seabot2_safety
 #        rosidl_default_generators
         )
 target_link_libraries(screen_node "${cpp_typesupport_target}" i2c)
