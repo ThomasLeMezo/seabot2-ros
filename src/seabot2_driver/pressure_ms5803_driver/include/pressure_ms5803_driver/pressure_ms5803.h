@@ -193,12 +193,4 @@ inline float Pressure_ms5803::get_temperature(){
     return temperature_;
 }
 
-/**
- *
- * @param val
- * @param nb_bit
- * @return
- */
-int16_t bin2decs(u_int16_t val, size_t nb_bit);
-
 #endif // PRESSURE_H

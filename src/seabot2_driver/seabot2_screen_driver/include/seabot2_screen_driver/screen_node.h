@@ -7,6 +7,7 @@
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
 #include "seabot2_mission/msg/waypoint.hpp"
 #include "seabot2_power_driver/msg/power_state.hpp"
+#include "seabot2_safety/msg/safety_status.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -29,7 +30,7 @@ private:
     double pressure_ = 9999.;
     double temperature_ = 99.9;
     double hygro_ = 99;
-    double voltage_ = 99.9;
+    double voltage_ = 25.4;
     string robot_name_ = "NoName";
     string mission_name_ = "NoMission";
     unsigned int wp_id_ = 0;
@@ -44,7 +45,7 @@ private:
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_sensor_internal_;
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_;
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_;
-    /// ToDo : add power driver
+    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
 
     /// Functions
     void timer_callback();
@@ -87,6 +88,12 @@ private:
      * @param msg
      */
     void power_callback(const seabot2_power_driver::msg::PowerState &msg);
+
+    /**
+     *
+     * @param msg
+     */
+    void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
 };
 
 #endif //BUILD_SCREEN_NODE_H

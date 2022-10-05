@@ -73,7 +73,7 @@ private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
 
     int file_ = 0;
-    int i2c_addr_ = 0x76;
+    int i2c_addr_ = 0x77;
     std::string i2c_periph_ = "/dev/i2c-1";
 
     u_int16_t k_[5];

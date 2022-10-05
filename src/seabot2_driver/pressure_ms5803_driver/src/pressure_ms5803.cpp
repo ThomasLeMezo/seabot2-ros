@@ -10,13 +10,6 @@
 
 using namespace std;
 
-int16_t bin2decs(u_int16_t val, size_t nb_bit){
-    if((val & 0b1<<(nb_bit-1))==0)
-        return val;
-    else
-        return (val-(1<<(nb_bit)));
-}
-
 Pressure_ms5803::~Pressure_ms5803(){
     if(file_ != 0)
         close(file_);
@@ -54,7 +47,7 @@ int Pressure_ms5803::init_sensor(){
     int return_val = 0;
 
     unsigned char buff[2] = {0, 0};
-    for(int i=0; i<5; i++){
+    for(size_t i=0; i<C_.size(); i++){
         __u8 add = CMD_PROM + (char) 2*(i+1);
         if (i2c_smbus_read_i2c_block_data(file_, add, 2, buff) != 2){
             RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5803] Error Reading 0x%X", add);
@@ -102,6 +95,7 @@ bool Pressure_ms5803::compute() {
         OFF2 = (1 * (TEMP-2000) * (TEMP-2000)) >> 4;
         SENS2 = 0;
     }
+
     TEMP -= T2;
     OFF -= OFF2;
     SENS -= SENS2;

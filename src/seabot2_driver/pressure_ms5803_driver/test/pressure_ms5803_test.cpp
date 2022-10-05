@@ -22,10 +22,10 @@ TEST(TestMS5803, ComputeResultTest) {
     p.setD1(4311550);
     p.setD2(8387300);
     p.compute();
-//    cout << "Pressure = " << p.get_pression() << endl;
-//    cout << "Temperature = " << p.get_temperature() << endl;
-    EXPECT_FLOAT_EQ(p.get_pression(), 1000.5);
-    EXPECT_FLOAT_EQ(p.get_temperature(), 20.15);
+    cout << "Pressure = " << p.get_pression() << endl;
+    cout << "Temperature = " << p.get_temperature() << endl;
+    EXPECT_FLOAT_EQ(p.get_pression(), (float)1000.5);
+    EXPECT_FLOAT_EQ(p.get_temperature(), (float)20.15);
     EXPECT_TRUE(true);
 }
 

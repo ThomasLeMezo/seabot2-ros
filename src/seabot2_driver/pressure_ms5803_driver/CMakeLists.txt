@@ -35,7 +35,7 @@ target_include_directories(pressure_ms5803_node PUBLIC
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
-  ament_lint_auto_find_test_dependencies()
+#  ament_lint_auto_find_test_dependencies()
 
   ament_add_gtest(ms5803_test test/pressure_ms5803_test.cpp src/pressure_ms5803.cpp)
   ament_target_dependencies(ms5803_test rclcpp)

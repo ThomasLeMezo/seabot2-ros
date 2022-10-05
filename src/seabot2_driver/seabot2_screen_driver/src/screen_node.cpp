@@ -31,7 +31,7 @@ void ScreenNode::timer_callback() {
         screen_.write_ip(ip_);
         screen_.write_pressure(round(pressure_)); /// in mbar
         screen_.write_temperature(round(temperature_*10.));
-        screen_.write_hygro(round(hygro_));
+
         screen_.write_voltage(round(voltage_*10.));
 
         screen_.write_current_waypoint(wp_id_);
@@ -51,6 +51,7 @@ void ScreenNode::timer_callback() {
         std::tm *now = std::localtime(&t);
         screen_.write_time(now->tm_hour, now->tm_min);
 
+        screen_.write_hygro(round(hygro_)); /// bug in hardware : should be placed before mission name
         screen_.write_mission_name(mission_name_);
         screen_.write_robot_name(robot_name_);
 
@@ -82,6 +83,9 @@ void ScreenNode::init_topics() {
 
     subscriber_power_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
             "/driver/power", 10, std::bind(&ScreenNode::power_callback, this, _1));
+
+    subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
+            "/safety/safety", 10, std::bind(&ScreenNode::safety_callback, this, _1));
 }
 
 void ScreenNode::get_hostname() {
@@ -149,5 +153,14 @@ void ScreenNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
 
 void ScreenNode::power_callback(const seabot2_power_driver::msg::PowerState &msg){
     voltage_ = msg.battery_volt;
+}
+
+void ScreenNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
+    if(msg.global_safety_valid) {
+        status_ = Screen::OK;
+    }
+    else{
+        status_ = Screen::ERROR;
+    }
 }
 
