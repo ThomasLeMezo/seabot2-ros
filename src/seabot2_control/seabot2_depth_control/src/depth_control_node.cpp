@@ -97,6 +97,10 @@ void DepthControlNode::depth_callback(const seabot2_depth_filter::msg::DepthPose
     depth_fusion_ = msg.depth;
 }
 
+void DepthControlNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
+    emergency_ = !msg.global_safety_valid;
+}
+
 void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
     if(msg.mission_enable)
         depth_set_point_ = msg.depth;
@@ -106,13 +110,6 @@ void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &m
     limit_velocity_ = msg.limit_velocity;
     approach_velocity_ = msg.approach_velocity;
     last_waypoint_time_ = msg.header.stamp;
-}
-
-void DepthControlNode::depth_control_emergency(const std::shared_ptr<rmw_request_id_t> request_header,
-                                               const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-                                               std::shared_ptr<std_srvs::srv::SetBool::Response> response){
-    emergency_ = request->data;
-    response->success = true;
 }
 
 void DepthControlNode::init_interfaces() {
@@ -125,12 +122,11 @@ void DepthControlNode::init_interfaces() {
             "/observer/depth", 10, std::bind(&DepthControlNode::depth_callback, this, _1));
     subscriber_mission_data_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
             "/mission/waypoint", 10, std::bind(&DepthControlNode::waypoint_callback, this, _1));
+    subscriber_safety_data_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
+            "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
 
     publisher_piston_ = this->create_publisher<std_msgs::msg::Int32>("/driver/piston_set_point", 10);
     publisher_debug_ = this->create_publisher<seabot2_depth_control::msg::DepthControlDebug>("depth_control_debug", 10);
-
-    service_emergency_ = this->create_service<std_srvs::srv::SetBool>("depth_control_emergency",
-                                                                      std::bind(&DepthControlNode::depth_control_emergency, this, _1, _2, _3));
 }
 
 double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double set_point, double limit_velocity, double approach_velocity){

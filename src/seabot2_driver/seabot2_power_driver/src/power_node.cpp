@@ -6,7 +6,7 @@ PowerNode::PowerNode()
         : Node("power_node"), power_(this){
 
     init_parameters();
-    init_topics();
+    init_interfaces();
     init_services();
 
     power_.i2c_open();
@@ -43,7 +43,7 @@ void PowerNode::init_parameters() {
     power_.setI2CAddr(this->get_parameter_or("i2c_address", power_.getI2CAddr()));
 }
 
-void PowerNode::init_topics() {
+void PowerNode::init_interfaces() {
     publisher_power_state_ = this->create_publisher<seabot2_power_driver::msg::PowerState>("power", 1);
 }
 

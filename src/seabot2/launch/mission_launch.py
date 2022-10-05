@@ -10,10 +10,12 @@ def generate_launch_description():
         'mission.yaml'  # Name of the file
     )
 
-    # mission_path = os.path.join(
-    #     get_package_share_directory('seabot2'),
-    #     'mission',  # Directory where yaml are
-    # )
+    config_safety = os.path.join(
+        get_package_share_directory('seabot2'),
+        'config',  # Directory where yaml are
+        'safety.yaml'  # Name of the file
+    )
+
     mission_path = os.path.expanduser('~')
 
     seabot2_mission = Node(
@@ -22,6 +24,15 @@ def generate_launch_description():
         namespace='mission',
         name='mission_node',
         parameters=[config_mission, {"mission_path": mission_path}]
+        # respawn=True
+    )
+
+    seabot2_safety = Node(
+        package='seabot2_safety',
+        executable='safety_node',
+        namespace='safety',
+        name='safety_node',
+        parameters=[config_safety]
         # respawn=True
     )
 

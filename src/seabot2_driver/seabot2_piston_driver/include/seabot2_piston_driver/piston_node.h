@@ -41,9 +41,9 @@ private:
     void init_parameters();
 
     /**
-     * Init topics to this node (publishers & subscribers)
+     * Init interfaces to this node (publishers & subscribers)
      */
-    void init_topics();
+    void init_interfaces();
 
     /**
      * Callback for set point position

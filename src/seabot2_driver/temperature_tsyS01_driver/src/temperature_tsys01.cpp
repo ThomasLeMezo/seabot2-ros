@@ -21,7 +21,7 @@ int Temperature_TSYS01::reset(){
 
 int Temperature_TSYS01::i2c_open(){
     if ((file_ = open(i2c_periph_.c_str(),O_RDWR)) < 0) {
-        RCLCPP_WARN(n_->get_logger(), "[Temperature_TSYS01] Failed to open the I2C bus (%s)", i2c_periph_);
+        RCLCPP_WARN(n_->get_logger(), "[Temperature_TSYS01] Failed to open the I2C bus (%s)", i2c_periph_.c_str());
         exit(1);
     }
 

@@ -14,6 +14,7 @@
 #include "seabot2_depth_control/msg/depth_control_debug.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 #include <eigen3/Eigen/Dense>
+#include "seabot2_safety/msg/safety_status.hpp"
 
 #define NB_STATES 7
 #define PISTON_STATE_OK 2
@@ -32,7 +33,7 @@ private:
     std::chrono::milliseconds loop_dt_ = 200ms; /// loop dt
 
     /// Variable
-    bool emergency_ = false;
+    bool emergency_ = true;
 
     /// Physical characteristics
     double physics_rho_ =  1025.0;
@@ -104,9 +105,9 @@ private:
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_state_data_;
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_data_;
+    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr publisher_piston_;
     rclcpp::Publisher<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr publisher_debug_;
-    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_emergency_;
 
     /**
      *  Init and get parameters of the Node
@@ -145,11 +146,13 @@ private:
      *
      * @param msg
      */
-    void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
+    void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
 
-    void depth_control_emergency(const std::shared_ptr<rmw_request_id_t> request_header,
-                                 const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-                                 std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+    /**
+     *
+     * @param msg
+     */
+    void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
 
     /**
      * Compute output

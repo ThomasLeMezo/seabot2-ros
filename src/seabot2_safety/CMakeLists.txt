@@ -13,10 +13,12 @@ find_package(seabot2_depth_filter REQUIRED)
 find_package(seabot2_light_driver REQUIRED)
 find_package(pressure_bme280_driver REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(seabot2_power_driver REQUIRED)
+find_package(seabot2_piston_driver REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/SafetyLog.msg"
+        "msg/SafetyStatus.msg"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target
@@ -29,6 +31,8 @@ ament_target_dependencies(safety_node
         rosidl_default_generators
         seabot2_depth_filter
         pressure_bme280_driver
+        seabot2_power_driver
+        seabot2_piston_driver
         std_srvs
 )
 target_link_libraries(safety_node "${cpp_typesupport_target}")

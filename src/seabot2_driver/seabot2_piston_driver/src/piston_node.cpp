@@ -6,7 +6,7 @@ PistonNode::PistonNode()
         : Node("piston_node"), piston_(this){
 
     init_parameters();
-    init_topics();
+    init_interfaces();
 
     piston_.i2c_open();
 
@@ -72,7 +72,7 @@ void PistonNode::topic_position_set_point_callback(const std_msgs::msg::Int32 &m
     }
 }
 
-void PistonNode::init_topics() {
+void PistonNode::init_interfaces() {
     publisher_piston_state_ = this->create_publisher<seabot2_piston_driver::msg::PistonState>("state", 1);
 
     subscription_position_set_point_ = this->create_subscription<std_msgs::msg::Int32>(

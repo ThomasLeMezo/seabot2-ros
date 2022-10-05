@@ -38,9 +38,9 @@ private:
     void init_parameters();
 
     /**
-     * Init topics to this node (publishers & subscribers)
+     * Init interface to this node
      */
-    void init_topics();
+    void init_interfaces();
 
     /**
      * Init services od this node
