@@ -51,4 +51,9 @@ driver:
       mode_auto: true
       speed_of_sound: 1500000
 
+  temperature_node:
+    ros__parameters:
+      loop_dt: 100 #ms
+      i2c_address: 0x77
+
 

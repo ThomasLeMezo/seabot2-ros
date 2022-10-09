@@ -23,6 +23,11 @@ ScreenNode::ScreenNode()
     RCLCPP_INFO(this->get_logger(), "[Screen_node] Start Ok");
 }
 
+ScreenNode::~ScreenNode() {
+    screen_.write_robot_status(Screen::Robot_Status::ERROR);
+    screen_.write_screen();
+}
+
 void ScreenNode::timer_callback() {
 
     if(depth_<depth_no_update_) {

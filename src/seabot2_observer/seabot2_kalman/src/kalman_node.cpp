@@ -31,18 +31,24 @@ void KalmanNode::init_parameters() {
     this->declare_parameter<double>("piston_volume_eq_init", piston_volume_eq_init_);
     this->declare_parameter<double>("init_chi", init_chi_);
     this->declare_parameter<double>("init_chi2", init_chi2_);
+    this->declare_parameter<double>("init_volume_air", init_volume_air_);
+
     this->declare_parameter<double>("gamma_alpha_velocity", gamma_alpha_velocity_);
     this->declare_parameter<double>("gamma_alpha_depth", gamma_alpha_depth_);
     this->declare_parameter<double>("gamma_alpha_offset", gamma_alpha_offset_);
     this->declare_parameter<double>("gamma_alpha_chi", gamma_alpha_chi_);
     this->declare_parameter<double>("gamma_alpha_chi2", gamma_alpha_chi2_);
     this->declare_parameter<double>("gamma_alpha_cz", gamma_alpha_cz_);
+    this->declare_parameter<double>("gamma_alpha_volume_air", gamma_alpha_volume_air_);
+
     this->declare_parameter<double>("gamma_init_velocity", gamma_init_velocity_);
     this->declare_parameter<double>("gamma_init_depth", gamma_init_depth_);
     this->declare_parameter<double>("gamma_init_offset", gamma_init_offset_);
     this->declare_parameter<double>("gamma_init_chi", gamma_init_chi_);
     this->declare_parameter<double>("gamma_init_chi2", gamma_init_chi2_);
     this->declare_parameter<double>("gamma_init_cz", gamma_init_cz_);
+    this->declare_parameter<double>("gamma_init_volume_air", gamma_init_volume_air_);
+
     this->declare_parameter<double>("gamma_beta_depth", gamma_beta_depth_);
 
     physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
@@ -58,18 +64,24 @@ void KalmanNode::init_parameters() {
     piston_volume_eq_init_ = this->get_parameter_or("piston_volume_eq_init", piston_volume_eq_init_);
     init_chi_ = this->get_parameter_or("init_chi", init_chi_);
     init_chi2_ = this->get_parameter_or("init_chi2", init_chi2_);
+    init_volume_air_ = this->get_parameter_or("init_volume_air", init_volume_air_);
+
     gamma_alpha_velocity_ = this->get_parameter_or("gamma_alpha_velocity", gamma_alpha_velocity_);
     gamma_alpha_depth_ = this->get_parameter_or("gamma_alpha_depth", gamma_alpha_depth_);
     gamma_alpha_offset_ = this->get_parameter_or("gamma_alpha_offset", gamma_alpha_offset_);
     gamma_alpha_chi_ = this->get_parameter_or("gamma_alpha_chi", gamma_alpha_chi_);
     gamma_alpha_chi2_ = this->get_parameter_or("gamma_alpha_chi2", gamma_alpha_chi2_);
     gamma_alpha_cz_ = this->get_parameter_or("gamma_alpha_cz", gamma_alpha_cz_);
+    gamma_alpha_volume_air_ = this->get_parameter_or("gamma_alpha_volume_air", gamma_alpha_volume_air_);
+
     gamma_init_velocity_ = this->get_parameter_or("gamma_init_velocity", gamma_init_velocity_);
     gamma_init_depth_ = this->get_parameter_or("gamma_init_depth", gamma_init_depth_);
     gamma_init_offset_ = this->get_parameter_or("gamma_init_offset", gamma_init_offset_);
     gamma_init_chi_ = this->get_parameter_or("gamma_init_chi", gamma_init_chi_);
     gamma_init_chi2_ = this->get_parameter_or("gamma_init_chi2", gamma_init_chi2_);
     gamma_init_cz_ = this->get_parameter_or("gamma_init_cz", gamma_init_cz_);
+    gamma_init_volume_air_ = this->get_parameter_or("gamma_init_volume_air", gamma_init_volume_air_);
+
     gamma_beta_depth_ = this->get_parameter_or("gamma_beta_depth", gamma_beta_depth_);
 
     /// Computed parameters
@@ -108,12 +120,17 @@ void KalmanNode::init_interfaces() {
 
 Matrix<double,NB_STATES, 1> KalmanNode::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u){
     Matrix<double,NB_STATES, 1> dx = Matrix<double,NB_STATES, 1>::Zero();
-    dx(0) = -coeff_A_*(u(0)+x(2)-(x(3)*x(1)+x(4)*pow(x(1),2)))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
+
+    /// ToDo : change equation to assert PV = nRT => V = nR(T/P) and take into account Temperature and Pressure instead of only depth
+
+    if(x(1)>0.)
+        dx(0) = -coeff_A_*(u(0)+x(2)-(x(6)/(x(1)+1.0)+x(3)*x(1)+x(4)*pow(x(1),2)))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     dx(1) = x(0);
     dx(2) = 0.0;
     dx(3) = 0.0;
     dx(4) = 0.0;
     dx(5) = 0.0;
+    dx(6) = 0.0;
     return dx;
 }
 
@@ -135,6 +152,8 @@ void KalmanNode::kalman_predict(Matrix<double,NB_STATES, 1> &x,
     Ak(0,3) = x(1)*coeff_A_;
     Ak(0,4) = pow(x(1),2)*coeff_A_;
     Ak(0,5) = -coeff_B_*abs(x(0))*x(0);
+    if(x(1)>0.)
+        Ak(0,6) = coeff_A_/(x(1)+1.0);
     Ak(1, 0) = 1.;
     Ak_tmp += Ak*dt;
 
@@ -176,9 +195,10 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     xhat(0) = fusion_velocity_;
     xhat(1) = fusion_depth_;
     xhat(2) = piston_volume_eq_init_; // Vp
-    xhat(3) = init_chi_*tick_to_volume_; // chi
-    xhat(4) = init_chi2_*tick_to_volume_; // chi2
+    xhat(3) = init_chi_; // chi
+    xhat(4) = init_chi2_; // chi2
     xhat(5) = 1.0; // Cz
+    xhat(6) = init_volume_air_; // Cz
     x_forcast_ = xhat;
 
     gamma_ = Matrix<double,NB_STATES,NB_STATES>::Zero();
@@ -188,6 +208,7 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     gamma_(3,3) = pow(gamma_init_chi_,2); // Compressibility
     gamma_(4,4) = pow(gamma_init_chi2_,2); // Compressibility 2
     gamma_(5,5) = pow(gamma_init_cz_,2); // Cz
+    gamma_(6,6) = pow(gamma_init_volume_air_,2); // Cz
 
     gamma_alpha_(0,0) = pow(gamma_alpha_velocity_, 2); // Velocity
     gamma_alpha_(1,1) = pow(gamma_alpha_depth_, 2); // Depth
@@ -195,6 +216,7 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     gamma_alpha_(3,3) = pow(gamma_alpha_chi_, 2); // Compressibility
     gamma_alpha_(4,4) = pow(gamma_alpha_chi2_, 2); // Compressibility 2
     gamma_alpha_(5,5) = pow(gamma_alpha_cz_, 2); // cz
+    gamma_alpha_(6,6) = pow(gamma_init_volume_air_, 2); // cz
 
     gamma_beta_(0, 0) = pow(gamma_beta_depth_, 2); // Depth
 
@@ -270,7 +292,9 @@ void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
         msg.chi = x_forcast_(3);
         msg.chi2 = x_forcast_(4);
         msg.cz = x_forcast_(5);
-        msg.offset_total = x_forcast_(2)+x_forcast_(3)*x_forcast_(1) + x_forcast_(4)*pow(x_forcast_(1),2);
+        msg.volume_air = x_forcast_(6);
+        if(x_forcast_(1)!=-1.0)
+            msg.offset_total = x_forcast_(2)+x_forcast_(6)/(x_forcast_(1)+1.0)+x_forcast_(3)*x_forcast_(1) + x_forcast_(4)*pow(x_forcast_(1),2);
         msg.header.stamp = time_last_predict_;
 
         msg.variance[0] = gamma_forcast_(0,0);
@@ -279,6 +303,7 @@ void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
         msg.variance[3] = gamma_forcast_(3,3);
         msg.variance[4] = gamma_forcast_(4,4);
         msg.variance[5] = gamma_forcast_(5,5);
+        msg.variance[6] = gamma_forcast_(6,6);
 
         publisher_kalman_->publish(msg);
     }

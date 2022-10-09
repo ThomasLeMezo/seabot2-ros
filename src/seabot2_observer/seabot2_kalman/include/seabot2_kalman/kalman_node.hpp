@@ -13,7 +13,7 @@ using namespace std;
 using namespace Eigen;
 
 #define NB_MESURES 1
-#define NB_STATES 6
+#define NB_STATES 7
 #define NB_COMMAND 1
 
 class KalmanNode : public rclcpp::Node {
@@ -47,6 +47,7 @@ private:
     double piston_volume_eq_init_ =  80e-6; /// m3
     double init_chi_ = 0.0; /// m3/m
     double init_chi2_ = 0.0; /// m3/m2
+    double init_volume_air_ = 30e-6; /// m3/m
 
     double gamma_alpha_velocity_ =  1e-3; // 1e-5
     double gamma_alpha_depth_ =  1e-5; // 1e-5
@@ -54,12 +55,16 @@ private:
     double gamma_alpha_chi_ =  1e-3*tick_to_volume_; // 2e-8
     double gamma_alpha_chi2_ =  1e-3*tick_to_volume_; // 2e-8
     double gamma_alpha_cz_ =  1e-3;
+    double gamma_alpha_volume_air_ =  1e-3*tick_to_volume_; // 2e-8
+
     double gamma_init_velocity_ =  1e-1;
     double gamma_init_depth_ =  1.0e-2;
     double gamma_init_offset_ =  piston_max_tick_value_*tick_to_volume_; // 1e-2
     double gamma_init_chi_ =  30.0*tick_to_volume_; // 20
     double gamma_init_chi2_ =  30.0*tick_to_volume_; // 1e-1
     double gamma_init_cz_ =  0.1;
+    double gamma_init_volume_air_ =  30e-6;
+
     double gamma_beta_depth_ =  1.0e-3; // 5e-4 (m)
 
     /// Callback data
@@ -85,6 +90,7 @@ private:
  *  xhat_(3) chi (chi*z)
  *  xhat_(4) chi2 (chi2*z²)
  *  xhat_(5) Cz
+ *  xhat_(6) Bubble (Vb/z)
  */
     Matrix<double, NB_STATES, 1> xhat_ = Matrix<double, NB_STATES, 1>::Zero();
     Matrix<double,NB_STATES, 1> x_forcast_ = Matrix<double, NB_STATES, 1>::Zero();

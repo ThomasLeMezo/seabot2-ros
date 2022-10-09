@@ -16,6 +16,8 @@ class ScreenNode : public rclcpp::Node {
 public:
     ScreenNode();
 
+    ~ScreenNode();
+
 private:
 
     /// I2C configuration
