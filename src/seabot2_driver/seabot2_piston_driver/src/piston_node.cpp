@@ -39,6 +39,27 @@ void PistonNode::timer_callback() {
         if(piston_.set_position(0)==EXIT_SUCCESS)
             last_cmd_ = 0;
     }
+
+//    /// Analyse reset
+//    if(piston_.position_set_point_ ==0 && abs(piston_.position_)>200 && piston_.state_==3){
+//        if(piston_.position_ == piston_.position_last_){
+//            if(!is_detected_issue_reset_){
+//                is_detected_issue_reset_= true;
+//                time_detected_issue_reset_ = this->now();
+//            }
+//            else{
+//                if(this->now()-time_detected_issue_reset_>delay_detected_issue_reset_){
+//                    /// Reset
+//                    if(piston_.set_piston_reset() == EXIT_SUCCESS) {
+//                        is_detected_issue_reset_ = false;
+//                    }
+//                }
+//            }
+//        }
+//        else{
+//            is_detected_issue_reset_ = false;
+//        }
+//    }
 }
 
 void PistonNode::init_parameters() {

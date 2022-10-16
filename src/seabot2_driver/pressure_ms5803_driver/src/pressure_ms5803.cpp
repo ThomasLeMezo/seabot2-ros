@@ -72,17 +72,17 @@ bool Pressure_ms5803::measure(){
 }
 
 bool Pressure_ms5803::compute() {
-    int32_t dT = D2_ - ((int32_t)C_[4] << 8);
-    int32_t TEMP = 2000+((dT * (int32_t)C_[5]) >> 23);
+    int64_t dT = (int32_t)D2_ - ((int32_t)C_[4] << 8);
+    int64_t TEMP = 2000+((dT * (int32_t)C_[5]) >> 23);
 
     int64_t OFF = ((int64_t)C_[1] << 16) + (((int64_t)C_[3] * dT) >> 7);
     int64_t SENS = ((int64_t)C_[0] << 15) + (((int64_t)C_[2] * dT) >> 8);
 
     /// Accurate temperature
-    int32_t T2;
+    int64_t T2;
     int64_t OFF2, SENS2;
     if(TEMP < 2000){
-        T2 = (3 * (int64_t)dT * (int64_t)dT ) >> 33;
+        T2 = (3 * dT * dT ) >> 33;
         OFF2 = (3 * (TEMP-2000) * (TEMP-2000)) >> 1;
         SENS2 = (5 * (TEMP-2000) * (TEMP-2000)) >> 3;
         if(TEMP < -1500){
@@ -91,7 +91,7 @@ bool Pressure_ms5803::compute() {
         }
     }
     else{
-        T2 = (7 * (int64_t)dT * (int64_t)dT) >> 37;
+        T2 = (7 * dT * dT) >> 37;
         OFF2 = (1 * (TEMP-2000) * (TEMP-2000)) >> 4;
         SENS2 = 0;
     }

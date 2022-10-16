@@ -6,10 +6,11 @@ using namespace placeholders;
 SafetyNode::SafetyNode()
         : Node("safety_node"){
 
+    RCLCPP_INFO(this->get_logger(), "[Safety_node] Init node safety");
     init_parameters();
     init_interfaces();
 
-    rclcpp::sleep_for(3s);
+    //rclcpp::sleep_for(3s);
 
     timer_ = this->create_wall_timer(
             loop_dt_, std::bind(&SafetyNode::timer_callback, this));
@@ -46,6 +47,7 @@ void SafetyNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg)
     depth_ = msg.depth;
     velocity_ = msg.velocity;
     depth_last_received_ = msg.header.stamp;
+    depth_last_received_ = msg.header.stamp;
 }
 
 void SafetyNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg){
@@ -57,10 +59,12 @@ void SafetyNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme
 
 void SafetyNode::power_callback(const seabot2_power_driver::msg::PowerState &msg){
     battery_volt_ = msg.battery_volt;
+    battery_last_received_ = msg.header.stamp;
 }
 
 void SafetyNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
     piston_position_ = msg.position;
+    piston_last_received_ = msg.header.stamp;
 }
 
 void SafetyNode::init_interfaces() {
@@ -176,7 +180,7 @@ bool SafetyNode::test_piston(){
         is_valid &= false;
         safety_published_frequency_ &= false;
         safety_piston_ &= false;
-        RCLCPP_WARN(this->get_logger(), "[Safety_node] No piston data received");
+        RCLCPP_WARN(this->get_logger(), "[Safety_node] No piston data received, %f", (this->now()-piston_last_received_).seconds());
     }
     return is_valid;
 }
@@ -225,10 +229,10 @@ void SafetyNode::flash_surface(){
         if(call_service_flash_surface(true)==EXIT_SUCCESS)
             flash_surface_enable_ = true;
     }
-    else if(flash_surface_enable_ && depth_ > depth_flash_surface_){
-        if(call_service_flash_surface(false)==EXIT_SUCCESS)
-            flash_surface_enable_ = false;
-    }
+//    else if(flash_surface_enable_ && depth_ > depth_flash_surface_){
+//        if(call_service_flash_surface(false)==EXIT_SUCCESS)
+//            flash_surface_enable_ = false;
+//    }
 }
 
 void SafetyNode::get_ram_cpu(){
@@ -282,7 +286,6 @@ void SafetyNode::timer_callback() {
     safety_depressurization_ = true;
     safety_seafloor_ = true;
     safety_piston_ = true;
-    safety_zero_depth_ = false;
 
     global_safety_ok_ &= test_depth();
     global_safety_ok_ &= test_internal_data();

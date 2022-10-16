@@ -22,7 +22,7 @@ extern "C" {
 #define CMD_ADC_CONV_D1_4096 0x48 /// ADC conversion command
 #define CMD_ADC_CONV_D2_4096 0x58 /// ADC conversion command
 
-#define CMD_PROM 0xA0 // Coefficient location
+#define CMD_PROM 0xA1 // Coefficient location
 
 class Pressure_ms5803
 {

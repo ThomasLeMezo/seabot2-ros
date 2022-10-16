@@ -124,7 +124,7 @@ Matrix<double,NB_STATES, 1> KalmanNode::f_dyn(const Matrix<double,NB_STATES,1> &
     /// ToDo : change equation to assert PV = nRT => V = nR(T/P) and take into account Temperature and Pressure instead of only depth
 
     if(x(1)>0.)
-        dx(0) = -coeff_A_*(u(0)+x(2)-(x(6)/(x(1)+1.0)+x(3)*x(1)+x(4)*pow(x(1),2)))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
+        dx(0) = -coeff_A_*(u(0)+x(2)+(x(6)/(x(1)+1.0)-(x(3)*x(1)+x(4)*pow(x(1),2))))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     dx(1) = x(0);
     dx(2) = 0.0;
     dx(3) = 0.0;
@@ -153,7 +153,7 @@ void KalmanNode::kalman_predict(Matrix<double,NB_STATES, 1> &x,
     Ak(0,4) = pow(x(1),2)*coeff_A_;
     Ak(0,5) = -coeff_B_*abs(x(0))*x(0);
     if(x(1)>0.)
-        Ak(0,6) = coeff_A_/(x(1)+1.0);
+        Ak(0,6) = -coeff_A_/(x(1)+1.0);
     Ak(1, 0) = 1.;
     Ak_tmp += Ak*dt;
 
@@ -268,6 +268,8 @@ void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
         }
 
         /// Reset Kalman if divergence
+        /// ToDo : add reset option if values get out of range ?
+        /// Link with safety node ?
         if(!xhat_.allFinite()) {
             init_kalman(xhat_);
             msg.valid = false;

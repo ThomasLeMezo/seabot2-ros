@@ -6,17 +6,28 @@ from launch.actions import IncludeLaunchDescription
 from launch.actions import ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
+from datetime import datetime
+import socket
+
 def generate_launch_description():
+    home_path = os.path.expanduser('~')
+    hostname = socket.gethostname()
+
+    time_now = datetime.utcnow()
+    bag_path = home_path + '/' + hostname + "_" + str(time_now.year) + "_" + str(time_now.month) + "_" + str(time_now.day) + "-" + str(time_now.hour) + "_" + str(time_now.minute) + "_" + str(time_now.second)
+
+    print(bag_path)
+
     bag = ExecuteProcess(
-        cmd=['ros2', 'bag', 'record', '-a'],
+        cmd=['ros2', 'bag', 'record', '-a', '-o', bag_path],
         output='screen'
     )
 
-    drivers = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('seabot2'), 'launch'),
-            '/driver_launch.py'])
-    )
+    # drivers = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource([os.path.join(
+    #         get_package_share_directory('seabot2'), 'launch'),
+    #         '/driver_launch.py'])
+    # )
 
     control = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
@@ -38,7 +49,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         bag,
-        drivers,
+        ## drivers,
         control,
         observer,
         mission

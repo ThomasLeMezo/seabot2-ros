@@ -20,6 +20,10 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::milliseconds loop_dt_ = 100ms; /// loop dt
 
+    bool is_detected_issue_reset_ = false;
+    rclcpp::Time time_detected_issue_reset_ = this->now();
+    std::chrono::milliseconds delay_detected_issue_reset_ = 5s;
+
     /// I2C configuration
     Piston piston_;
 

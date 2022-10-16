@@ -5,23 +5,31 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    home_path = os.path.expanduser('~')
+    parameters_file_list = []
+
     config_observer = os.path.join(
-        get_package_share_directory('seabot2'),
+        home_path,
         'config',  # Directory where yaml are
         'observer.yaml'  # Name of the file
     )
+    if os.path.exists(config_observer):
+        parameters_file_list.append(config_observer)
+        
     config_physics = os.path.join(
         get_package_share_directory('seabot2'),
         'config',  # Directory where yaml are
         'physics.yaml'  # Name of the file
     )
+    if os.path.exists(config_physics):
+        parameters_file_list.append(config_physics)
 
     depth_filter_node = Node(
         package='seabot2_depth_filter',
         executable='depth_pose_node',
         namespace='observer',
         name='depth_pose_node',
-        parameters=[config_observer, config_physics],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -30,7 +38,7 @@ def generate_launch_description():
         executable='filter_internal_sensor_node',
         namespace='observer',
         name='filter_internal_sensor_node',
-        parameters=[config_observer],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -39,7 +47,7 @@ def generate_launch_description():
         executable='kalman_node',
         namespace='observer',
         name='kalman_node',
-        parameters=[config_observer, config_physics],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -48,7 +56,7 @@ def generate_launch_description():
         executable='lambert_node',
         namespace='observer',
         name='lambert_node',
-        parameters=[config_observer],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -57,7 +65,7 @@ def generate_launch_description():
         executable='filter_power_node',
         namespace='observer',
         name='filter_power_node',
-        parameters=[config_observer],
+        parameters=parameters_file_list,
         respawn=True
     )
 

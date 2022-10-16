@@ -1,3 +1,4 @@
+# sudo systemctl enable seabot2.driver.service
 [Unit]
 Description= Launch seabot2 drivers
 

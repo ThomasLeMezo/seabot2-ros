@@ -14,6 +14,7 @@ using namespace std;
 class LightNode : public rclcpp::Node {
 public:
     LightNode();
+    ~LightNode();
 
 private:
 

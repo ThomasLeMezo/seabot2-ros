@@ -54,6 +54,6 @@ driver:
   temperature_node:
     ros__parameters:
       loop_dt: 100 #ms
-      i2c_address: 0x77
+      i2c_address: 0x76
 
 

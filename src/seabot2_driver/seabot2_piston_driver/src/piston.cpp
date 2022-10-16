@@ -25,10 +25,14 @@ int Piston::i2c_open(){
     return 0;
 }
 
-void Piston::set_piston_reset() const{
+int Piston::set_piston_reset() const{
     RCLCPP_INFO(n_->get_logger(),"[Piston_driver] Start resting piston");
-    if(i2c_smbus_write_byte_data(file_, REGISTER_RESET, 0x01)<0)
-        RCLCPP_WARN(n_->get_logger(),"[Piston_driver] I2C bus Failure - Piston Reset");
+    if(i2c_smbus_write_byte_data(file_, REGISTER_RESET, 0x00)<0) {
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston Reset");
+        return EXIT_FAILURE;
+    }
+    else
+        return EXIT_SUCCESS;
 }
 
 void Piston::set_regulation_dead_zone(const __u16 &val) const{
@@ -64,6 +68,7 @@ int Piston::get_all_data(){
         unsigned int u_position=0, u_position_set_point = 0;
         for(int i=0; i<=3; i++)
             u_position |= buff[i]<<(i*8);
+        position_last_ = position_;
         position_ = static_cast<int32_t>(u_position);
 
         switch_top_ = buff[4] & (0b1<<0);

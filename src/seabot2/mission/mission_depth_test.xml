@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<mission>
+<!-- <offset>
+		<start_time_utc>
+		<year>2020</year>
+		<month>02</month>
+		<day>17</day>
+		<hour>14</hour>
+		<min>15</min>
+	</start_time_utc>
+</offset> -->
+
+<paths>
+	<waypoint>
+		<duration>180</duration>
+		<depth>30.0</depth>
+		<limit_velocity>0.05</limit_velocity>
+		<approach_velocity>1.0</approach_velocity>
+	</waypoint>
+
+	
+</paths>
+
+</mission>

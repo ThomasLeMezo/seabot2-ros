@@ -49,13 +49,13 @@ int Temperature_TSYS01::init_sensor(){
         k_[4-i] = (buff[0] << 8) | buff[1] << 0;
     }
     if(return_val==0)
-        RCLCPP_INFO(n_->get_logger(), "[Temperature_TSYS01] Sensor Read PROM OK");
+        RCLCPP_DEBUG(n_->get_logger(), "[Temperature_TSYS01] Sensor Read PROM OK");
 
-    RCLCPP_INFO(n_->get_logger(), "[Temperature_TSYS01] k0 = %d", k_[0]);
-    RCLCPP_INFO(n_->get_logger(), "[Temperature_TSYS01] k1 = %d", k_[1]);
-    RCLCPP_INFO(n_->get_logger(), "[Temperature_TSYS01] k2 = %d", k_[2]);
-    RCLCPP_INFO(n_->get_logger(), "[Temperature_TSYS01] k3 = %d", k_[3]);
-    RCLCPP_INFO(n_->get_logger(), "[Temperature_TSYS01] k4 = %d", k_[4]);
+    RCLCPP_DEBUG(n_->get_logger(), "[Temperature_TSYS01] k0 = %d", k_[0]);
+    RCLCPP_DEBUG(n_->get_logger(), "[Temperature_TSYS01] k1 = %d", k_[1]);
+    RCLCPP_DEBUG(n_->get_logger(), "[Temperature_TSYS01] k2 = %d", k_[2]);
+    RCLCPP_DEBUG(n_->get_logger(), "[Temperature_TSYS01] k3 = %d", k_[3]);
+    RCLCPP_DEBUG(n_->get_logger(), "[Temperature_TSYS01] k4 = %d", k_[4]);
 
     return return_val;
 }

@@ -16,6 +16,10 @@ LightNode::LightNode()
     RCLCPP_INFO(this->get_logger(), "[Light_node] Start Ok");
 }
 
+LightNode::~LightNode(){
+    light_.set_light_enable(false);
+}
+
 void LightNode::timer_callback() {
     if(light_is_on_){
         if(special_flash_ && (this->now()>time_turn_off_light_)){

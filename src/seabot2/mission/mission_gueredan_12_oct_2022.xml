@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<mission>
+    <offset>
+            <start_time_utc>
+            <year>2022</year>
+            <month>10</month>
+            <day>13</day>
+            <hour>10</hour>
+            <min>32</min>
+        </start_time_utc>
+    </offset>
+
+    <paths>
+
+        <waypoint>
+            <duration>330</duration>
+            <depth>3.0</depth>
+            <limit_velocity>0.05</limit_velocity>
+            <approach_velocity>2.0</approach_velocity>
+        </waypoint>
+
+        <loop number="6" depth_increment="0.0">
+            <waypoint>
+                <duration>330</duration>
+                <depth>10.0</depth>
+                <limit_velocity>0.05</limit_velocity>
+                <approach_velocity>2.0</approach_velocity>
+            </waypoint>
+
+            <waypoint>
+                <duration>330</duration>
+                <depth>15.0</depth>
+                <limit_velocity>0.05</limit_velocity>
+                <approach_velocity>2.0</approach_velocity>
+            </waypoint>
+        </loop>
+
+        <waypoint>
+            <duration>330</duration>
+            <depth>15.0</depth>
+            <limit_velocity>0.05</limit_velocity>
+            <approach_velocity>2.0</approach_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>330</duration>
+            <depth>3.0</depth>
+            <limit_velocity>0.05</limit_velocity>
+            <approach_velocity>2.0</approach_velocity>
+        </waypoint>
+
+    </paths>
+
+</mission>

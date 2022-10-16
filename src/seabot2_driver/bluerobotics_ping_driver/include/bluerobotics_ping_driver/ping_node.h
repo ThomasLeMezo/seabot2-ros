@@ -13,6 +13,7 @@ using namespace std;
 class PingNode : public rclcpp::Node {
 public:
     PingNode();
+    ~PingNode();
 
 private:
 
@@ -25,6 +26,7 @@ private:
 
     /// Variables
     string uart_port_ = "/dev/ttyAMA2";
+    unsigned int uart_baudrate_ = 115200;
     std::unique_ptr<Ping1d> device_;
     std::shared_ptr<AbstractLink> port_;
 

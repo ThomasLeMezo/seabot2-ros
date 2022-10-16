@@ -5,18 +5,23 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    home_path = os.path.expanduser('~')
+    parameters_file_list = []
+
     config_driver = os.path.join(
-        get_package_share_directory('seabot2'),
+        home_path,
         'config',  # Directory where yaml are
         'driver.yaml'  # Name of the file
     )
+    if os.path.exists(config_driver):
+        parameters_file_list.append(config_driver)
 
     gpsd_node = Node(
         package='gpsd_client',
         executable='gpsd_node',
         namespace='driver',
         name='gpsd_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -25,7 +30,7 @@ def generate_launch_description():
         executable='bme280_node',
         namespace='driver',
         name='bme280_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -34,7 +39,7 @@ def generate_launch_description():
         executable='pressure_ms5803_node',
         namespace='driver',
         name='pressure_ms5803_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -43,7 +48,7 @@ def generate_launch_description():
         executable='light_node',
         namespace='driver',
         name='light_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -52,7 +57,7 @@ def generate_launch_description():
         executable='piston_node',
         namespace='driver',
         name='piston_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -61,7 +66,7 @@ def generate_launch_description():
         executable='power_node',
         namespace='driver',
         name='power_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -70,7 +75,7 @@ def generate_launch_description():
         executable='screen_node',
         namespace='driver',
         name='screen_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -79,7 +84,7 @@ def generate_launch_description():
         executable='thruster_node',
         namespace='driver',
         name='thruster_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -88,7 +93,7 @@ def generate_launch_description():
         executable='bluerobotics_ping_node',
         namespace='driver',
         name='ping_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 
@@ -97,7 +102,7 @@ def generate_launch_description():
         executable='temperature_tsys01_node',
         namespace='driver',
         name='temperature_node',
-        parameters=[config_driver],
+        parameters=parameters_file_list,
         respawn=True
     )
 

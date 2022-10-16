@@ -4,26 +4,32 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
+
+    home_path = os.path.expanduser('~')
+    parameters_file_list = [{"mission_path": home_path}]
+
     config_mission = os.path.join(
-        get_package_share_directory('seabot2'),
+        home_path,
         'config',  # Directory where yaml are
         'mission.yaml'  # Name of the file
     )
+    if os.path.exists(config_mission):
+        parameters_file_list.append(config_mission)
 
     config_safety = os.path.join(
-        get_package_share_directory('seabot2'),
+        home_path,
         'config',  # Directory where yaml are
         'safety.yaml'  # Name of the file
     )
-
-    mission_path = os.path.expanduser('~')
+    if os.path.exists(config_safety):
+        parameters_file_list.append(config_safety)
 
     seabot2_mission = Node(
         package='seabot2_mission',
         executable='mission_node',
         namespace='mission',
         name='mission_node',
-        parameters=[config_mission, {"mission_path": mission_path}]
+        parameters=parameters_file_list
         # respawn=True
     )
 
@@ -32,10 +38,11 @@ def generate_launch_description():
         executable='safety_node',
         namespace='safety',
         name='safety_node',
-        parameters=[config_safety]
+        parameters=parameters_file_list
         # respawn=True
     )
 
     return LaunchDescription([
-        seabot2_mission
+        seabot2_mission,
+        seabot2_safety
     ])

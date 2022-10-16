@@ -55,6 +55,7 @@ void FilterPowerNode::power_callback(const seabot2_power_driver::msg::PowerState
     if(battery_volt_memory_.size()==filter_window_size_){
         msg_filter.battery_volt = compute_filter(battery_volt_memory_);
         msg_filter.motor_current = compute_filter(motor_current_memory_);
+        msg_filter.header.stamp = msg.header.stamp;
         for(size_t i=0; i<2; i++)
             msg_filter.esc_current[i] = compute_filter(esc_current_memory_[i]);
         for(size_t i=0; i<4; i++)

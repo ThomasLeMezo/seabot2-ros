@@ -16,7 +16,7 @@
 #include <eigen3/Eigen/Dense>
 #include "seabot2_safety/msg/safety_status.hpp"
 
-#define NB_STATES 7
+#define NB_STATES 8
 #define PISTON_STATE_OK 2
 
 using namespace std::chrono_literals;

@@ -81,6 +81,7 @@ void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &m
     x(4) = msg.chi;
     x(5) = msg.chi2;
     x(6) = msg.cz;
+    x(7) = msg.volume_air;
     time_last_kalman_callback_ = this->now();
 }
 
@@ -137,6 +138,7 @@ double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double
     const double x5 = x(4); /// chi1
     const double x6 = x(5); /// chi2
     const double x7 = x(6); /// Cf
+    const double x8 = x(7); /// V_air
     const double A = coeff_A_;
     const double B = coeff_B_;
     const double beta = limit_velocity;
@@ -147,7 +149,9 @@ double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double
     double T = 1.0 - pow(tanh(e), 2);
     double dde = -alpha*beta*de*T;
     double dT = -2.*de*tanh(e)*T;
-    double dx1 = -A*(x3+x4-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
+    double dx1=0.0;
+    if(x2!=-1)
+        dx1 = -A*(x3+x4+x8/(x2+1.0)-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
 
     double y = x1-beta*tanh(e);
     double dy = dx1 - beta*de*T;
@@ -198,7 +202,7 @@ void DepthControlNode::timer_callback() {
                 u = flow_piston_sink_;
 
                 /// Compute the position of the piston to be at equilibrium
-                double position_eq = x(3) / tick_to_volume_; /// Assuming no compressibility effect
+                double position_eq = (x(3)+x(6)/1.0)/ tick_to_volume_; /// Assuming no compressibility effect
 
                 /// First move to position_eq and the slowly decrease piston volume by flow_piston_sink_
                 if(position_eq - piston_position_ > 2.*piston_reach_position_dead_zone_) { /// position reached

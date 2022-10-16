@@ -24,10 +24,20 @@ PingNode::PingNode()
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Start Ok");
 }
 
+PingNode::~PingNode(){
+    if(enable_ping_){
+        device_->set_ping_enable(false); /// Diseable ping
+    }
+}
+
+#include "link/desktop/serial-link.h"
+
 void PingNode::init_driver(){
-    port_ = AbstractLink::openUrl(uart_port_);
+    RCLCPP_INFO(this->get_logger(), "[Ping_node] Init driver");
+    port_ = std::make_shared<SerialLink>(uart_port_, uart_baudrate_);
     device_ = std::make_unique<Ping1d>(*port_.get());
     device_->initialize(loop_dt_.count());
+
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device Type = %ui", device_->device_information.device_type);
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device Id = %ui", device_->device_id);
 
@@ -45,8 +55,11 @@ void PingNode::init_driver(){
 
 void PingNode::timer_callback() {
     if(enable_ping_) {
+        RCLCPP_INFO(this->get_logger(),"[Ping_mode] Wait for message");
         ping_message *ping_msg = device_->waitMessage(Ping1dId::PROFILE);
+        RCLCPP_INFO(this->get_logger(),"[Ping_mode] ping_message read");
         if (ping_msg->msgData != nullptr) {
+            RCLCPP_INFO(this->get_logger(),"[Ping_mode] Msg received");
             ping1d_profile profile_msg(*ping_msg);
 
             bluerobotics_ping_driver::msg::Profile msg;
@@ -72,6 +85,7 @@ void PingNode::init_parameters() {
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
     this->declare_parameter<string>("serial_port", uart_port_);
+    this->declare_parameter<int>("serial_baudrate", uart_baudrate_);
     this->declare_parameter<bool>("enable_ping", enable_ping_);
     this->declare_parameter<bool>("mode_auto", mode_auto_);
     this->declare_parameter<int>("speed_of_sound", speed_of_sound_);
@@ -79,6 +93,7 @@ void PingNode::init_parameters() {
     this->declare_parameter<int>("gain_setting", gain_setting_);
 
     uart_port_ = this->get_parameter_or("serial_port", uart_port_);
+    uart_baudrate_ = this->get_parameter_or("serial_baudrate", uart_baudrate_);
     enable_ping_ = this->get_parameter_or("enable_ping", enable_ping_);
     mode_auto_ = this->get_parameter_or("mode_auto", mode_auto_);
     speed_of_sound_ = this->get_parameter_or("speed_of_sound", speed_of_sound_);

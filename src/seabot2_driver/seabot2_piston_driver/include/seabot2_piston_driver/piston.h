@@ -76,6 +76,7 @@ public:
 
 public:
     int position_ = 0;
+    int position_last_ = 0;
     bool switch_top_ = false;
     bool switch_bottom_ = false;
     int state_ = 0;
@@ -91,7 +92,7 @@ public:
     /**
      * Reset the piston to position 0
      */
-    void set_piston_reset() const;
+    int set_piston_reset() const;
 
     /**
      * Set the regulation dead zone
@@ -117,6 +118,7 @@ public:
      * @return
      */
     int get_all_data();
+
 };
 
 #endif // PISTON_H
