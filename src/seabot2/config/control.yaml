@@ -1,0 +1,15 @@
+control:
+  depth_control_node:
+    ros__parameters:
+      root_regulation: -0.2
+      limit_depth_control: 0.5 # m
+      flow_piston_sink: -5e-7 # m3/s
+      piston_hysteresis: 0.6
+      hold_depth_enable: false
+      hold_depth_value_enter: 0.1 # m
+      hold_depth_value_exit: 0.2 # m
+      hold_velocity_enter: 0.01 # m/s
+      delta_velocity_lb: -0.01 # m/s
+      delta_velocity_ub: 0.01 # m/s
+      delta_position_lb: -0.005 # m
+      delta_position_ub: 0.005 # m

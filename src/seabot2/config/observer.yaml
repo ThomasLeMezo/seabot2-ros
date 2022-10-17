@@ -1,0 +1,38 @@
+observer:
+
+  depth_filter_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  internal_sensor_filter:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  kalman_node:
+    ros__parameters:
+      enable_kalman_depth: 0.5 # m
+      piston_volume_eq_init:  100e-6 # m3
+      init_chi: 0.0 # m3/m
+      init_chi2: 0.0 # m3/m2
+      gamma_alpha_velocity:  1e-3 # 1e-5
+      gamma_alpha_depth:  1e-5 # 1e-5
+#      gamma_alpha_offset:  9.707e-12 # 5e-2*tick_to_volume_ # 2e-5
+#      gamma_alpha_chi:  1.94e-13 # 1e-3*tick_to_volume_ # 2e-8
+#      gamma_alpha_chi2:  1.94e-13 #1e-3*tick_to_volume_ # 2e-8
+      gamma_alpha_cz:  1e-3
+      gamma_init_velocity:  1e-1 #
+      gamma_init_depth:  1.0e-2 #
+      #gamma_init_chi:  30.0*tick_to_volume_ # 20
+      #gamma_init_chi2:  30.0*tick_to_volume_ # 1e-1
+      gamma_init_cz:  0.1
+      gamma_beta_depth:  1.0e-3 # 5e-4
+
+  lmabert_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  power_filter_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+

@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    physics_rho_: 1025.0 # water density (kg/m3)
+    physics_g_: 9.807 #  g-force (m/s2)
+
+    physics_velocity_limit: 0.5 # maximum velocity of the seabot (m/s)
+
+    screw_thread: 1e-3 # m
+    tick_per_turn: 8192.0 # CUI ATM10 2048*4
+    motor_max_rpm: 38 # rotation per minute
+    piston_diameter: 0.045 # m
+    robot_diameter: 0.125 # m
+    piston_max_tick: 1146880.0 # ticks
+    robot_mass: 12.0 # kg

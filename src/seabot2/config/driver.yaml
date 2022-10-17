@@ -1,0 +1,59 @@
+driver:
+  gpsd_node:
+    ros__parameters:
+      frame_id: "gps"
+
+  bme280_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  pressure_ms5803_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
+  light_node:
+    ros__parameters:
+      flash_duration: 1
+      flash_pause_between_flash: 5
+      flash_pause_end: 40
+
+  piston_node:
+    ros__parameters:
+      loop_dt: 100 #ms
+      delay_reset_if_no_data: 30
+
+  power_node:
+    ros__parameters:
+      loop_dt: 100 #ms
+
+  screen_node:
+    ros__parameters:
+      loop_dt: 500
+      depth_no_update: 3.0 # meter
+
+  thruster_node:
+    ros__parameters:
+      loop_dt: 100
+      coeff_cmd_to_pwm: 9.0
+      delay_stop: 500 #ms
+      max_angular_velocity: 1.0
+      max_linear_velocity: 1.0
+      max_velocity_pwm: 5.0
+      allow_backward: true
+      reverse_angular_velocity: true
+      reverse_left: false
+      reverse_right: true
+
+  ping_node:
+    ros__parameters:
+      loop_dt: 100 #ms
+      enable_ping: false
+      mode_auto: true
+      speed_of_sound: 1500000
+
+  temperature_node:
+    ros__parameters:
+      loop_dt: 100 #ms
+      i2c_address: 0x76
+
+
