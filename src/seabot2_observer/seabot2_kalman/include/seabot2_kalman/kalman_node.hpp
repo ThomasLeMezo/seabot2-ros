@@ -35,12 +35,14 @@ private:
     double screw_thread_ =  1.e-3;
     double tick_per_turn_ =  2048*4;
     double piston_diameter_ =  0.045;
-    double piston_max_tick_value_ =  1146880;
+    double piston_max_tick_ =  1146880;
 
     double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
     double coeff_A_ = physics_g_ * physics_rho_ / robot_mass_;
     double coeff_B_ = 0.5 * physics_rho_ * Cf_ / robot_mass_;
+
+    double piston_max_volume_ = piston_max_tick_ * tick_to_volume_;
 
     /// Initialization variables
     double enable_kalman_depth_ = 0.5; /// m
@@ -59,7 +61,7 @@ private:
 
     double gamma_init_velocity_ =  1e-1;
     double gamma_init_depth_ =  1.0e-2;
-    double gamma_init_offset_ =  piston_max_tick_value_*tick_to_volume_; // 1e-2
+    double gamma_init_offset_ = piston_max_tick_ * tick_to_volume_; // 1e-2
     double gamma_init_chi_ =  30.0*tick_to_volume_; // 20
     double gamma_init_chi2_ =  30.0*tick_to_volume_; // 1e-1
     double gamma_init_cz_ =  0.1;
@@ -202,5 +204,12 @@ private:
      * @param new_piston_data
      */
     void compute_kalman(bool new_depth_data=false, bool new_piston_data=false);
+
+    /**
+     * Test if state of Kalman filter is out of range of admissible values
+     * @param xhat
+     * @return
+     */
+    bool is_out_of_range(const Matrix<double, NB_STATES, 1> &xhat);
 };
 #endif //BUILD_KALMANN_NODE_HPP

@@ -10,5 +10,5 @@
     motor_max_rpm: 38 # rotation per minute
     piston_diameter: 0.045 # m
     robot_diameter: 0.125 # m
-    piston_max_tick_value: 1146880.0 # ticks
+    piston_max_tick: 1146880.0 # ticks
     robot_mass: 12.0 # kg

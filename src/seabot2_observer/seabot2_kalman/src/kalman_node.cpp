@@ -25,7 +25,7 @@ void KalmanNode::init_parameters() {
     this->declare_parameter<double>("screw_thread", screw_thread_);
     this->declare_parameter<double>("tick_per_turn", tick_per_turn_);
     this->declare_parameter<double>("piston_diameter", piston_diameter_);
-    this->declare_parameter<double>("piston_max_tick_value", piston_max_tick_value_);
+    this->declare_parameter<double>("piston_max_tick_value", piston_max_tick_);
 
     this->declare_parameter<double>("enable_kalman_depth", enable_kalman_depth_);
     this->declare_parameter<double>("piston_volume_eq_init", piston_volume_eq_init_);
@@ -58,7 +58,9 @@ void KalmanNode::init_parameters() {
     screw_thread_ = this->get_parameter_or("screw_thread", screw_thread_);
     tick_per_turn_ = this->get_parameter_or("tick_per_turn", tick_per_turn_);
     piston_diameter_ = this->get_parameter_or("piston_diameter", piston_diameter_);
-    piston_max_tick_value_ = this->get_parameter_or("piston_max_tick_value", piston_max_tick_value_);
+    piston_max_tick_ = this->get_parameter_or("piston_max_tick", piston_max_tick_);
+    tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
+    piston_max_volume_ = piston_max_tick_ * tick_to_volume_;
 
     enable_kalman_depth_ = this->get_parameter_or("enable_kalman_depth", enable_kalman_depth_);
     piston_volume_eq_init_ = this->get_parameter_or("piston_volume_eq_init", piston_volume_eq_init_);
@@ -76,6 +78,7 @@ void KalmanNode::init_parameters() {
 
     gamma_init_velocity_ = this->get_parameter_or("gamma_init_velocity", gamma_init_velocity_);
     gamma_init_depth_ = this->get_parameter_or("gamma_init_depth", gamma_init_depth_);
+    gamma_init_offset_ = piston_max_tick_ * tick_to_volume_;
     gamma_init_offset_ = this->get_parameter_or("gamma_init_offset", gamma_init_offset_);
     gamma_init_chi_ = this->get_parameter_or("gamma_init_chi", gamma_init_chi_);
     gamma_init_chi2_ = this->get_parameter_or("gamma_init_chi2", gamma_init_chi2_);
@@ -225,6 +228,13 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     Ck_(0, 1) = 1.;
 }
 
+bool KalmanNode::is_out_of_range(const Matrix<double, NB_STATES, 1> &xhat){
+    bool is_out = false;
+    if(xhat(2) != std::clamp(xhat(2), -piston_max_volume_, piston_max_volume_))
+        is_out = true;
+    return is_out;
+}
+
 void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
     seabot2_kalman::msg::KalmanState msg;
 
@@ -270,7 +280,7 @@ void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
         /// Reset Kalman if divergence
         /// ToDo : add reset option if values get out of range ?
         /// Link with safety node ?
-        if(!xhat_.allFinite()) {
+        if(!xhat_.allFinite() || is_out_of_range(xhat_)) {
             init_kalman(xhat_);
             msg.valid = false;
         }
