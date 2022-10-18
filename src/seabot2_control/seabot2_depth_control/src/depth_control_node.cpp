@@ -126,7 +126,7 @@ void DepthControlNode::init_interfaces() {
     subscriber_safety_data_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
             "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
 
-    publisher_piston_ = this->create_publisher<std_msgs::msg::Int32>("/driver/piston_set_point", 10);
+    publisher_piston_ = this->create_publisher<seabot2_piston_driver::msg::PistonSetPoint>("/driver/piston_set_point", 10);
     publisher_debug_ = this->create_publisher<seabot2_depth_control::msg::DepthControlDebug>("depth_control_debug", 10);
 }
 
@@ -194,8 +194,10 @@ void DepthControlNode::timer_callback() {
                 regulation_state_ = STATE_SINK;
             u = 0.;
             piston_set_point_ = 0;
+            is_exit_ = true;
             break;
         case STATE_SINK:
+            is_exit_ = false;
             if(depth_set_point_<limit_depth_control_) /// Case where set point is surface
                 regulation_state_ = STATE_SURFACE;
             else if(depth_fusion_<limit_depth_control_){ /// Case where float is between surface and limit_depth_control
@@ -219,6 +221,7 @@ void DepthControlNode::timer_callback() {
             }
             break;
         case STATE_CONTROL:
+            is_exit_ = false;
             if(depth_set_point_<limit_depth_control_)
                 regulation_state_ = STATE_SURFACE;
             else if(depth_fusion_>=limit_depth_control_){
@@ -264,12 +267,14 @@ void DepthControlNode::timer_callback() {
 
             break;
         case STATE_HOLD_DEPTH:
+            is_exit_ = false;
             u=0.0;
             if(abs(depth_set_point_-x(1))>=hold_depth_value_exit_)
                 regulation_state_ = STATE_CONTROL;
             break;
 
         case STATE_PISTON_ISSUE:
+            is_exit_ = true;
             u = 0.0;
             piston_set_point_ = 0;
 
@@ -283,15 +288,11 @@ void DepthControlNode::timer_callback() {
     /// Publish data to piston & debug
 
     piston_set_point_ = std::clamp(piston_set_point_, 0., piston_max_tick_value_);
+    seabot2_piston_driver::msg::PistonSetPoint msg_piston;
 
-//    if(abs(piston_set_point_old_ - piston_set_point_)>piston_hysteresis_){
-//        piston_set_point_old_ = piston_set_point_;
-
-        std_msgs::msg::Int32  msg_piston;
-
-        msg_piston.data = round(piston_set_point_);
-        publisher_piston_->publish(msg_piston);
-//    }
+    msg_piston.position = round(piston_set_point_);
+    msg_piston.exit = is_exit_;
+    publisher_piston_->publish(msg_piston);
 
     /// Limit debug messages to changes
     //if(debug_msg_.u != u || debug_msg_.piston_set_point != piston_set_point_ || debug_msg_.mode != regulation_state_) {

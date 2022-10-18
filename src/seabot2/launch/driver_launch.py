@@ -115,5 +115,6 @@ def generate_launch_description():
         power_node,
         screen_node,
         thruster_node,
+        ping_node,
         temperature_node
     ])

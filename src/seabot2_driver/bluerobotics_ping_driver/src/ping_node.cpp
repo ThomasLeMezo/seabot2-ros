@@ -6,15 +6,13 @@
 
 #include <memory>
 
-using namespace placeholders;
-using namespace std;
+using namespace std::placeholders;
 
 PingNode::PingNode()
         : Node("ping_node"){
 
     init_parameters();
-    init_topics();
-    init_services();
+    init_interfaces();
 
     init_driver();
 
@@ -47,10 +45,9 @@ void PingNode::init_driver(){
     device_->set_gain_setting(1); /// Set gain
 
     device_->set_mode_auto(true);
-
-    /// Enable the device
-    RCLCPP_INFO(this->get_logger(), "[Ping_node] Start the device = %B", enable_ping_);
     device_->set_ping_enable(enable_ping_); /// Set ping enable
+
+    RCLCPP_INFO(this->get_logger(), "[Ping_node] Device configured");
 }
 
 void PingNode::timer_callback() {
@@ -73,7 +70,7 @@ void PingNode::timer_callback() {
             msg.scan_length = profile_msg.scan_length();
             msg.gain_setting = profile_msg.gain_setting();
             msg.profile_data_length = profile_msg.profile_data_length();
-            msg.profile_data = vector<uint8_t>(profile_msg.profile_data(), profile_msg.profile_data()+profile_msg.profile_data_length());
+            msg.profile_data = std::vector<uint8_t>(profile_msg.profile_data(), profile_msg.profile_data()+profile_msg.profile_data_length());
 
             publisher_profile_->publish(msg);
         }
@@ -84,9 +81,8 @@ void PingNode::init_parameters() {
     this->declare_parameter<long>("loop_dt", loop_dt_.count());
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
-    this->declare_parameter<string>("serial_port", uart_port_);
+    this->declare_parameter<std::string>("serial_port", uart_port_);
     this->declare_parameter<int>("serial_baudrate", uart_baudrate_);
-    this->declare_parameter<bool>("enable_ping", enable_ping_);
     this->declare_parameter<bool>("mode_auto", mode_auto_);
     this->declare_parameter<int>("speed_of_sound", speed_of_sound_);
     this->declare_parameter<int>("ping_interval", ping_interval_);
@@ -94,20 +90,26 @@ void PingNode::init_parameters() {
 
     uart_port_ = this->get_parameter_or("serial_port", uart_port_);
     uart_baudrate_ = this->get_parameter_or("serial_baudrate", uart_baudrate_);
-    enable_ping_ = this->get_parameter_or("enable_ping", enable_ping_);
     mode_auto_ = this->get_parameter_or("mode_auto", mode_auto_);
     speed_of_sound_ = this->get_parameter_or("speed_of_sound", speed_of_sound_);
     ping_interval_ = this->get_parameter_or("ping_interval", ping_interval_);
     gain_setting_ = this->get_parameter_or("gain_setting", gain_setting_);
+}
+
+void PingNode::ping_enable_callback(const std::shared_ptr<rmw_request_id_t> request_header,
+                                                   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+                                                   std::shared_ptr<std_srvs::srv::SetBool::Response> response){
 
 }
 
-void PingNode::init_topics() {
+void PingNode::init_interfaces() {
     publisher_profile_ = this->create_publisher<bluerobotics_ping_driver::msg::Profile>("profile", 1);
-}
 
-void PingNode::init_services(){
-
+    service_ping_enable_ = this->create_service<std_srvs::srv::SetBool>("ping_enable",
+                                                                       std::bind(&PingNode::ping_enable_callback, this,
+                                                                                 std::placeholders::_1,
+                                                                                 std::placeholders::_2,
+                                                                                 std::placeholders::_3));
 }
 
 int main(int argc, char *argv[]) {

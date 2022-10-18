@@ -5,7 +5,7 @@
 #include <memory>
 #include "seabot2_piston_driver/piston.h"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
-#include "std_msgs/msg/int32.hpp"
+#include "seabot2_piston_driver/msg/piston_set_point.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -31,10 +31,11 @@ private:
     std::chrono::seconds delay_no_data_ = 30s;
     rclcpp::Time time_last_cmd_received_ = this->now();
     int last_cmd_ = -1;
+    bool is_exit_ = true;
 
     /// Topics
     rclcpp::Publisher<seabot2_piston_driver::msg::PistonState>::SharedPtr publisher_piston_state_;
-    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr subscription_position_set_point_;
+    rclcpp::Subscription<seabot2_piston_driver::msg::PistonSetPoint>::SharedPtr subscription_position_set_point_;
 
     /// Functions
     void timer_callback();
@@ -53,7 +54,7 @@ private:
      * Callback for set point position
      * @param msg
      */
-    void topic_position_set_point_callback(const std_msgs::msg::Int32 &msg);
+    void topic_position_set_point_callback(const seabot2_piston_driver::msg::PistonSetPoint &msg);
 
 };
 

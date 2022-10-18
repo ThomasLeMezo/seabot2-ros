@@ -26,9 +26,28 @@ int Piston::i2c_open(){
 }
 
 int Piston::set_piston_reset() const{
-    RCLCPP_INFO(n_->get_logger(),"[Piston_driver] Start resting piston");
-    if(i2c_smbus_write_byte_data(file_, REGISTER_RESET, 0x00)<0) {
+    RCLCPP_INFO(n_->get_logger(), "[Piston_driver] Start resting piston");
+    if (i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_SEARCH_SWITCH_BOTTOM) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston Reset");
+        return EXIT_FAILURE;
+    } else
+        return EXIT_SUCCESS;
+}
+
+int Piston::set_piston_exit() const{
+    RCLCPP_INFO(n_->get_logger(),"[Piston_driver] Send piston exit");
+    if(i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_EXIT) < 0) {
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston exit");
+        return EXIT_FAILURE;
+    }
+    else
+        return EXIT_SUCCESS;
+}
+
+int Piston::set_piston_regulation() const{
+    RCLCPP_INFO(n_->get_logger(),"[Piston_driver] Set regulation");
+    if(i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_REGULATION) < 0) {
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston exit");
         return EXIT_FAILURE;
     }
     else

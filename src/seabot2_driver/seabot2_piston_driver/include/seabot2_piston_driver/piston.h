@@ -14,7 +14,7 @@ extern "C" {
 #include <i2c/smbus.h>
 }
 
-#define REGISTER_RESET 0x05
+#define REGISTER_STATE 0x05
 #define REGISTER_REGULATION_DEAD_ZONE 0x30
 #define REGISTER_REGULATION_PROPORTIONAL 0x32
 #define REGISTER_DATA_READ 0x00
@@ -60,13 +60,15 @@ public:
 
     void setI2CPeriph(const std::string &i2CPeriph);
 
+    enum state_piston { PISTON_SEARCH_SWITCH_BOTTOM, PISTON_RELEASE_SWITCH_BOTTOM, PISTON_BACK_SWITCH_BOTTOM, PISTON_REGULATION, PISTON_EXIT};
+
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
 
     int file_ = 0; /// File to the i2c port
     std::string i2c_periph_ = "/dev/i2c-1";
     int i2c_addr_ = 0x1E;
-    const int code_version_ = 0x02; /// Code version of the expected hardware
+    const int code_version_ = 0x03; /// Code version of the expected hardware
     uint8_t pic_code_version_=0; /// Code version read from the hardware
 
 public:
@@ -93,6 +95,18 @@ public:
      * Reset the piston to position 0
      */
     int set_piston_reset() const;
+
+    /**
+     * Set piston exit mode
+     * @return
+     */
+    int set_piston_exit() const;
+
+    /**
+     *
+     * @return
+     */
+    int set_piston_regulation() const;
 
     /**
      * Set the regulation dead zone

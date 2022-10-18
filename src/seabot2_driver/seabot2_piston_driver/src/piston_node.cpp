@@ -39,27 +39,6 @@ void PistonNode::timer_callback() {
         if(piston_.set_position(0)==EXIT_SUCCESS)
             last_cmd_ = 0;
     }
-
-//    /// Analyse reset
-//    if(piston_.position_set_point_ ==0 && abs(piston_.position_)>200 && piston_.state_==3){
-//        if(piston_.position_ == piston_.position_last_){
-//            if(!is_detected_issue_reset_){
-//                is_detected_issue_reset_= true;
-//                time_detected_issue_reset_ = this->now();
-//            }
-//            else{
-//                if(this->now()-time_detected_issue_reset_>delay_detected_issue_reset_){
-//                    /// Reset
-//                    if(piston_.set_piston_reset() == EXIT_SUCCESS) {
-//                        is_detected_issue_reset_ = false;
-//                    }
-//                }
-//            }
-//        }
-//        else{
-//            is_detected_issue_reset_ = false;
-//        }
-//    }
 }
 
 void PistonNode::init_parameters() {
@@ -84,11 +63,23 @@ void PistonNode::init_parameters() {
     piston_.R2_ = this->get_parameter_or("bridge_R2", piston_.R2_);
 }
 
-void PistonNode::topic_position_set_point_callback(const std_msgs::msg::Int32 &msg){
+void PistonNode::topic_position_set_point_callback(const seabot2_piston_driver::msg::PistonSetPoint &msg){
     time_last_cmd_received_ = this->now();
-    if(last_cmd_ != msg.data) {
-        if(piston_.set_position(msg.data) == EXIT_SUCCESS) {
-            last_cmd_ = msg.data;
+    is_exit_ = msg.exit;
+
+    if(is_exit_){
+        if(piston_.state_ != piston_.PISTON_EXIT) {
+            piston_.set_piston_exit();
+        }
+    }
+    else{
+        if(piston_.state_ == piston_.PISTON_EXIT){
+            piston_.set_piston_regulation();
+        }
+        if(last_cmd_ != msg.position) {
+            if(piston_.set_position(msg.position) == EXIT_SUCCESS) {
+                last_cmd_ = msg.position;
+            }
         }
     }
 }
@@ -96,7 +87,7 @@ void PistonNode::topic_position_set_point_callback(const std_msgs::msg::Int32 &m
 void PistonNode::init_interfaces() {
     publisher_piston_state_ = this->create_publisher<seabot2_piston_driver::msg::PistonState>("state", 1);
 
-    subscription_position_set_point_ = this->create_subscription<std_msgs::msg::Int32>(
+    subscription_position_set_point_ = this->create_subscription<seabot2_piston_driver::msg::PistonSetPoint>(
             "piston_set_point", 10, std::bind(&PistonNode::topic_position_set_point_callback, this, _1));
 }
 

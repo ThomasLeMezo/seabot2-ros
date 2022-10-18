@@ -6,9 +6,9 @@
 #include <ping-device-ping1d.h>
 #include <abstract-link.h>
 #include <bluerobotics_ping_driver/msg/profile.hpp>
+#include "std_srvs/srv/set_bool.hpp"
 
 using namespace std::chrono_literals;
-using namespace std;
 
 class PingNode : public rclcpp::Node {
 public:
@@ -23,14 +23,15 @@ private:
 
     /// Topics / Services
     rclcpp::Publisher<bluerobotics_ping_driver::msg::Profile>::SharedPtr publisher_profile_;
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_ping_enable_;
 
     /// Variables
-    string uart_port_ = "/dev/ttyAMA2";
+    std::string uart_port_ = "/dev/ping1D";
     unsigned int uart_baudrate_ = 115200;
     std::unique_ptr<Ping1d> device_;
     std::shared_ptr<AbstractLink> port_;
 
-    bool enable_ping_ = true;
+    bool enable_ping_ = false;
     bool mode_auto_ = false; /// mode
     int speed_of_sound_ = 1550000; /// speed of sound [mm/s]
     int ping_interval_ = 200; /// interval [ms]
@@ -46,19 +47,24 @@ private:
     void init_parameters();
 
     /**
-     * Init topics to this node (publishers & subscribers)
+     * Init interfaces of the node
      */
-    void init_topics();
-
-    /**
-     * Init services od this node
-     */
-    void init_services();
+    void init_interfaces();
 
     /**
      * Init the ping1D driver
      */
     void init_driver();
+
+    /**
+     *
+     * @param request_header
+     * @param request
+     * @param response
+     */
+    void ping_enable_callback(const std::shared_ptr<rmw_request_id_t> request_header,
+                               const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+                               std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
 };
 

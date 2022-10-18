@@ -18,6 +18,7 @@ add_subdirectory(ping-cpp/src/)
 find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_srvs REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -29,7 +30,12 @@ rosidl_get_typesupport_target(cpp_typesupport_target
 
 ### Excutable
 add_executable(bluerobotics_ping_node src/ping_node.cpp)
-ament_target_dependencies(bluerobotics_ping_node rclcpp std_msgs)
+
+ament_target_dependencies(bluerobotics_ping_node
+        rclcpp
+        std_msgs
+        std_srvs)
+
 target_link_libraries(bluerobotics_ping_node "${cpp_typesupport_target}"
         DEVICE
         HAL

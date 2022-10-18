@@ -13,6 +13,7 @@ find_package(rosidl_default_generators REQUIRED)
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/PistonState.msg"
+        "msg/PistonSetPoint.msg"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target

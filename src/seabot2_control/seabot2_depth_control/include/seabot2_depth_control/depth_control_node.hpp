@@ -10,8 +10,8 @@
 #include "seabot2_kalman/msg/kalman_state.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "std_msgs/msg/int32.hpp"
 #include "seabot2_depth_control/msg/depth_control_debug.hpp"
+#include "seabot2_piston_driver/msg/piston_set_point.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 #include <eigen3/Eigen/Dense>
 #include "seabot2_safety/msg/safety_status.hpp"
@@ -79,6 +79,7 @@ private:
     int piston_state_ = 0;
     double piston_set_point_ = 0.;
     double piston_set_point_old_ = 0.;
+    bool is_exit_ = true;
 
     /// Callback data
     rclcpp::Time time_last_kalman_callback_ = this->now();
@@ -106,7 +107,7 @@ private:
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_data_;
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr publisher_piston_;
+    rclcpp::Publisher<seabot2_piston_driver::msg::PistonSetPoint>::SharedPtr publisher_piston_;
     rclcpp::Publisher<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr publisher_debug_;
 
     /**
