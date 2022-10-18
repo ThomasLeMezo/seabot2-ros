@@ -111,14 +111,22 @@ void KalmanNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg)
     compute_kalman(true, false);
 }
 
+void KalmanNode::density_callback(const seabot2_density::msg::Density &msg){
+    physics_rho_ = msg.density;
+    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
+    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
+}
+
 void KalmanNode::init_interfaces() {
     publisher_kalman_ = this->create_publisher<seabot2_kalman::msg::KalmanState>("kalman", 10);
 
     subscriber_state_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
-            "/driver/state", 10, std::bind(&KalmanNode::state_callback, this, _1));
+            "/driver/piston", 10, std::bind(&KalmanNode::state_callback, this, _1));
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&KalmanNode::depth_callback, this, _1));
 
+    subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
+            "/observer/density", 10, std::bind(&KalmanNode::density_callback, this, _1));
 }
 
 Matrix<double,NB_STATES, 1> KalmanNode::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u){

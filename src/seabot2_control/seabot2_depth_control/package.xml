@@ -17,6 +17,7 @@
   <build_depend>seabot2_depth_filter</build_depend>
   <build_depend>seabot2_kalman</build_depend>
   <build_depend>seabot2_safety</build_depend>
+  <build_depend>seabot2_density</build_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
@@ -27,6 +28,7 @@
   <exec_depend>seabot2_depth_filter</exec_depend>
   <exec_depend>seabot2_kalman</exec_depend>
   <exec_depend>seabot2_safety</exec_depend>
+  <exec_depend>seabot2_density</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

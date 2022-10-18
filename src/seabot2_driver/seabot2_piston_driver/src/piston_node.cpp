@@ -36,8 +36,8 @@ void PistonNode::timer_callback() {
         publisher_piston_state_->publish(state_msg);
     }
     if(last_cmd_ !=0 && (this->now()-time_last_cmd_received_)>delay_no_data_){
-        if(piston_.set_position(0)==EXIT_SUCCESS)
-            last_cmd_ = 0;
+        is_exit_ = true;
+        piston_.set_piston_exit();
     }
 }
 
@@ -85,7 +85,7 @@ void PistonNode::topic_position_set_point_callback(const seabot2_piston_driver::
 }
 
 void PistonNode::init_interfaces() {
-    publisher_piston_state_ = this->create_publisher<seabot2_piston_driver::msg::PistonState>("state", 1);
+    publisher_piston_state_ = this->create_publisher<seabot2_piston_driver::msg::PistonState>("piston", 1);
 
     subscription_position_set_point_ = this->create_subscription<seabot2_piston_driver::msg::PistonSetPoint>(
             "piston_set_point", 10, std::bind(&PistonNode::topic_position_set_point_callback, this, _1));

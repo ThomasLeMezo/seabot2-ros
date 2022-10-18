@@ -13,6 +13,7 @@ find_package(seabot2_piston_driver REQUIRED)
 find_package(seabot2_depth_filter REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(seabot2_density REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -31,6 +32,7 @@ ament_target_dependencies(kalman_node
         seabot2_depth_filter
         std_srvs
         std_msgs
+        seabot2_density
         )
 target_link_libraries(kalman_node "${cpp_typesupport_target}" proj)
 

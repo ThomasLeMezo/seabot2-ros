@@ -9,7 +9,7 @@ class MinimalPublisher(Node):
 
     def __init__(self):
         super().__init__('minimal_publisher')
-        self.publisher_ = self.create_publisher(PressureSensorData, '/driver/sensor_external', 10)
+        self.publisher_ = self.create_publisher(PressureSensorData, '/driver/pressure_external', 10)
         timer_period = 1./5.0  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.i = 0

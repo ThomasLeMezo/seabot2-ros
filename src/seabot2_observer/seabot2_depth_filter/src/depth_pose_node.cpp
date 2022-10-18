@@ -76,8 +76,11 @@ void DepthPoseNode::pressure_callback(const pressure_ms5803_driver::msg::Pressur
         /// Compute mean value
         double pressure_mean = pressure_sum / (double)pressure_deque_median.size();
 
-        double depth = (pressure_mean - zero_depth_) / (g_*rho_/1e5); /// 1e5 for Pa to Bar
+        double pressure = (pressure_mean - zero_depth_);
+        double depth = pressure / (g_*rho_/1e5); /// 1e5 for Pa to Bar
+
         msg_pose.depth = depth;
+        msg_pose.pressure = pressure;
 
         /// ************** Compute velocity ************** //
         depth_memory_.push_front(std::pair<double,rclcpp::Time>(depth, msg.header.stamp));
@@ -114,7 +117,7 @@ void DepthPoseNode::init_interfaces() {
     publisher_depth_data_ = this->create_publisher<seabot2_depth_filter::msg::DepthPose>("depth", 1);
 
     subscriber_pressure_data_ = this->create_subscription<pressure_ms5803_driver::msg::PressureSensorData>(
-            "/driver/sensor_external", 10, std::bind(&DepthPoseNode::pressure_callback, this, _1));
+            "/driver/pressure_external", 10, std::bind(&DepthPoseNode::pressure_callback, this, _1));
 
     service_zero_depth_ = this->create_service<std_srvs::srv::Trigger>("zero_pressure",
                                                                             std::bind(&DepthPoseNode::service_zero_pressure_callback, this, _1, _2, _3));

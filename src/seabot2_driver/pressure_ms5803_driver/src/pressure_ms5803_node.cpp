@@ -70,7 +70,7 @@ void PressureMS5803Node::init_parameters() {
 }
 
 void PressureMS5803Node::init_interfaces() {
-    publisher_sensor_ = this->create_publisher<pressure_ms5803_driver::msg::PressureSensorData>("sensor_external", 10);
+    publisher_sensor_ = this->create_publisher<pressure_ms5803_driver::msg::PressureSensorData>("pressure_external", 10);
 }
 
 

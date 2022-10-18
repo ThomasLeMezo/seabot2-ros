@@ -5,6 +5,7 @@
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
 #include "seabot2_kalman/msg/kalman_state.hpp"
+#include "seabot2_density/msg/density.hpp"
 #include "std_msgs/msg/int32.hpp"
 #include <eigen3/Eigen/Dense>
 
@@ -107,6 +108,8 @@ private:
 
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_state_data_;
+    rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
+
     rclcpp::Publisher<seabot2_kalman::msg::KalmanState>::SharedPtr publisher_kalman_;
 
     /// Functions
@@ -132,6 +135,12 @@ private:
      * @param msg
      */
     void depth_callback(const seabot2_depth_filter::msg::DepthPose &msg);
+
+    /**
+     *
+     * @param msg
+     */
+    void density_callback(const seabot2_density::msg::Density &msg);
 
 private:
 

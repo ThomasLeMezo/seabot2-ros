@@ -74,13 +74,13 @@ void SafetyNode::init_interfaces() {
             "/observer/depth", 10, std::bind(&SafetyNode::depth_callback, this, _1));
 
     subscriber_internal_sensor_filter_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
-            "/observer/sensor_internal", 10, std::bind(&SafetyNode::internal_sensor_callback, this, _1));
+            "/observer/pressure_internal", 10, std::bind(&SafetyNode::internal_sensor_callback, this, _1));
 
     subscriber_power_data_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
             "/observer/power", 10, std::bind(&SafetyNode::power_callback, this, _1));
 
     subscriber_piston_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
-            "/driver/state", 10, std::bind(&SafetyNode::piston_callback, this, _1));
+            "/driver/piston", 10, std::bind(&SafetyNode::piston_callback, this, _1));
 
     client_zero_pressure_ = this->create_client<std_srvs::srv::Trigger>("/observer/zero_pressure");
 

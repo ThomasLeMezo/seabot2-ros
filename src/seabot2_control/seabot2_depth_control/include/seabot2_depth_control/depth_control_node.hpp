@@ -15,6 +15,7 @@
 #include "std_srvs/srv/set_bool.hpp"
 #include <eigen3/Eigen/Dense>
 #include "seabot2_safety/msg/safety_status.hpp"
+#include "seabot2_density/msg/density.hpp"
 
 #define NB_STATES 8
 #define PISTON_STATE_OK 2
@@ -107,6 +108,8 @@ private:
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_data_;
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
+    rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
+
     rclcpp::Publisher<seabot2_piston_driver::msg::PistonSetPoint>::SharedPtr publisher_piston_;
     rclcpp::Publisher<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr publisher_debug_;
 
@@ -135,7 +138,13 @@ private:
      *
      * @param msg
      */
-    void state_callback(const seabot2_piston_driver::msg::PistonState &msg);
+    void density_callback(const seabot2_density::msg::Density &msg);
+
+    /**
+     *
+     * @param msg
+     */
+    void piston_callback(const seabot2_piston_driver::msg::PistonState &msg);
 
     /**
      *

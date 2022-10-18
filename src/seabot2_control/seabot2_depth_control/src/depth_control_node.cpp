@@ -85,7 +85,7 @@ void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &m
     time_last_kalman_callback_ = this->now();
 }
 
-void DepthControlNode::state_callback(const seabot2_piston_driver::msg::PistonState &msg){
+void DepthControlNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
     piston_position_ = msg.position;
     piston_switch_top_ = msg.switch_top;
     piston_switch_bottom_ = msg.switch_bottom;
@@ -118,16 +118,24 @@ void DepthControlNode::init_interfaces() {
     subscriber_kalman_data_ = this->create_subscription<seabot2_kalman::msg::KalmanState>(
             "/observer/kalman", 10, std::bind(&DepthControlNode::kalman_callback, this, _1));
     subscriber_state_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
-            "/driver/state", 10, std::bind(&DepthControlNode::state_callback, this, _1));
+            "/driver/piston", 10, std::bind(&DepthControlNode::piston_callback, this, _1));
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&DepthControlNode::depth_callback, this, _1));
     subscriber_mission_data_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
             "/mission/waypoint", 10, std::bind(&DepthControlNode::waypoint_callback, this, _1));
     subscriber_safety_data_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
             "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
+    subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
+            "/observer/density", 10, std::bind(&DepthControlNode::density_callback, this, _1));
 
     publisher_piston_ = this->create_publisher<seabot2_piston_driver::msg::PistonSetPoint>("/driver/piston_set_point", 10);
     publisher_debug_ = this->create_publisher<seabot2_depth_control::msg::DepthControlDebug>("depth_control_debug", 10);
+}
+
+void DepthControlNode::density_callback(const seabot2_density::msg::Density &msg){
+    physics_rho_ = msg.density;
+    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
+    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
 }
 
 double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double set_point, double limit_velocity, double approach_velocity){

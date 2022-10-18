@@ -54,10 +54,10 @@ void InternalSensorFilterNode::pressure_callback(const pressure_bme280_driver::m
 }
 
 void InternalSensorFilterNode::init_interfaces() {
-    publisher_pressure_data_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("sensor_internal", 1);
+    publisher_pressure_data_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("pressure_internal", 1);
 
     subscriber_pressure_data_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
-            "/driver/sensor_internal", 10, std::bind(&InternalSensorFilterNode::pressure_callback, this, _1));
+            "/driver/pressure_internal", 10, std::bind(&InternalSensorFilterNode::pressure_callback, this, _1));
 
 }
 

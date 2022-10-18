@@ -81,7 +81,7 @@ void ScreenNode::init_parameters() {
 void ScreenNode::init_topics() {
 
     subscriber_sensor_internal_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
-            "/driver/sensor_internal", 10, std::bind(&ScreenNode::topic_internal_pressure_callback, this, _1));
+            "/driver/pressure_internal", 10, std::bind(&ScreenNode::topic_internal_pressure_callback, this, _1));
 
     subscriber_mission_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
             "/mission/waypoint", 10, std::bind(&ScreenNode::waypoint_callback, this, _1));

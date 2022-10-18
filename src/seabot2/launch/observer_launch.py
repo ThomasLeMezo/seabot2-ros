@@ -69,10 +69,20 @@ def generate_launch_description():
         respawn=True
     )
 
+    density_node = Node(
+        package='seabot2_density',
+        executable='density_node',
+        namespace='observer',
+        name='density_node',
+        parameters=parameters_file_list,
+        respawn=True
+    )
+
     return LaunchDescription([
         depth_filter_node,
         internal_sensor_filter,
         kalman_node,
         lambert_node,
-        power_filter_node
+        power_filter_node,
+        density_node
     ])

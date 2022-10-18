@@ -149,7 +149,7 @@ void Bme280Node::print_sensor_mode() {
 }
 
 void Bme280Node::init_interfaces() {
-    publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("sensor_internal", 10);
+    publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("pressure_internal", 10);
 }
 
 int main(int argc, char *argv[]) {
