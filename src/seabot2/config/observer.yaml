@@ -2,11 +2,21 @@ observer:
 
   depth_filter_node:
     ros__parameters:
-      loop_dt: 200 #ms
+      velocity_dt_gap_sample: 5
+      filter_window_size: 5
+      filter_median_remove_side_samples: 1
+      filter_velocity_median_remove_side_samples: 1
+      filter_velocity_window_size: 6
 
   internal_sensor_filter:
     ros__parameters:
-      loop_dt: 200 #ms
+      filter_window_size: 5
+      filter_median_remove_side_samples: 1
+
+  temperature_filter_node:
+    ros__parameters:
+      filter_window_size: 5
+      filter_median_remove_side_samples: 1
 
   kalman_node:
     ros__parameters:

@@ -190,8 +190,8 @@ void DepthControlNode::timer_callback() {
     /// Analyze specific cases
     if(emergency_)
         regulation_state_ = STATE_SURFACE;
-    if(piston_state_!=PISTON_STATE_OK)
-        regulation_state_ = STATE_PISTON_ISSUE;
+//    if(piston_state_!=PISTON_STATE_OK)
+//        regulation_state_ = STATE_PISTON_ISSUE;
     if((this->now()-last_waypoint_time_)>last_waypoint_max_delay_)
         depth_set_point_ = 0.0;
 

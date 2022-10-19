@@ -27,11 +27,14 @@ add_library(teos SHARED
       lib/TeosCpp/src/TeosIce.cpp
       lib/TeosCpp/src/TeosSea.cpp
 )
-target_include_directories(teos PRIVATE lib/TeosCpp/include)
+target_include_directories(teos PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        lib/TeosCpp/include)
 
 ### Executable
 add_executable(density_node src/density_node.cpp)
-target_include_directories(density_node PRIVATE lib/TeosCpp/include)
+
 ament_target_dependencies(density_node
         rclcpp
         rosidl_default_generators
@@ -44,6 +47,7 @@ target_link_libraries(density_node
 
 ### Includes
 target_include_directories(density_node PUBLIC
+        lib/TeosCpp/include
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
@@ -57,6 +61,10 @@ endif()
 
 
 ### Install
+
+install(TARGETS teos
+        LIBRARY DESTINATION lib
+)
 install(TARGETS density_node
         DESTINATION lib/${PROJECT_NAME})
 

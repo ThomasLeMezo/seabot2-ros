@@ -51,11 +51,18 @@ target_include_directories(bluerobotics_ping_node PUBLIC
 target_include_directories(bluerobotics_ping_node PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/bluerobotics_ping_driver>)
 
-target_include_directories(bluerobotics_ping_node PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/bluerobotics_ping_driver>)
-
 ### Install
 install(TARGETS bluerobotics_ping_node
         DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS DEVICE
+        LIBRARY DESTINATION lib
+        )
+install(TARGETS HAL
+        LIBRARY DESTINATION lib
+        )
+install(TARGETS PING_MESSAGES
+        LIBRARY DESTINATION lib
+        )
 
 ament_package()

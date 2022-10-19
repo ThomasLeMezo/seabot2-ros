@@ -23,10 +23,12 @@ void DepthPoseNode::init_parameters() {
     velocity_limit_ = this->get_parameter_or("physics_velocity_limit", velocity_limit_);
 
     this->declare_parameter<long>("velocity_dt_gap_sample", velocity_dt_gap_sample_);
+    this->declare_parameter<long>("filter_velocity_window_size", filter_velocity_window_size_);
     this->declare_parameter<long>("filter_velocity_median_remove_side_samples", filter_velocity_median_remove_side_samples_);
     this->declare_parameter<long>("filter_window_size", filter_window_size_);
     this->declare_parameter<long>("filter_median_remove_side_samples", filter_median_remove_side_samples_);
 
+    filter_velocity_window_size_ = this->get_parameter_or("filter_velocity_window_size", filter_velocity_window_size_);
     velocity_dt_gap_sample_ = this->get_parameter_or("velocity_dt_gap_sample", velocity_dt_gap_sample_);
     filter_velocity_median_remove_side_samples_ = this->get_parameter_or("filter_velocity_median_remove_side_samples", filter_velocity_median_remove_side_samples_);
     filter_window_size_ = this->get_parameter_or("filter_window_size", filter_window_size_);
