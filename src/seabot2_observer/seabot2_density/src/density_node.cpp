@@ -36,7 +36,7 @@ void DensityNode::init_interfaces() {
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&DensityNode::pressure_callback, this, _1));
     subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
-            "/driver/temperature", 10, std::bind(&DensityNode::temperature_callback, this, _1));
+            "/observer/temperature", 10, std::bind(&DensityNode::temperature_callback, this, _1));
 }
 
 void DensityNode::timer_callback() {
