@@ -9,12 +9,12 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(pressure_ms5803_driver REQUIRED)
 find_package(std_srvs REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/DepthPose.msg"
+        "msg/PressureSensorData.msg"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target
@@ -25,7 +25,6 @@ add_executable(depth_pose_node src/depth_pose_node.cpp)
 ament_target_dependencies(depth_pose_node
         rclcpp
         rosidl_default_generators
-        pressure_ms5803_driver
         std_srvs
         )
 target_link_libraries(depth_pose_node "${cpp_typesupport_target}")

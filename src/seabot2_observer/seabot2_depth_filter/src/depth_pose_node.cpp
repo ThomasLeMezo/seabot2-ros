@@ -48,7 +48,7 @@ void DepthPoseNode::service_zero_pressure_callback(const std::shared_ptr<rmw_req
         response->success = false;
 }
 
-void DepthPoseNode::pressure_callback(const pressure_ms5803_driver::msg::PressureSensorData &msg) {
+void DepthPoseNode::pressure_callback(const seabot2_depth_filter::msg::PressureSensorData &msg) {
     seabot2_depth_filter::msg::DepthPose msg_pose;
     msg_pose.header.stamp = msg.header.stamp;
     msg_pose.zero_depth_pressure = zero_depth_;
@@ -118,7 +118,7 @@ void DepthPoseNode::pressure_callback(const pressure_ms5803_driver::msg::Pressur
 void DepthPoseNode::init_interfaces() {
     publisher_depth_data_ = this->create_publisher<seabot2_depth_filter::msg::DepthPose>("depth", 1);
 
-    subscriber_pressure_data_ = this->create_subscription<pressure_ms5803_driver::msg::PressureSensorData>(
+    subscriber_pressure_data_ = this->create_subscription<seabot2_depth_filter::msg::PressureSensorData>(
             "/driver/pressure_external", 10, std::bind(&DepthPoseNode::pressure_callback, this, _1));
 
     service_zero_depth_ = this->create_service<std_srvs::srv::Trigger>("zero_pressure",

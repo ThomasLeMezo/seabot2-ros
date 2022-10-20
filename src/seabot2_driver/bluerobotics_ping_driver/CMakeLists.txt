@@ -61,8 +61,8 @@ install(TARGETS DEVICE
 install(TARGETS HAL
         LIBRARY DESTINATION lib
         )
-install(TARGETS PING_MESSAGES
-        LIBRARY DESTINATION lib
-        )
+#install(TARGETS PING_MESSAGES
+#        LIBRARY DESTINATION lib
+#        )
 
 ament_package()
