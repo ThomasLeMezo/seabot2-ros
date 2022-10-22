@@ -29,8 +29,8 @@ def generate_launch_description():
         executable='mission_node',
         namespace='mission',
         name='mission_node',
-        parameters=parameters_file_list
-        # respawn=True
+        parameters=parameters_file_list,
+        respawn=True
     )
 
     seabot2_safety = Node(
@@ -38,11 +38,19 @@ def generate_launch_description():
         executable='safety_node',
         namespace='safety',
         name='safety_node',
-        parameters=parameters_file_list
-        # respawn=True
+        parameters=parameters_file_list,
+        respawn=True
+    )
+
+    seabot2_record_parameters = Node(
+        package='seabot2_log_parameters',
+        executable='log_parameter_node',
+        namespace='observer',
+        name='log_parameter_node'
     )
 
     return LaunchDescription([
         seabot2_mission,
-        seabot2_safety
+        seabot2_safety,
+        seabot2_record_parameters
     ])

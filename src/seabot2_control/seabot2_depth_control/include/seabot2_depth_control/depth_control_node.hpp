@@ -45,6 +45,7 @@ private:
     double tick_per_turn_ =  2048*4;
     double piston_diameter_ =  0.045;
     double piston_max_tick_value_ =  1146880;
+    bool enable_volume_air_ = false;
 
     double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;

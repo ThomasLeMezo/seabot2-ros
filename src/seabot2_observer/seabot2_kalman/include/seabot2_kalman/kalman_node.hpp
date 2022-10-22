@@ -51,6 +51,7 @@ private:
     double init_chi_ = 0.0; /// m3/m
     double init_chi2_ = 0.0; /// m3/m2
     double init_volume_air_ = 30e-6; /// m3/m
+    bool enable_volume_air_ = false;
 
     double gamma_alpha_velocity_ =  1e-3; // 1e-5
     double gamma_alpha_depth_ =  1e-5; // 1e-5

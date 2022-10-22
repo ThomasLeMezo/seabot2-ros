@@ -134,8 +134,10 @@ Matrix<double,NB_STATES, 1> KalmanNode::f_dyn(const Matrix<double,NB_STATES,1> &
 
     /// ToDo : change equation to assert PV = nRT => V = nR(T/P) and take into account Temperature and Pressure instead of only depth
 
-    if(x(1)>0.)
-        dx(0) = -coeff_A_*(u(0)+x(2)+(x(6)/(x(1)+1.0)-(x(3)*x(1)+x(4)*pow(x(1),2))))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
+    if(enable_volume_air_ && x(1)>0.)
+        dx(0) = -coeff_A_*(u(0)+x(2)+x(6)/(x(1)+1.0)-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
+    else
+        dx(0) = -coeff_A_*(u(0)+x(2)-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     dx(1) = x(0);
     dx(2) = 0.0;
     dx(3) = 0.0;
@@ -163,8 +165,10 @@ void KalmanNode::kalman_predict(Matrix<double,NB_STATES, 1> &x,
     Ak(0,3) = x(1)*coeff_A_;
     Ak(0,4) = pow(x(1),2)*coeff_A_;
     Ak(0,5) = -coeff_B_*abs(x(0))*x(0);
-    if(x(1)>0.)
+    if(enable_volume_air_ && x(1)>0.)
         Ak(0,6) = -coeff_A_/(x(1)+1.0);
+    else
+        Ak(0,6) = 0.;
     Ak(1, 0) = 1.;
     Ak_tmp += Ak*dt;
 
@@ -209,7 +213,10 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     xhat(3) = init_chi_; // chi
     xhat(4) = init_chi2_; // chi2
     xhat(5) = 1.0; // Cz
-    xhat(6) = init_volume_air_; // Cz
+    if(enable_volume_air_)
+        xhat(6) = init_volume_air_; // Cz
+    else
+        xhat(6) = 0.;
     x_forcast_ = xhat;
 
     gamma_ = Matrix<double,NB_STATES,NB_STATES>::Zero();
@@ -219,7 +226,10 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     gamma_(3,3) = pow(gamma_init_chi_,2); // Compressibility
     gamma_(4,4) = pow(gamma_init_chi2_,2); // Compressibility 2
     gamma_(5,5) = pow(gamma_init_cz_,2); // Cz
-    gamma_(6,6) = pow(gamma_init_volume_air_,2); // Cz
+    if(enable_volume_air_)
+        gamma_(6,6) = pow(gamma_init_volume_air_,2); // Cz
+    else
+        gamma_(6,6) = 0.;
 
     gamma_alpha_(0,0) = pow(gamma_alpha_velocity_, 2); // Velocity
     gamma_alpha_(1,1) = pow(gamma_alpha_depth_, 2); // Depth
@@ -227,7 +237,10 @@ void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
     gamma_alpha_(3,3) = pow(gamma_alpha_chi_, 2); // Compressibility
     gamma_alpha_(4,4) = pow(gamma_alpha_chi2_, 2); // Compressibility 2
     gamma_alpha_(5,5) = pow(gamma_alpha_cz_, 2); // cz
-    gamma_alpha_(6,6) = pow(gamma_init_volume_air_, 2); // cz
+    if(enable_volume_air_)
+        gamma_alpha_(6,6) = pow(gamma_init_volume_air_, 2); // cz
+    else
+        gamma_alpha_(6,6) = 0;
 
     gamma_beta_(0, 0) = pow(gamma_beta_depth_, 2); // Depth
 
