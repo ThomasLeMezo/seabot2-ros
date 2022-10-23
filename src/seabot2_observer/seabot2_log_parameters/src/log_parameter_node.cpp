@@ -86,9 +86,8 @@ void LogParameterNode::get_param_values(const std::string &node_name,
 }
 
 void LogParameterNode::record_parameters() {
-    RCLCPP_INFO(this->get_logger(), "[log_parameter_node] Record");
+    RCLCPP_INFO(this->get_logger(), "[log_parameter_node] Start recording parameters");
     std::string current_node_name = this->get_fully_qualified_name();
-    RCLCPP_INFO(this->get_logger(), "[log_parameter_node] Current node %s", current_node_name.c_str());
     std::vector<std::string> node_list = this->get_node_names();
     for(auto node_name:node_list){
         if(node_name.compare(current_node_name)!=0
@@ -98,6 +97,7 @@ void LogParameterNode::record_parameters() {
             get_param_values(node_name, get_param_list(node_name));
         }
     }
+    RCLCPP_INFO(this->get_logger(), "[log_parameter_node] Parameters have been recorded");
 }
 
 int main(int argc, char *argv[]) {

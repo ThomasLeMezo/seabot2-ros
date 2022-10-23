@@ -14,12 +14,12 @@ DepthPoseNode::DepthPoseNode()
 
 void DepthPoseNode::init_parameters() {
 
-    this->declare_parameter<double>("physics_rho_", rho_);
-    this->declare_parameter<double>("physics_g_", g_);
+    this->declare_parameter<double>("physics_rho", rho_);
+    this->declare_parameter<double>("physics_g", g_);
     this->declare_parameter<double>("physics_velocity_limit", velocity_limit_);
 
-    rho_ = this->get_parameter_or("physics_rho_", rho_);
-    g_ = this->get_parameter_or("physics_g_", g_);
+    rho_ = this->get_parameter_or("physics_rho", rho_);
+    g_ = this->get_parameter_or("physics_g", g_);
     velocity_limit_ = this->get_parameter_or("physics_velocity_limit", velocity_limit_);
 
     this->declare_parameter<long>("velocity_dt_gap_sample", velocity_dt_gap_sample_);

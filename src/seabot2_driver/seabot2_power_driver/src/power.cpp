@@ -43,9 +43,9 @@ int Power::get_all_data(){
             cell_volt_[i] -= cell_volt_[i-1];
 
         for(int i=4; i<6; i++){
-            esc_current_[i - 4] = ((int)buff[2 * i] + ((int)(buff[2 * i + 1]) << 8)) * CONVERT_BRIDGE_CURRENT * CONVERT_CURRENT_V_to_A;
+            esc_current_[i - 4] = (((int)buff[2 * i] + ((int)(buff[2 * i + 1]) << 8)) * CONVERT_BRIDGE_CURRENT - 3.3/2.0) * CONVERT_CURRENT_V_to_A;
         }
-        motor_current_ = ((int)buff[12] + ((int)buff[13] << 8)) * CONVERT_BRIDGE_CURRENT * CONVERT_CURRENT_V_to_A;
+        motor_current_ = (((int)buff[12] + ((int)buff[13] << 8)) * CONVERT_BRIDGE_CURRENT -3.3/2.0) * CONVERT_CURRENT_V_to_A;
         power_state_ = buff[14];
 
         return EXIT_SUCCESS;
