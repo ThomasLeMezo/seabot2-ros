@@ -206,7 +206,7 @@ private:
      *
      * @param xhat
      */
-    void init_kalman(Matrix<double, NB_STATES, 1> &xhat );
+    void init_kalman();
 
     /**
      *

@@ -35,7 +35,7 @@ void PistonNode::timer_callback() {
 
         publisher_piston_state_->publish(state_msg);
     }
-    if(last_cmd_ !=0 && (this->now()-time_last_cmd_received_)>delay_no_data_){
+    if((this->now()-time_last_cmd_received_)>delay_no_data_ && !is_exit_){
         is_exit_ = true;
         piston_.set_piston_exit();
     }

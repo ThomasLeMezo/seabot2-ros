@@ -9,6 +9,7 @@ MissionNode::MissionNode()
     init_parameters();
     init_interfaces();
 
+    rclcpp::sleep_for(1s); // Wait to be sure to log mission data
     mission_.load_mission(mission_file_name_, mission_path_);
 
     timer_ = this->create_wall_timer(

@@ -9,7 +9,7 @@ KalmanNode::KalmanNode()
     init_parameters();
     init_interfaces();
 
-    init_kalman(xhat_);
+    init_kalman();
 
     RCLCPP_INFO(this->get_logger(), "[Kalman_node] Start Ok");
 }
@@ -181,6 +181,7 @@ void KalmanNode::kalman_correc(Matrix<double,NB_STATES, 1> &x,
                    const Matrix<double,NB_MESURES, 1> &y,
                    const Matrix<double,NB_MESURES,NB_MESURES> &gamma_beta,
                    const Matrix<double,NB_MESURES, NB_STATES> &Ck){
+
     const Matrix<double,NB_MESURES,NB_MESURES> S = Ck * gamma * Ck.transpose() + gamma_beta;
     const Matrix<double,NB_STATES, NB_MESURES> K = gamma * Ck.transpose() * S.inverse();
     const Matrix<double,NB_MESURES, 1> ztilde = y - Ck*x;
@@ -206,18 +207,18 @@ void KalmanNode::kalman(Matrix<double,NB_STATES, 1> &x,
     kalman_predict(x, gamma, u, gamma_alpha, dt);
 }
 
-void KalmanNode::init_kalman(Matrix<double, NB_STATES, 1> &xhat ){
-    xhat(0) = fusion_velocity_;
-    xhat(1) = fusion_depth_;
-    xhat(2) = piston_volume_eq_init_; // Vp
-    xhat(3) = init_chi_; // chi
-    xhat(4) = init_chi2_; // chi2
-    xhat(5) = 1.0; // Cz
+void KalmanNode::init_kalman(){
+    xhat_(0) = fusion_velocity_;
+    xhat_(1) = fusion_depth_;
+    xhat_(2) = piston_volume_eq_init_; // Vp
+    xhat_(3) = init_chi_; // chi
+    xhat_(4) = init_chi2_; // chi2
+    xhat_(5) = 1.0; // Cz
     if(enable_volume_air_)
-        xhat(6) = init_volume_air_; // Cz
+        xhat_(6) = init_volume_air_; // Cz
     else
-        xhat(6) = 0.;
-    x_forcast_ = xhat;
+        xhat_(6) = 0.;
+    x_forcast_ = xhat_;
 
     gamma_ = Matrix<double,NB_STATES,NB_STATES>::Zero();
     gamma_(0,0) = pow(gamma_init_velocity_, 2); // velocity
@@ -302,7 +303,7 @@ void KalmanNode::compute_kalman(bool new_depth_data, bool new_piston_data) {
         /// ToDo : add reset option if values get out of range ?
         /// Link with safety node ?
         if(!xhat_.allFinite() || is_out_of_range(xhat_)) {
-            init_kalman(xhat_);
+            init_kalman();
             msg.valid = false;
         }
         else

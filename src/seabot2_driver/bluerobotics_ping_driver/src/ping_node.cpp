@@ -25,6 +25,9 @@ PingNode::PingNode()
 PingNode::~PingNode(){
     if(enable_ping_){
         device_->set_ping_enable(false); /// Diseable ping
+
+        ping_message ping_msg = ping1d_continuous_stop();
+        device_->writeMessage(ping_msg);
     }
 }
 
@@ -36,8 +39,12 @@ void PingNode::init_driver(){
     device_ = std::make_unique<Ping1d>(*port_.get());
     device_->initialize(loop_dt_.count());
 
-    RCLCPP_INFO(this->get_logger(), "[Ping_node] Device Type = %ui", device_->device_information.device_type);
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device Id = %ui", device_->device_id);
+    RCLCPP_INFO(this->get_logger(), "[Ping_node device_type = %ui", device_->device_information.device_type);
+    RCLCPP_INFO(this->get_logger(), "[Ping_node device_revision = %ui", device_->device_information.device_revision);
+    RCLCPP_INFO(this->get_logger(), "[Ping_node firmware_version_major = %ui", device_->device_information.firmware_version_major);
+    RCLCPP_INFO(this->get_logger(), "[Ping_node firmware_version_minor = %ui", device_->device_information.firmware_version_minor);
+    RCLCPP_INFO(this->get_logger(), "[Ping_node firmware_version_patch = %ui", device_->device_information.firmware_version_patch);
 
     device_->set_mode_auto(false); /// Set mode
     device_->set_speed_of_sound(1550000); /// Set speed of sound
@@ -47,15 +54,22 @@ void PingNode::init_driver(){
     device_->set_mode_auto(true);
     device_->set_ping_enable(enable_ping_); /// Set ping enable
 
+    if(enable_ping_) {
+        /// Ask for continuous stream of data
+        ping_message ping_msg = ping1d_continuous_start();
+        device_->writeMessage(ping_msg);
+    }
+
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device configured");
 }
 
 void PingNode::timer_callback() {
     if(enable_ping_) {
-        RCLCPP_INFO(this->get_logger(),"[Ping_mode] Wait for message");
-        ping_message *ping_msg = device_->waitMessage(Ping1dId::PROFILE);
-        RCLCPP_INFO(this->get_logger(),"[Ping_mode] ping_message read");
-        if (ping_msg->msgData != nullptr) {
+        //RCLCPP_INFO(this->get_logger(),"[Ping_mode] Wait for message");
+        ping_message *ping_msg = device_->request(Ping1dId::PROFILE);
+        //ping_message *ping_msg = device_->waitMessage(Ping1dId::PROFILE);
+        //RCLCPP_INFO(this->get_logger(),"[Ping_mode] ping_message read");
+        if (ping_msg !=nullptr && ping_msg->msgData != nullptr) {
             RCLCPP_INFO(this->get_logger(),"[Ping_mode] Msg received");
             ping1d_profile profile_msg(*ping_msg);
 
@@ -102,6 +116,16 @@ void PingNode::ping_enable_callback(const std::shared_ptr<rmw_request_id_t> requ
                                                    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                                                    std::shared_ptr<std_srvs::srv::SetBool::Response> response){
 
+    enable_ping_ = request->data;
+    device_->set_ping_enable(enable_ping_); /// Set ping enable
+    if(enable_ping_) {
+        ping_message ping_msg = ping1d_continuous_start();
+        device_->writeMessage(ping_msg);
+    }
+    else{
+        ping_message ping_msg = ping1d_continuous_stop();
+        device_->writeMessage(ping_msg);
+    }
 }
 
 void PingNode::init_interfaces() {
