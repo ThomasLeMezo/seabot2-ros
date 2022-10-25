@@ -28,4 +28,7 @@ install(DIRECTORY launch config mission linux
         DESTINATION share/${PROJECT_NAME}/
 )
 
+install(DIRECTORY config
+        DESTINATION $ENV{HOME})
+
 ament_package()

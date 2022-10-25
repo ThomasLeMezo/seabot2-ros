@@ -65,7 +65,7 @@ bool Temperature_TSYS01::measure(){
     usleep(60000);
     unsigned char buff[3] = {0, 0, 0};
     if (i2c_smbus_read_i2c_block_data(file_, CMD_ADC_READ, 3, buff)!=3){
-        RCLCPP_WARN(n_->get_logger(), "[Temperature_TSYS01] Error Reading T");
+        RCLCPP_WARN(n_->get_logger(), "[Temperature_TSYS01] Error Reading T at device \\\\x%02x", i2c_addr_);
         valid_data_ = false;
         return false;
     }

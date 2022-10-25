@@ -16,9 +16,6 @@ PingNode::PingNode()
 
     init_driver();
 
-    timer_ = this->create_wall_timer(
-            loop_dt_, std::bind(&PingNode::timer_callback, this));
-
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Start Ok");
 }
 
@@ -26,7 +23,8 @@ PingNode::~PingNode(){
     if(enable_ping_){
         device_->set_ping_enable(false); /// Diseable ping
 
-        ping_message ping_msg = ping1d_continuous_stop();
+        ping1d_continuous_stop ping_msg = ping1d_continuous_stop();
+        ping_msg.set_id(static_cast<uint16_t>(PingMessageId::PING1D_PROFILE));
         device_->writeMessage(ping_msg);
     }
 }
@@ -37,7 +35,6 @@ void PingNode::init_driver(){
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Init driver");
     port_ = std::make_shared<SerialLink>(uart_port_, uart_baudrate_);
     device_ = std::make_unique<Ping1d>(*port_.get());
-    device_->initialize(loop_dt_.count());
 
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device Id = %ui", device_->device_id);
     RCLCPP_INFO(this->get_logger(), "[Ping_node device_type = %ui", device_->device_information.device_type);
@@ -56,19 +53,17 @@ void PingNode::init_driver(){
 
     if(enable_ping_) {
         /// Ask for continuous stream of data
-        ping_message ping_msg = ping1d_continuous_start();
+        ping1d_continuous_start ping_msg = ping1d_continuous_start();
+        ping_msg.set_id(static_cast<uint16_t>(PingMessageId::PING1D_PROFILE));
         device_->writeMessage(ping_msg);
     }
 
     RCLCPP_INFO(this->get_logger(), "[Ping_node] Device configured");
 }
 
-void PingNode::timer_callback() {
+void PingNode::wait_message() {
     if(enable_ping_) {
-        //RCLCPP_INFO(this->get_logger(),"[Ping_mode] Wait for message");
-        ping_message *ping_msg = device_->request(Ping1dId::PROFILE);
-        //ping_message *ping_msg = device_->waitMessage(Ping1dId::PROFILE);
-        //RCLCPP_INFO(this->get_logger(),"[Ping_mode] ping_message read");
+        ping_message *ping_msg = device_->waitMessage(Ping1dId::PROFILE);
         if (ping_msg !=nullptr && ping_msg->msgData != nullptr) {
             RCLCPP_INFO(this->get_logger(),"[Ping_mode] Msg received");
             ping1d_profile profile_msg(*ping_msg);
@@ -92,8 +87,6 @@ void PingNode::timer_callback() {
 }
 
 void PingNode::init_parameters() {
-    this->declare_parameter<long>("loop_dt", loop_dt_.count());
-    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_dt", loop_dt_.count()));
 
     this->declare_parameter<std::string>("serial_port", uart_port_);
     this->declare_parameter<int>("serial_baudrate", uart_baudrate_);
@@ -119,11 +112,13 @@ void PingNode::ping_enable_callback(const std::shared_ptr<rmw_request_id_t> requ
     enable_ping_ = request->data;
     device_->set_ping_enable(enable_ping_); /// Set ping enable
     if(enable_ping_) {
-        ping_message ping_msg = ping1d_continuous_start();
+        ping1d_continuous_start ping_msg = ping1d_continuous_start();
+        ping_msg.set_id(static_cast<uint16_t>(PingMessageId::PING1D_PROFILE));
         device_->writeMessage(ping_msg);
     }
     else{
-        ping_message ping_msg = ping1d_continuous_stop();
+        ping1d_continuous_stop ping_msg = ping1d_continuous_stop();
+        ping_msg.set_id(static_cast<uint16_t>(PingMessageId::PING1D_PROFILE));
         device_->writeMessage(ping_msg);
     }
 }
@@ -140,7 +135,12 @@ void PingNode::init_interfaces() {
 
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PingNode>());
+    auto node = std::make_shared<PingNode>();
+    while (rclcpp::ok()){
+        node->wait_message();
+        rclcpp::spin_some(node);
+    }
+
     rclcpp::shutdown();
     return 0;
 }

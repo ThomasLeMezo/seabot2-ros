@@ -2,19 +2,57 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
+import yaml
+import socket
+from enum import Enum, IntEnum
 
+class PressureExternalSensor(Enum):
+    none = 0
+    ms5803 = 1
+    ms5837 = 2
 
+def test_enable_pressure(yaml_data, sensor_node_name):
+    if sensor_node_name in yaml_data['driver']:
+        if 'ros__parameters' in yaml_data['driver'][sensor_node_name]:
+            if 'enable' in yaml_data['driver'][sensor_node_name]['ros__parameters']:
+                return yaml_data['driver'][sensor_node_name]['ros__parameters']['enable']
+    return False
 def generate_launch_description():
     home_path = os.path.expanduser('~')
+    hostname = socket.gethostname()
     parameters_file_list = []
 
     config_driver = os.path.join(
         home_path,
-        'config',  # Directory where yaml are
+        'config/default/',  # Directory where yaml are
         'driver.yaml'  # Name of the file
     )
     if os.path.exists(config_driver):
         parameters_file_list.append(config_driver)
+
+    config_driver_custom = os.path.join(
+        home_path,
+        'config/' + hostname + '/',  # Directory where yaml are
+        'driver.yaml'  # Name of the file
+    )
+
+    pressure_external = PressureExternalSensor.none
+    if os.path.exists(config_driver_custom):
+        parameters_file_list.append(config_driver_custom)
+
+        # read yaml file
+        with open(config_driver_custom, "r") as stream:
+            try:
+                yaml_data = yaml.safe_load(stream)
+                if test_enable_pressure(yaml_data, 'pressure_ms5803_node'):
+                    pressure_external = PressureExternalSensor.ms5803
+                elif test_enable_pressure(yaml_data, 'pressure_ms5837_node'):
+                    pressure_external = PressureExternalSensor.ms5837
+            except yaml.YAMLError as exc:
+                print(exc)
+
+    # Node list
+    list_node = []
 
     gpsd_node = Node(
         package='gpsd_client',
@@ -24,6 +62,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(gpsd_node)
 
     bme280_node = Node(
         package='pressure_bme280_driver',
@@ -33,6 +72,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(bme280_node)
 
     ms5803_node = Node(
         package='pressure_ms5803_driver',
@@ -42,6 +82,19 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    if pressure_external == PressureExternalSensor.ms5803:
+        list_node.append(ms5803_node)
+
+    ms5837_node = Node(
+        package='pressure_ms5837_driver',
+        executable='pressure_ms5837_node',
+        namespace='driver',
+        name='pressure_ms5837_node',
+        parameters=parameters_file_list,
+        respawn=True
+    )
+    if pressure_external == PressureExternalSensor.ms5837:
+        list_node.append(ms5837_node)
 
     light_node = Node(
         package='seabot2_light_driver',
@@ -51,6 +104,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(light_node)
 
     piston_node = Node(
         package='seabot2_piston_driver',
@@ -60,6 +114,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(piston_node)
 
     power_node = Node(
         package='seabot2_power_driver',
@@ -69,6 +124,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(power_node)
 
     screen_node = Node(
         package='seabot2_screen_driver',
@@ -78,6 +134,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(screen_node)
 
     thruster_node = Node(
         package='seabot2_thruster_driver',
@@ -87,6 +144,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(thruster_node)
 
     ping_node = Node(
         package='bluerobotics_ping_driver',
@@ -96,6 +154,7 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(ping_node)
 
     temperature_node = Node(
         package='temperature_tsys01_driver',
@@ -105,16 +164,6 @@ def generate_launch_description():
         parameters=parameters_file_list,
         respawn=True
     )
+    list_node.append(temperature_node)
 
-    return LaunchDescription([
-        gpsd_node,
-        bme280_node,
-        ms5803_node,
-        light_node,
-        piston_node,
-        power_node,
-        screen_node,
-        thruster_node,
-        ping_node,
-        temperature_node
-    ])
+    return LaunchDescription(list_node)

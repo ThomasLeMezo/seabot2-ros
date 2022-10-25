@@ -5,7 +5,7 @@
 #define T_MIN 0.0
 #define T_MAX 50.0
 #define T_REF 20.0
-#define P_MAX 14.0
+#define P_MAX 30.0
 #define P_MIN 0.0
 
 using namespace std;

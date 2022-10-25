@@ -11,6 +11,10 @@ driver:
     ros__parameters:
       loop_dt: 200 #ms
 
+  pressure_ms5837_node:
+    ros__parameters:
+      loop_dt: 200 #ms
+
   light_node:
     ros__parameters:
       flash_duration: 1
@@ -40,14 +44,11 @@ driver:
       max_linear_velocity: 1.0
       max_velocity_pwm: 5.0
       allow_backward: true
-      reverse_angular_velocity: true
-      reverse_left: false
-      reverse_right: true
 
   ping_node:
     ros__parameters:
-      loop_dt: 100 #ms
-      enable_ping: false
+      loop_dt: 10 #ms
+      enable_ping: true
       mode_auto: true
       speed_of_sound: 1500000
 

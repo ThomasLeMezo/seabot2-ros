@@ -15,11 +15,14 @@ public:
     PingNode();
     ~PingNode();
 
-private:
+/// Functions
 
-    /// Rclcpp
-    rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::milliseconds loop_dt_ = 100ms; /// loop dt
+    /**
+     *
+     */
+    void wait_message();
+
+private:
 
     /// Topics / Services
     rclcpp::Publisher<bluerobotics_ping_driver::msg::Profile>::SharedPtr publisher_profile_;
@@ -37,9 +40,6 @@ private:
     int ping_interval_ = 200; /// interval [ms]
     int gain_setting_ = 1; /// gain [1, 2, 3, 4, 5, 6]
 
-
-    /// Functions
-    void timer_callback();
 
     /**
      *  Init and get parameters of the Node
@@ -63,8 +63,8 @@ private:
      * @param response
      */
     void ping_enable_callback(const std::shared_ptr<rmw_request_id_t> request_header,
-                               const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-                               std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+                              const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+                              std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
 };
 

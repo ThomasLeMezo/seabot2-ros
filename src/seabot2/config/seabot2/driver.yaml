@@ -1,0 +1,18 @@
+driver:
+  pressure_ms5803_node:
+    ros__parameters:
+      enable: true
+
+  pressure_ms5837_node:
+    ros__parameters:
+      enable: false
+
+  thruster_node:
+    ros__parameters:
+      reverse_angular_velocity: true
+      reverse_left: false
+      reverse_right: true
+
+  temperature_node:
+    ros__parameters:
+      i2c_address: 0x77
