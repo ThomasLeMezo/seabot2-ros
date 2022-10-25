@@ -270,7 +270,7 @@ void SafetyNode::get_ram_cpu(){
     sysinfo(&memInfo);
     long long physMemUsed = memInfo.totalram - memInfo.freeram;
     //Multiply in next statement to avoid int overflow on right hand side...
-    physMemUsed *= memInfo.mem_unit;
+    physMemUsed /= 1000000;
     ram_ = physMemUsed;
 }
 
@@ -293,6 +293,7 @@ void SafetyNode::timer_callback() {
     global_safety_ok_ &= test_zero_pressure();
     global_safety_ok_ &= test_battery();
     flash_surface();
+    get_ram_cpu();
 
     seabot2_safety::msg::SafetyStatus msg;
     msg.global_safety_valid = global_safety_ok_;
