@@ -65,7 +65,7 @@ void PingNode::wait_message() {
     if(enable_ping_) {
         ping_message *ping_msg = device_->waitMessage(Ping1dId::PROFILE);
         if (ping_msg !=nullptr && ping_msg->msgData != nullptr) {
-            RCLCPP_INFO(this->get_logger(),"[Ping_mode] Msg received");
+            //RCLCPP_INFO(this->get_logger(),"[Ping_mode] Msg received");
             ping1d_profile profile_msg(*ping_msg);
 
             bluerobotics_ping_driver::msg::Profile msg;

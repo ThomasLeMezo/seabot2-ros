@@ -10,7 +10,7 @@ def generate_launch_description():
 
     config_observer = os.path.join(
         home_path,
-        'config',  # Directory where yaml are
+        'config/default/',  # Directory where yaml are
         'observer.yaml'  # Name of the file
     )
     if os.path.exists(config_observer):
@@ -18,7 +18,7 @@ def generate_launch_description():
         
     config_physics = os.path.join(
         get_package_share_directory('seabot2'),
-        'config',  # Directory where yaml are
+        'config/default/',  # Directory where yaml are
         'physics.yaml'  # Name of the file
     )
     if os.path.exists(config_physics):

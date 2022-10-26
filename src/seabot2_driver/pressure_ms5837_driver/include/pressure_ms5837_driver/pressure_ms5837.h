@@ -132,7 +132,7 @@ private:
     /// I2C port
 
     const float p_min_out_range_ = 0.7; /// minimum pression allowed in bar
-    const float p_max_out_range_ = 15.0; /// maximum pression allowed in bar
+    const float p_max_out_range_ = 30.0; /// maximum pression allowed in bar
     const float t_min_out_range_ = 0.0; /// minimum temperature allowed in degree
     const float t_max_out_range_ = 80.0; /// maximum temperature allowed degree
 
@@ -151,7 +151,7 @@ private:
  */
 inline bool Pressure_ms5837::measure_D1(){
     i2c_smbus_write_byte(file_, CMD_ADC_CONV_D1_8192);
-    usleep(10000);
+    usleep(20000);
     unsigned char buff[3] = {0, 0, 0};
     if (i2c_smbus_read_i2c_block_data(file_, CMD_ADC_READ, 3, buff) != 3){
         RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5837] Error Reading D1");
@@ -167,7 +167,7 @@ inline bool Pressure_ms5837::measure_D1(){
  */
 inline bool Pressure_ms5837::measure_D2(){
     i2c_smbus_write_byte(file_, CMD_ADC_CONV_D2_8192);
-    usleep(10000);
+    usleep(20000);
     unsigned char buff[3] = {0, 0, 0};
     if (i2c_smbus_read_i2c_block_data(file_, CMD_ADC_READ, 3, buff) != 3){
         RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5837] Error Reading D2");

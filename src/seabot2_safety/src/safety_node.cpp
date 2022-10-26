@@ -65,6 +65,7 @@ void SafetyNode::power_callback(const seabot2_power_driver::msg::PowerState &msg
 void SafetyNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
     piston_position_ = msg.position;
     piston_last_received_ = msg.header.stamp;
+    piston_state_ = msg.state;
 }
 
 void SafetyNode::init_interfaces() {
@@ -124,7 +125,7 @@ bool SafetyNode::test_internal_data() {
 
 bool SafetyNode::test_zero_pressure() {
     bool is_valid_conditions = false;
-    if(piston_position_ < limit_piston_position_reset_depth_
+    if(piston_state_ == 4
        && depth_ < max_depth_reset_zero_
        && abs(velocity_) < max_velocity_reset_zero_){
         is_valid_conditions = true;

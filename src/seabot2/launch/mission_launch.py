@@ -10,7 +10,7 @@ def generate_launch_description():
 
     config_mission = os.path.join(
         home_path,
-        'config',  # Directory where yaml are
+        'config/default/',  # Directory where yaml are
         'mission.yaml'  # Name of the file
     )
     if os.path.exists(config_mission):
@@ -18,7 +18,7 @@ def generate_launch_description():
 
     config_safety = os.path.join(
         home_path,
-        'config',  # Directory where yaml are
+        'config/default/',  # Directory where yaml are
         'safety.yaml'  # Name of the file
     )
     if os.path.exists(config_safety):

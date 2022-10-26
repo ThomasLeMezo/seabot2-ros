@@ -22,7 +22,7 @@ extern "C" {
 #define CMD_ADC_CONV_D1_4096 0x48 /// ADC conversion command
 #define CMD_ADC_CONV_D2_4096 0x58 /// ADC conversion command
 
-#define CMD_PROM 0xA1 // Coefficient location
+#define CMD_PROM 0xA0 // Coefficient location
 
 class Pressure_ms5803
 {
@@ -136,7 +136,7 @@ private:
     const float t_min_out_range_ = 0.0; /// minimum temperature allowed in degree
     const float t_max_out_range_ = 80.0; /// maximum temperature allowed degree
 
-    std::array<u_int16_t, 6>  C_; /// Factory calibration coefficients
+    std::array<u_int16_t, 7>  C_; /// Factory calibration coefficients
 
     u_int32_t D1_, D2_; /// Digital pressure and temperature value
 

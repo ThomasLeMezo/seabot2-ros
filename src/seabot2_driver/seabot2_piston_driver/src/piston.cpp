@@ -34,14 +34,16 @@ int Piston::set_piston_reset() const{
         return EXIT_SUCCESS;
 }
 
-int Piston::set_piston_exit() const{
-    RCLCPP_INFO(n_->get_logger(),"[Piston_driver] Send piston exit");
-    if(i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_EXIT) < 0) {
+int Piston::set_piston_exit() const {
+    RCLCPP_INFO(n_->get_logger(), "[Piston_driver] Send piston exit");
+    if (i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_EXIT) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston exit");
         return EXIT_FAILURE;
-    }
-    else
+    } else {
+        set_position(0);
         return EXIT_SUCCESS;
+    }
+
 }
 
 int Piston::set_piston_regulation() const{

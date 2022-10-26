@@ -61,6 +61,7 @@ private:
     bool flash_surface_enable_ = false;
 
     double piston_position_ = 0.0;
+    int piston_state_ = 0;
     rclcpp::Time piston_last_received_ = this->now();
     std::chrono::milliseconds piston_no_data_warning_ = 1s;
     double limit_piston_position_reset_depth_ = 100.0;

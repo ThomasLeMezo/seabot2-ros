@@ -48,7 +48,7 @@ int Pressure_ms5803::init_sensor(){
 
     unsigned char buff[2] = {0, 0};
     for(size_t i=0; i<C_.size(); i++){
-        __u8 add = CMD_PROM + (char) 2*(i+1);
+        __u8 add = CMD_PROM + (char) 2*i;
         if (i2c_smbus_read_i2c_block_data(file_, add, 2, buff) != 2){
             RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5803] Error Reading 0x%X", add);
             return_val = 1;
@@ -72,11 +72,11 @@ bool Pressure_ms5803::measure(){
 }
 
 bool Pressure_ms5803::compute() {
-    int64_t dT = (int32_t)D2_ - ((int32_t)C_[4] << 8);
-    int64_t TEMP = 2000+((dT * (int32_t)C_[5]) >> 23);
+    int64_t dT = (int32_t)D2_ - ((int32_t)C_[5] << 8);
+    int64_t TEMP = 2000+((dT * (int32_t)C_[6]) >> 23);
 
-    int64_t OFF = ((int64_t)C_[1] << 16) + (((int64_t)C_[3] * dT) >> 7);
-    int64_t SENS = ((int64_t)C_[0] << 15) + (((int64_t)C_[2] * dT) >> 8);
+    int64_t OFF = ((int64_t)C_[2] << 16) + (((int64_t)C_[4] * dT) >> 7);
+    int64_t SENS = ((int64_t)C_[1] << 15) + (((int64_t)C_[3] * dT) >> 8);
 
     /// Accurate temperature
     int64_t T2;

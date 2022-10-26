@@ -48,7 +48,7 @@ int Pressure_ms5837::init_sensor(){
 
     unsigned char buff[2] = {0, 0};
     for(size_t i=0; i<C_.size(); i++){
-        __u8 add = CMD_PROM + (char) 2*(i+1);
+        __u8 add = CMD_PROM + (char) 2*i;
         if (i2c_smbus_read_i2c_block_data(file_, add, 2, buff) != 2){
             RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5837] Error Reading 0x%X", add);
             return_val = 1;
@@ -108,7 +108,7 @@ bool Pressure_ms5837::compute() {
     if(temperature_ < t_min_out_range_ || temperature_ > t_max_out_range_ || pressure_ < p_min_out_range_ || pressure_ > p_max_out_range_){
         if(n_ != nullptr)
             RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5837] Data out of range (p=%f t=%f)", pressure_, temperature_);
-        if(pressure_ < p_min_out_range_ || pressure_ > p_max_out_range_) /// detection of overpressure (>50m)
+        if(pressure_ < p_min_out_range_ || pressure_ > p_max_out_range_) /// detection of overpressure (>300m)
             return false;
     }
     return true;

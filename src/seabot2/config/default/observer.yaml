@@ -38,6 +38,7 @@ observer:
       gamma_init_chi:  1e-10
       gamma_init_chi2:  1e-10
       gamma_init_cz:  0.1
+      gamma_init_volume_air: 1e-5
       gamma_beta_depth:  5.0e-3
 
   lmabert_node:

@@ -28,11 +28,15 @@ void DepthPoseNode::init_parameters() {
     this->declare_parameter<long>("filter_window_size", filter_window_size_);
     this->declare_parameter<long>("filter_median_remove_side_samples", filter_median_remove_side_samples_);
 
+    this->declare_parameter<int>("zero_depth_window_size", zero_depth_window_size_);
+
     filter_velocity_window_size_ = this->get_parameter_or("filter_velocity_window_size", filter_velocity_window_size_);
     velocity_dt_gap_sample_ = this->get_parameter_or("velocity_dt_gap_sample", velocity_dt_gap_sample_);
     filter_velocity_median_remove_side_samples_ = this->get_parameter_or("filter_velocity_median_remove_side_samples", filter_velocity_median_remove_side_samples_);
     filter_window_size_ = this->get_parameter_or("filter_window_size", filter_window_size_);
     filter_median_remove_side_samples_ = this->get_parameter_or("filter_median_remove_side_samples", filter_median_remove_side_samples_);
+
+    zero_depth_window_size_ = this->get_parameter_or("zero_depth_window_size", zero_depth_window_size_);
 }
 
 void DepthPoseNode::service_zero_pressure_callback(const std::shared_ptr<rmw_request_id_t> request_header,
