@@ -1,5 +1,6 @@
 #include "seabot2_log_parameters/log_parameter_node.hpp"
 #include <algorithm>    // std::sort
+#include <unistd.h>
 
 #include "rcl_interfaces/srv/list_parameters.hpp"
 #include "rcl_interfaces/srv/get_parameters.hpp"
@@ -87,6 +88,20 @@ void LogParameterNode::get_param_values(const std::string &node_name,
 
 void LogParameterNode::record_parameters() {
     RCLCPP_INFO(this->get_logger(), "[log_parameter_node] Start recording parameters");
+
+    // Get hostname
+    char hostname[40];
+    gethostname(hostname, 40);
+    seabot2_log_parameters::msg::LogParameter msg;
+    msg.node_name = "linux";
+    msg.param_name = "/hostname";
+    msg.value.string_value = std::string(hostname);
+    msg.value.type = 9;
+    publisher_parameters_->publish(msg);
+    RCLCPP_INFO(this->get_logger(), "[log_parameter_node] %s %s %s %i", msg.node_name.c_str(), msg.param_name.c_str(), msg.value.string_value.c_str(), msg.value.type);
+    rclcpp::sleep_for(100ms);
+
+    // Get parameters
     std::string current_node_name = this->get_fully_qualified_name();
     std::vector<std::string> node_list = this->get_node_names();
     for(auto node_name:node_list){

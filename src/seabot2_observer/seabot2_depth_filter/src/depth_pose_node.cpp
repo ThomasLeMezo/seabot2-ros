@@ -63,7 +63,7 @@ void DepthPoseNode::pressure_callback(const seabot2_depth_filter::msg::PressureS
         pressure_deque_.pop_back();
 
     /// Add new data to deque for zero_pressure
-    pressure_zero_depth_deque_.push_back(msg.pressure);
+    pressure_zero_depth_deque_.push_front(msg.pressure);
     if(pressure_zero_depth_deque_.size()>zero_depth_window_size_)
         pressure_zero_depth_deque_.pop_back();
 
