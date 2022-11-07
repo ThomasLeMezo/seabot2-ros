@@ -45,47 +45,67 @@ endif()
 install(TARGETS simulator_node
         DESTINATION lib/${PROJECT_NAME})
 
+########################################################################################################################
 ### Biding
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
-find_package(pybind11 CONFIG REQUIRED)
-#add_subdirectory(pybind11)
 
+# Find python version & cmake variables
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+
+# Find package in system path
+find_package(pybind11 CONFIG REQUIRED)
+
+# define the path for the output files
 set(PYTHON_PACKAGE_DIR "${CMAKE_CURRENT_BINARY_DIR}/python_package")
+
+# create a directory inside the ouput files path
+file(MAKE_DIRECTORY ${PYTHON_PACKAGE_DIR}/seabot2py)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/python/seabot2py/" "${PYTHON_PACKAGE_DIR}/seabot2py")
+
+# Add the configuration file (the input file contains macro variables)
 configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.py
         ${PYTHON_PACKAGE_DIR}/setup.py
 )
 
-pybind11_add_module(seabot2_simulator SHARED
+# Decleare the module for pybind11
+pybind11_add_module(seabot2py SHARED
         python/simulator_binding.cpp
         src/simulator.cpp)
-target_link_libraries(seabot2_simulator PRIVATE
+
+# Link with libs
+target_link_libraries(seabot2py PRIVATE
         ${LIBTEOS}
         )
-target_include_directories(seabot2_simulator
+
+# Include .h files and other header from ros package
+target_include_directories(seabot2py
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
         ${seabot2_density_DIR}/../../../include/seabot2_density)
 
 # Copy .so files in the python module directory
-add_custom_command(TARGET seabot2_simulator POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:seabot2_simulator>" "${PYTHON_PACKAGE_DIR}/seabot2_simulator"
-        )
-#install( DIRECTORY "${PYTHON_PACKAGE_DIR}/seabot2_simulator" DESTINATION "${PYTHON_INSTALL_DIR}")
-add_custom_target(pip_package)
-add_custom_command(TARGET pip_package PRE_BUILD
-        COMMAND ${PYTHON_EXECUTABLE} ARGS setup.py bdist_wheel -d ${CMAKE_BINARY_DIR}
+add_custom_command(TARGET seabot2py POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:seabot2py>" "${PYTHON_PACKAGE_DIR}/seabot2py")
+
+# install( DIRECTORY "${PYTHON_PACKAGE_DIR}/seabot2py" DESTINATION "${PYTHON_INSTALL_DIR}")
+
+# Create the wheel for the package
+#add_custom_target(pip_package)
+add_custom_command(TARGET seabot2py POST_BUILD
+        COMMAND python3 ARGS setup.py bdist_wheel -d ${CMAKE_BINARY_DIR}
         WORKING_DIRECTORY ${PYTHON_PACKAGE_DIR}
         )
 
-add_custom_target(install_python)
-add_custom_command(TARGET install_python PRE_BUILD
+# Install the wheel
+#add_custom_target(install_python)
+add_custom_command(TARGET seabot2py POST_BUILD
         COMMAND pip install --upgrade .
         WORKING_DIRECTORY ${PYTHON_PACKAGE_DIR}
         )
 
-add_dependencies(install_python seabot2_simulator)
+#add_dependencies(seabot2py pip_package)
+#add_dependencies(pip_package install_python)
 
 endif()
 

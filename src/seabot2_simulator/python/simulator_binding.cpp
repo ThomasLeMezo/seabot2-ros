@@ -10,7 +10,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(seabot2_simulator, m) {
+PYBIND11_MODULE(seabot2py, m) {
     m.doc() = "Python binding of seabot2_simulator";
 
     py::class_<Simulator>(m, "Simulator", py::dynamic_attr())
