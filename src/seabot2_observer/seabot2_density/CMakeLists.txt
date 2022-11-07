@@ -32,6 +32,11 @@ target_include_directories(teos PUBLIC
         $<INSTALL_INTERFACE:include>
         lib/TeosCpp/include)
 
+file(GLOB_RECURSE TEOS_PUBLIC_HEADERS
+        "${PROJECT_SOURCE_DIR}/lib/TeosCpp/include/*.h"
+        )
+set_target_properties(teos PROPERTIES PUBLIC_HEADER "${TEOS_PUBLIC_HEADERS}")
+
 ### Executable
 add_executable(density_node src/density_node.cpp)
 
@@ -64,6 +69,7 @@ endif()
 
 install(TARGETS teos
         LIBRARY DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/seabot2_density/seabot2_density/teos
 )
 install(TARGETS density_node
         DESTINATION lib/${PROJECT_NAME})

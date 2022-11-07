@@ -1,0 +1,47 @@
+#include "seabot2_simulator/simulator_node.hpp"
+
+using namespace std::placeholders;
+
+SimulatorNode::SimulatorNode()
+        : Node("simulator_node"), s_(){
+
+    RCLCPP_INFO(this->get_logger(), "[Simulator_node] Init node simulation");
+    init_parameters();
+    init_interfaces();
+
+    timer_ = this->create_wall_timer(
+            loop_dt_, std::bind(&SimulatorNode::timer_callback, this));
+
+    s_.run_simulation(10.0);
+
+    cout << "position piston" << '\t' << s_.x_(0)*s_.rad_to_pulses_ << endl;
+    cout << "piston velocity" << '\t' << s_.x_(1)*s_.rad_to_pulses_ << endl;
+    cout << "piston current" << '\t' << s_.x_(2) << endl;
+    cout << "velocity" << '\t' << s_.x_(3) << endl;
+    cout << "depth" << '\t' << s_.x_(4) << endl;
+
+    //cout << s_.x_ << endl;
+    cout << s_.motor_cmd_ << endl;
+    cout << s_.nb_steps << endl;
+
+    RCLCPP_INFO(this->get_logger(), "[Simulator_node] Start Ok");
+}
+
+void SimulatorNode::init_parameters() {
+}
+
+void SimulatorNode::init_interfaces() {
+
+}
+
+void SimulatorNode::timer_callback() {
+
+}
+
+int main(int argc, char *argv[]) {
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<SimulatorNode>());
+    rclcpp::shutdown();
+
+    return 0;
+}
