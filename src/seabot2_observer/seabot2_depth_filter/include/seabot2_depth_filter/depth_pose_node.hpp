@@ -41,7 +41,7 @@ private:
 
 // Zero depth
     deque<double> pressure_zero_depth_deque_;
-    size_t zero_depth_window_size_ = 150;
+    size_t zero_depth_window_size_ = 50;
 
     bool new_data_ = false;
 

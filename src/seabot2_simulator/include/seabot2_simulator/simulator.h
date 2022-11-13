@@ -7,12 +7,14 @@
 
 #include <eigen3/Eigen/Dense>
 #include "seabot2_density/teos/TeosSea.h"
+#include "seabot2_kalman/kalman/kalman.h"
+#include <random>
 
 //using namespace std::chrono_literals;
 using namespace std;
 using namespace Eigen;
 
-#define NB_STATES 5
+#define SIMU_NB_STATES 5
 
 #define MOTOR_STOP 2000
 #define MOTOR_DEAD_ZONE 50
@@ -24,7 +26,7 @@ class Simulator{
 public:
         Simulator();
 
-        Matrix<double, NB_STATES, 1> f(const Matrix<double, NB_STATES, 1> &x, int pwm=MOTOR_STOP);
+        Matrix<double, SIMU_NB_STATES, 1> f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm=MOTOR_STOP);
 
         void run_simulation(double t_max=10.0);
 
@@ -38,6 +40,14 @@ public:
 
         void clear_memory();
 
+        void simulate_pressure();
+
+        void simulate_depth();
+
+        void simulate_piston_position();
+
+        void save_data(double t);
+
 public:
 
     /* state variable x_
@@ -47,8 +57,9 @@ public:
      * x[3] : dz (velocity)
      * x[4] : z (depth)
      */
-    Matrix<double, NB_STATES, 1> x_ = Matrix<double, NB_STATES, 1>::Zero();
+    Matrix<double, SIMU_NB_STATES, 1> x_ = Matrix<double, SIMU_NB_STATES, 1>::Zero();
     int motor_cmd_ = MOTOR_STOP;
+    double temperature_, sea_pressure_, salinity_, rho_, g_;
 
     unsigned long int nb_steps = 0;
 
@@ -108,7 +119,7 @@ public:
     double Kt_ = maxon_TorqueConstant_*1e-3; /// Motor torque constant (N.m/Amp)
     double R_ = maxon_TerminalResistance_ + seabot_AddedInductanceResistance_; /// Electric resistance (Ohm)
     double L_ = maxon_TerminalInductance_*1e-3 + seabot_AddedInductance_; /// Electric inductance (H)
-    double rad_to_pulses_ = tick_per_turn_ / maxon_Reduction_;
+    double rad_to_tick_ = tick_per_turn_ / maxon_Reduction_;
 
     const double Tfstatic_ = Kt_*20e-3; /// 20mA
     const double pistonSurface_ = M_PI*pow(piston_diameter_/2.,2);
@@ -130,6 +141,29 @@ public:
     double memory_dt = 0.02;
     double memory_last_time = 0;
     std::vector<double> memory_time, memory_piston_position, memory_piston_velocity, memory_velocity, memory_depth;
+    std::vector<double> memory_temperature, memory_salinity, memory_sea_pressure, memory_density;
+    std::vector<double> memory_kalman_depth, memory_kalman_velocity, memory_kalman_offset, memory_kalman_chi,
+                        memory_kalman_chi2, memory_kalman_cz, memory_kalman_air;
+
+    /// Kalman ///
+    Kalman k_;
+
+    /// Sensors
+    double pressure_sensor_last_time = 0.0;
+    double pressure_sensor_dt = 0.2; /// s
+    double pressure_sensor_ = 0.; /// Simulated (noisy) value of the pressure sensor
+    const double pressure_sensor_mean_ = 0.0;
+    const double pressure_sensor_stddev_ = 0.01;
+    std::default_random_engine generator_;
+    std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
+
+    double piston_last_time_ = 0.01;
+    double piston_dt_ = 0.2;
+    double piston_position_ = 0.;
+    int piston_set_point_ = 0;
+
+    /// Fusion
+    double fusion_depth_, fusion_velocity_;
 };
 
 

@@ -96,7 +96,7 @@ void LogParameterNode::record_parameters() {
     msg.node_name = "linux";
     msg.param_name = "/hostname";
     msg.value.string_value = std::string(hostname);
-    msg.value.type = 9;
+    msg.value.type = 4;
     publisher_parameters_->publish(msg);
     RCLCPP_INFO(this->get_logger(), "[log_parameter_node] %s %s %s %i", msg.node_name.c_str(), msg.param_name.c_str(), msg.value.string_value.c_str(), msg.value.type);
     rclcpp::sleep_for(100ms);

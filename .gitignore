@@ -1,5 +1,8 @@
 devel/
 logs/
+log/
+install/
+venv/
 build/
 bin/
 lib/

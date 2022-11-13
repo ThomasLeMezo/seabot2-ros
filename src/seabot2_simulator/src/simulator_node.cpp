@@ -14,17 +14,19 @@ SimulatorNode::SimulatorNode()
 
     s_.run_simulation(10.0);
 
-    cout << "position piston" << '\t' << s_.x_(0)*s_.rad_to_pulses_ << endl;
-    cout << "piston velocity" << '\t' << s_.x_(1)*s_.rad_to_pulses_ << endl;
+    cout << "position piston" << '\t' << s_.x_(0)*s_.rad_to_tick_ << endl;
+    cout << "piston velocity" << '\t' << s_.x_(1)*s_.rad_to_tick_ << endl;
     cout << "piston current" << '\t' << s_.x_(2) << endl;
     cout << "velocity" << '\t' << s_.x_(3) << endl;
     cout << "depth" << '\t' << s_.x_(4) << endl;
+    cout << "depth_kalman" << '\t' << s_.memory_kalman_depth[s_.memory_kalman_depth.size()-1] << endl;
 
     //cout << s_.x_ << endl;
     cout << s_.motor_cmd_ << endl;
     cout << s_.nb_steps << endl;
 
-    RCLCPP_INFO(this->get_logger(), "[Simulator_node] Start Ok");
+    RCLCPP_INFO(this->get_logger(), "[Simulator_node] Simulation ended");
+    exit(EXIT_SUCCESS);
 }
 
 void SimulatorNode::init_parameters() {

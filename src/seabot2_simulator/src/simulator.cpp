@@ -14,28 +14,30 @@ double Simulator::get_density_from_depth(double z, double sea_pressure) {
                               sea_pressure);
 }
 
-Simulator::Simulator(): ts() {
+Simulator::Simulator(): ts(), k_() {
 
 }
 
 double Simulator::temperature_from_depth(double z) {
-    return 15.0;
+    temperature_ = 15.0;
+    return temperature_;
 }
 
 double Simulator::salinity_from_depth(double z) {
-    return 0.0;
+    salinity_ = 0.0;
+    return salinity_;
 }
 
-Matrix<double, NB_STATES, 1> Simulator::f(const Matrix<double, NB_STATES, 1> &x, int pwm) {
-    Matrix<double, NB_STATES, 1> dx = Matrix<double, NB_STATES, 1>::Zero();
+Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm) {
+    Matrix<double, SIMU_NB_STATES, 1> dx = Matrix<double, SIMU_NB_STATES, 1>::Zero();
 
-    double temperature = temperature_from_depth(x(4))+ts.gtc.gsw_t0; /// in K
-    double sea_pressure = ts.gsw_p_from_z(x(4), latitude_); /// dbar
-    double abs_pressure = sea_pressure*1e5 + ts.gtc.gsw_p0; /// Pa
-    double g = ts.gsw_grav(latitude_, sea_pressure);
-    double rho = get_density_from_depth(x(4), sea_pressure);
-    double coeff_A_ = g * rho / robot_mass_;
-    double coeff_B_ = 0.5 * rho * Cf_ / robot_mass_;
+    double temp_K = temperature_from_depth(x(4))+ts.gtc.gsw_t0; /// in K
+    sea_pressure_ = ts.gsw_p_from_z(x(4), latitude_); /// dbar
+    double abs_pressure = sea_pressure_*1e5 + ts.gtc.gsw_p0; /// Pa
+    g_ = ts.gsw_grav(latitude_, sea_pressure_);
+    rho_ = get_density_from_depth(x(4), sea_pressure_);
+    double coeff_A_ = g_ * rho_ / robot_mass_;
+    double coeff_B_ = 0.5 * rho_ * Cf_ / robot_mass_;
 
     double V = battery_tension_*(static_cast<double>(pwm)-MOTOR_STOP)/(double)MOTOR_STOP;
 
@@ -46,7 +48,7 @@ Matrix<double, NB_STATES, 1> Simulator::f(const Matrix<double, NB_STATES, 1> &x,
     dx(2) = -Ke_/L_*x(1)-R_/L_*x(2)+V/L_;
 
     double Vp = -(x(0)/M_PI)*screw_thread_*pow(piston_diameter_/2.0, 2);
-    double Vair = (volume_air_p0*volume_air_init/volume_air_temp0)*(temperature/abs_pressure);
+    double Vair = (volume_air_p0*volume_air_init/volume_air_temp0)*(temp_K/abs_pressure);
     double Vext = fmin(0, M_PI*pow(antenna_diam_/2, 2)*x(4)-volume_equilibrium_); /// Volume of antenna when emerged [neg]
 
     dx(3) = -coeff_A_*(Vext+volume_equilibrium_+Vp-(chi_*x(4)+chi2_*pow(x(4), 2))+Vair)-coeff_B_*Cz_*abs(x(3))*x(3);
@@ -56,7 +58,7 @@ Matrix<double, NB_STATES, 1> Simulator::f(const Matrix<double, NB_STATES, 1> &x,
 }
 
 int Simulator::control_pwm(int position_set_point){
-    double position = round(rad_to_pulses_*x_(0));
+    double position = round(rad_to_tick_ * x_(0));
 
     const double motor_regulation_K = 0.3;
     const int motor_regulation_dead_zone = 50;
@@ -77,7 +79,7 @@ int Simulator::control_pwm(int position_set_point){
     }
 
     if((motor_set_point<MOTOR_STOP && x_(4)<=0)
-       || (motor_set_point>MOTOR_STOP && x_(4)*rad_to_pulses_>=piston_max_tick_)){
+       || (motor_set_point>MOTOR_STOP && x_(4) * rad_to_tick_ >= piston_max_tick_)){
         motor_cmd_ = MOTOR_STOP;
     }
     else{
@@ -99,27 +101,79 @@ void Simulator::clear_memory(){
     memory_depth.clear();
 }
 
+void Simulator::simulate_pressure(){
+    /// ToDo : simulation of filter
+    pressure_sensor_ = x_(4) + pressure_sensor_dist_(generator_);
+}
+
+void Simulator::simulate_depth(){
+    fusion_depth_ = pressure_sensor_ / (g_*rho_/1e5);
+    fusion_velocity_ = 0.;
+}
+
+void Simulator::simulate_piston_position() {
+    piston_position_ = x_(0)*rad_to_tick_;
+}
+
+void Simulator::save_data(double t){
+    memory_time.push_back(t);
+    memory_piston_position.push_back(piston_position_);
+    memory_piston_velocity.push_back(x_(1) * rad_to_tick_);
+    memory_velocity.push_back(x_(2));
+    memory_depth.push_back(x_(3));
+
+    memory_temperature.push_back(temperature_);
+    memory_salinity.push_back(salinity_);
+    memory_sea_pressure.push_back(sea_pressure_);
+    memory_density.push_back(rho_);
+
+    memory_kalman_velocity.push_back(k_.x_forcast_(0));
+    memory_kalman_depth.push_back(k_.x_forcast_(1));
+    memory_kalman_offset.push_back(k_.x_forcast_(2));
+    memory_kalman_chi.push_back(k_.x_forcast_(3));
+    memory_kalman_chi2.push_back(k_.x_forcast_(4));
+    memory_kalman_cz.push_back(k_.x_forcast_(5));
+    memory_kalman_air.push_back(k_.x_forcast_(6));
+
+}
+
 void Simulator::run_simulation(double t_max) {
     clear_memory();
     int pwm = MOTOR_STOP;
-    int tick_set_point = 100000;
+    piston_set_point_ = 100000;
+    k_.init_parameters(rclcpp::Time(0., RCL_STEADY_TIME));
 
     auto start = high_resolution_clock::now();
     for(double t=0; t<t_max; t+=dt_) {
 
+        /// Physical simulation
         if((t-control_pwm_last_time) >= control_pwm_dt) {
             control_pwm_last_time = t;
-            pwm = control_pwm(tick_set_point);
+            pwm = control_pwm(piston_set_point_);
         }
         x_ += dt_ * f(x_, pwm);
 
+        /// Pressure Simulation
+        if((t-pressure_sensor_last_time) >= pressure_sensor_dt) {
+            pressure_sensor_last_time = t;
+            simulate_pressure();
+            simulate_depth();
+
+            /// Compute Kalman
+            k_.set_new_depth_data(fusion_depth_, fusion_velocity_, rclcpp::Time(t*1e9, RCL_STEADY_TIME));
+        }
+
+        if((t-piston_last_time_)>= piston_dt_){
+            piston_last_time_ = t;
+            simulate_piston_position();
+
+            /// Compute Kalman
+            k_.set_new_piston_data(piston_position_, piston_set_point_, rclcpp::Time(t*1e9, RCL_STEADY_TIME));
+        }
+
         if((t-memory_last_time)>=memory_dt) {
             memory_last_time = t;
-            memory_time.push_back(t);
-            memory_piston_position.push_back(x_(0)*rad_to_pulses_);
-            memory_piston_velocity.push_back(x_(1)*rad_to_pulses_);
-            memory_velocity.push_back(x_(2));
-            memory_depth.push_back(x_(3));
+            save_data(t);
         }
         nb_steps++;
     }
