@@ -38,11 +38,11 @@ driver:
   thruster_node:
     ros__parameters:
       loop_dt: 100
-      coeff_cmd_to_pwm: 9.0
+      coeff_cmd_to_pwm: 10.0
       delay_stop: 500 #ms
       max_angular_velocity: 1.0
       max_linear_velocity: 1.0
-      max_velocity_pwm: 5.0
+      max_velocity_pwm: 1000.0
       allow_backward: true
 
   ping_node:

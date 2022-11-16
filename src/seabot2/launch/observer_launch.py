@@ -17,7 +17,7 @@ def generate_launch_description():
         parameters_file_list.append(config_observer)
         
     config_physics = os.path.join(
-        get_package_share_directory('seabot2'),
+        home_path,
         'config/default/',  # Directory where yaml are
         'physics.yaml'  # Name of the file
     )

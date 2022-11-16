@@ -169,6 +169,9 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
     }
 
     rclcpp::Time last_time = time_start_;
+    current_waypoint_ = 0;
+    is_first_waypoint_ = true;
+
     int return_code = EXIT_SUCCESS;
     BOOST_FOREACH(pt::ptree::value_type &v, tree.get_child("mission.paths")){
                     return_code &= decode_waypoint(v, last_time, 0.0);

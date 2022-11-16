@@ -10,8 +10,8 @@ driver:
   thruster_node:
     ros__parameters:
       reverse_angular_velocity: true
-      reverse_left: false
-      reverse_right: true
+      reverse_left: true
+      reverse_right: false
 
   temperature_node:
     ros__parameters:

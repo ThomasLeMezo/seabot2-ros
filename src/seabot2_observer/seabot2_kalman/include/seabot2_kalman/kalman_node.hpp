@@ -27,7 +27,7 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::milliseconds loop_dt_ = 200ms; /// loop dt
 
-    std::unique_ptr<Kalman> k_;
+    Kalman k_;
 
     /// Interfaces
 

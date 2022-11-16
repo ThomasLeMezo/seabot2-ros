@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
-    physics_g_: 9.807 #  g-force (m/s2)
-    salinity: 0.0
+    physics_g: 9.807 #  g-force (m/s2)
+    physics_salinity: 35.0
     physics_rho: 1025.0 # water density (kg/m3)
 
     physics_velocity_limit: 0.5 # maximum velocity of the seabot (m/s)
@@ -12,4 +12,4 @@
     piston_diameter: 0.045 # m
     robot_diameter: 0.125 # m
     piston_max_tick: 1146880.0 # ticks
-    robot_mass: 12.0 # kg
+    robot_mass: 12.6 # kg
