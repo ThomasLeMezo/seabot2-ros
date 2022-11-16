@@ -41,6 +41,8 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("delta_velocity_ub", delta_velocity_ub_);
     this->declare_parameter<double>("delta_position_lb", delta_position_lb_);
     this->declare_parameter<double>("delta_position_ub", delta_position_ub_);
+    this->declare_parameter<bool>("control_filter", control_filter_);
+    this->declare_parameter<bool>("enable_volume_air", enable_volume_air_);
 
 
     physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
@@ -65,6 +67,8 @@ void DepthControlNode::init_parameters() {
     delta_velocity_ub_ = this->get_parameter_or("delta_velocity_ub", delta_velocity_ub_);
     delta_position_lb_ = this->get_parameter_or("delta_position_lb", delta_position_lb_);
     delta_position_ub_ = this->get_parameter_or("delta_position_ub", delta_position_ub_);
+    control_filter_ = this->get_parameter_or("control_filter", control_filter_);
+    enable_volume_air_ = this->get_parameter_or("enable_volume_air", enable_volume_air_);
 
     /// Computed parameters
     Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
@@ -100,6 +104,7 @@ void DepthControlNode::piston_callback(const seabot2_piston_driver::msg::PistonS
 
 void DepthControlNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
     depth_fusion_ = msg.depth;
+    pressure_ = msg.pressure;
 }
 
 void DepthControlNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
@@ -162,8 +167,8 @@ double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double
     double dde = -alpha*beta*de*T;
     double dT = -2.*de*tanh(e)*T;
     double dx1=0.0;
-    if(enable_volume_air_ && x2!=-1)
-        dx1 = -A*(x3+x4+x8/(x2+1.0)-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
+    if(enable_volume_air_ && pressure_>0)
+        dx1 = -A*(x3+x4+x8*temperature_/pressure_-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
     else
         dx1 = -A*(x3+x4-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
 
@@ -243,16 +248,24 @@ void DepthControlNode::timer_callback() {
                 if((this->now()-time_last_kalman_callback_)<safety_time_no_data_
                    && (this->now()-time_last_piston_callback_)<safety_time_no_data_){
 
-                    /// Compute several commands according to velocity acceptable bounds
-                    /// ToDo : modify tolerance wrt distance to set point ?
-                    array<double, 4> u_tab;
-                    u_tab[0] = compute_u(x, depth_set_point_, limit_velocity_+delta_velocity_lb_, approach_velocity_);
-                    u_tab[1] = compute_u(x, depth_set_point_, limit_velocity_+delta_velocity_ub_, approach_velocity_);
-                    u_tab[2] = compute_u(x, depth_set_point_+delta_position_lb_, limit_velocity_, approach_velocity_);
-                    u_tab[3] = compute_u(x, depth_set_point_+delta_position_ub_, limit_velocity_, approach_velocity_);
+                    if(control_filter_) {
+                        /// Compute several commands according to velocity acceptable bounds
+                        /// ToDo : modify tolerance wrt distance to set point ?
+                        array<double, 4> u_tab;
+                        u_tab[0] = compute_u(x, depth_set_point_, limit_velocity_ + delta_velocity_lb_,
+                                             approach_velocity_);
+                        u_tab[1] = compute_u(x, depth_set_point_, limit_velocity_ + delta_velocity_ub_,
+                                             approach_velocity_);
+                        u_tab[2] = compute_u(x, depth_set_point_ + delta_position_lb_, limit_velocity_,
+                                             approach_velocity_);
+                        u_tab[3] = compute_u(x, depth_set_point_ + delta_position_ub_, limit_velocity_,
+                                             approach_velocity_);
 
-                    /// Find best command
-                    u=optimize_u(u_tab);
+                        /// Find best command
+                        u = optimize_u(u_tab);
+                    }
+                    else
+                        u = compute_u(x, depth_set_point_, limit_velocity_, approach_velocity_);
 
                     /// Mechanical limits (in = v_min, out = v_max)
                     if((piston_switch_top_ && u<0) || (piston_switch_bottom_ && u>0))
@@ -315,6 +328,10 @@ void DepthControlNode::timer_callback() {
         debug_msg_.piston_set_point = piston_set_point_;
         publisher_debug_->publish(debug_msg_);
     //}
+}
+
+void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
+    msg.temperature;
 }
 
 

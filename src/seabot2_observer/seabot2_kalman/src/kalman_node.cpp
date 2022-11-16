@@ -49,6 +49,8 @@ void KalmanNode::init_parameters() {
 
     this->declare_parameter<double>("gamma_beta_depth", k_.gamma_beta_depth_);
 
+    this->declare_parameter<bool>("enable_volume_air", k_.enable_volume_air_);
+
     k_.physics_rho_ = this->get_parameter_or("physics_rho", k_.physics_rho_);
     k_.physics_g_ = this->get_parameter_or("physics_g", k_.physics_g_);
     k_.robot_mass_ = this->get_parameter_or("physics_mass", k_.robot_mass_);
@@ -83,6 +85,8 @@ void KalmanNode::init_parameters() {
 
     k_.gamma_beta_depth_ = this->get_parameter_or("gamma_beta_depth", k_.gamma_beta_depth_);
 
+    k_.enable_volume_air_ = this->get_parameter_or("enable_volume_air", k_.enable_volume_air_);
+
     k_.init_parameters(this->now());
 }
 
@@ -91,12 +95,17 @@ void KalmanNode::state_callback(const seabot2_piston_driver::msg::PistonState &m
 }
 
 void KalmanNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+    k_.update_pressure(msg.pressure);
     k_.set_new_depth_data(msg.depth, msg.velocity, msg.header.stamp);
     publish_data();
 }
 
 void KalmanNode::density_callback(const seabot2_density::msg::Density &msg){
     k_.update_density(msg.density);
+}
+
+void KalmanNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
+    k_.update_temperature(msg.temperature);
 }
 
 void KalmanNode::init_interfaces() {
@@ -109,6 +118,9 @@ void KalmanNode::init_interfaces() {
 
     subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
             "/observer/density", 10, std::bind(&KalmanNode::density_callback, this, _1));
+
+    subscriber_temperature_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+            "/driver/temperature", 10, std::bind(&KalmanNode::temperature_callback, this, _1));
 }
 
 

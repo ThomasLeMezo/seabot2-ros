@@ -41,7 +41,9 @@ observer:
       gamma_init_volume_air: 1e-5
       gamma_beta_depth:  5.0e-3
 
-  lmabert_node:
+      enable_volume_air: true
+
+  lambert_node:
     ros__parameters:
       loop_dt: 200 #ms
 

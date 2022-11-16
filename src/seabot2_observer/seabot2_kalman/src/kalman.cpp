@@ -31,8 +31,8 @@ Matrix<double,NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, c
 
     /// ToDo : change equation to assert PV = nRT => V = nR(T/P) and take into account Temperature and Pressure instead of only depth
 
-    if(enable_volume_air_ && x(1)>0.)
-        dx(0) = -coeff_A_*(u(0)+x(2)+x(6)/(x(1)+1.0)-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
+    if(enable_volume_air_ && pressure_>0.)
+        dx(0) = -coeff_A_*(u(0)+x(2)+x(6)*temperature_/pressure_-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     else
         dx(0) = -coeff_A_*(u(0)+x(2)-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     dx(1) = x(0);
@@ -62,8 +62,8 @@ void Kalman::kalman_predict(Matrix<double,NB_STATES, 1> &x,
     Ak(0,3) = x(1)*coeff_A_;
     Ak(0,4) = pow(x(1),2)*coeff_A_;
     Ak(0,5) = -coeff_B_*abs(x(0))*x(0);
-    if(enable_volume_air_ && x(1)>0.)
-        Ak(0,6) = -coeff_A_/(x(1)+1.0);
+    if(enable_volume_air_ && pressure_>0.)
+        Ak(0,6) = -coeff_A_*temperature_/pressure_;
     else
         Ak(0,6) = 0.;
     Ak(1, 0) = 1.;
@@ -154,6 +154,14 @@ void Kalman::set_new_depth_data(double depth, double velocity, const rclcpp::Tim
     fusion_velocity_ = velocity;
     fusion_stamp_ = stamp;
     compute_kalman(true, false);
+}
+
+void Kalman::update_temperature(double temperature){
+    temperature_ = temperature+273.15;
+}
+
+void Kalman::update_pressure(double pressure){
+    pressure_ = (pressure*1e5);
 }
 
 void Kalman::compute_kalman(bool new_depth_data, bool new_piston_data) {

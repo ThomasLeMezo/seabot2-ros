@@ -16,6 +16,7 @@
 #include <eigen3/Eigen/Dense>
 #include "seabot2_safety/msg/safety_status.hpp"
 #include "seabot2_density/msg/density.hpp"
+#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 
 #define NB_STATES 8
 #define PISTON_STATE_OK 2
@@ -92,6 +93,9 @@ private:
     double depth_set_point_ = 0.0;
     double limit_velocity_ = 0.0;
     double approach_velocity_ = 1.0;
+    bool control_filter_ = false;
+    double temperature_ = 288.15;
+    double pressure_ = 101325;
 
     std::chrono::milliseconds last_waypoint_max_delay_ = 5s;
     rclcpp::Time last_waypoint_time_ = this->now();
@@ -110,6 +114,7 @@ private:
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_data_;
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
     rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
+    rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_;
 
     rclcpp::Publisher<seabot2_piston_driver::msg::PistonSetPoint>::SharedPtr publisher_piston_;
     rclcpp::Publisher<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr publisher_debug_;
@@ -164,6 +169,12 @@ private:
      * @param msg
      */
     void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
+
+    /**
+     *
+     * @param msg
+     */
+    void temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg);
 
     /**
      * Compute output

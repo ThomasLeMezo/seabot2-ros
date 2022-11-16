@@ -18,6 +18,7 @@ find_package(seabot2_depth_filter REQUIRED)
 find_package(seabot2_kalman REQUIRED)
 find_package(seabot2_safety REQUIRED)
 find_package(seabot2_density REQUIRED)
+find_package(temperature_tsys01_driver REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -40,6 +41,7 @@ ament_target_dependencies(depth_control_node
         std_srvs
         std_msgs
         seabot2_density
+        temperature_tsys01_driver
         )
 target_link_libraries(depth_control_node "${cpp_typesupport_target}")
 

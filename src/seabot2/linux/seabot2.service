@@ -6,7 +6,7 @@ Description= Launch seabot2 drivers
 After=seabot2.driver
 
 [Service]
-ExecStartPre=/bin/sleep 60
+#ExecStartPre=/bin/sleep 15
 User=pi
 Group=pi
 UMask=022

@@ -91,6 +91,9 @@ public:
     rclcpp::Time piston_stamp_;
     double piston_set_point_ = 0.;
 
+    double temperature_=288.15; /// in K
+    double pressure_; /// in Pa
+
 public:
     /// Kalman variables
 /*
@@ -192,6 +195,18 @@ public:
      * @param stamp
      */
     void set_new_depth_data(double depth, double velocity, const rclcpp::Time &stamp);
+
+    /**
+     *
+     * @param temperature
+     */
+    void update_temperature(double temperature);
+
+    /**
+     *
+     * @param pressure
+     */
+    void update_pressure(double pressure);
 
 };
 

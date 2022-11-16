@@ -10,11 +10,13 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>rosidl_default_generators</build_depend>
-  <buildtool_depend>seabot2_piston_driver</buildtool_depend>
-  <buildtool_depend>seabot2_depth_filter</buildtool_depend>
-  <buildtool_depend>std_srvs</buildtool_depend>
-  <buildtool_depend>std_msgs</buildtool_depend>
-  <buildtool_depend>seabot2_density</buildtool_depend>
+  <build_depend>seabot2_piston_driver</build_depend>
+  <build_depend>seabot2_depth_filter</build_depend>
+  <build_depend>std_srvs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>seabot2_density</build_depend>
+  <build_depend>temperature_tsys01_driver</build_depend>
+  <build_depend>seabot2_depth_filter</build_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
@@ -25,6 +27,9 @@
   <exec_depend>std_srvs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>seabot2_density</exec_depend>
+  <exec_depend>temperature_tsys01_driver</exec_depend>
+  <exec_depend>seabot2_depth_filter</exec_depend>
+
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
