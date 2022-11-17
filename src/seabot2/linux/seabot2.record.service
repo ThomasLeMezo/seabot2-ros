@@ -1,5 +1,5 @@
 # sudo systemctl daemon-reload
-# sudo systemctl enable seabot2.driver.service
+# sudo systemctl enable seabot2.record.service
 
 [Unit]
 Description= Launch seabot2 record

@@ -33,7 +33,7 @@ def generate_launch_description():
         respawn=True
     )
 
-    internal_sensor_filter = Node(
+    internal_sensor_filter_node = Node(
         package='seabot2_internal_sensor_filter',
         executable='filter_internal_sensor_node',
         namespace='observer',
@@ -42,7 +42,7 @@ def generate_launch_description():
         respawn=True
     )
 
-    temperature_filter = Node(
+    temperature_filter_node = Node(
         package='seabot2_temperature_filter',
         executable='filter_temperature_node',
         namespace='observer',
@@ -89,8 +89,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         depth_filter_node,
-        internal_sensor_filter,
-        temperature_filter,
+        internal_sensor_filter_node,
+        temperature_filter_node,
         kalman_node,
         lambert_node,
         power_filter_node,

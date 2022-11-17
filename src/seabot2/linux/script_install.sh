@@ -7,4 +7,4 @@ sudo systemctl enable seabot2.driver.service
 sudo systemctl enable seabot2.record.service
 sudo systemctl enable seabot2.service
 
-cp ~/seabot2-ros/src/seabot2/config/* ~/config/
+cp -r ~/seabot2-ros/src/seabot2/config/* ~/config/

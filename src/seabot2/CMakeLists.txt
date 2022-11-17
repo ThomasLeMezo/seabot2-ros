@@ -24,7 +24,7 @@ if(BUILD_TESTING)
 endif()
 
 # Install launch files.
-install(DIRECTORY launch config mission linux
+install(DIRECTORY launch mission linux
         DESTINATION share/${PROJECT_NAME}/
 )
 

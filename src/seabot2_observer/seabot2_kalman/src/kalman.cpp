@@ -99,7 +99,7 @@ void Kalman::init_kalman(){
     xhat_(4) = init_chi2_; // chi2
     xhat_(5) = 1.0; // Cz
     if(enable_volume_air_)
-        xhat_(6) = init_volume_air_; // Cz
+        xhat_(6) = init_volume_air_;
     else
         xhat_(6) = 0.;
     x_forcast_ = xhat_;

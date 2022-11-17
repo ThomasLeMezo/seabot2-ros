@@ -11,6 +11,8 @@
 	</start_time_utc>
 </offset> -->
 
+<description>Seabot2 mission</description>
+
 <paths>
 	<waypoint>
 		<duration>180</duration>

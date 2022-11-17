@@ -87,6 +87,9 @@ void KalmanNode::init_parameters() {
 
     k_.enable_volume_air_ = this->get_parameter_or("enable_volume_air", k_.enable_volume_air_);
 
+    RCLCPP_INFO(this->get_logger(), "[Kalman_node] physics_rho = %f", k_.physics_rho_);
+    RCLCPP_INFO(this->get_logger(), "[Kalman_node] gamma_init_volume_air_ = %f", k_.gamma_init_volume_air_);
+
     k_.init_parameters(this->now());
 }
 
