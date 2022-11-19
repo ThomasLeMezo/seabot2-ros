@@ -59,6 +59,7 @@ public:
     double piston_volume_eq_init_ =  80e-6; /// m3
     double init_chi_ = 0.0; /// m3/m
     double init_chi2_ = 0.0; /// m3/m2
+    double init_cz_ = 1.0;
     double init_volume_air_ = 5e-4; /// m3/m
     bool enable_volume_air_ = true;
 

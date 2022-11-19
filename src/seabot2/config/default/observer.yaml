@@ -25,6 +25,7 @@ observer:
       init_chi: 0.0 # m3/m
       init_chi2: 0.0 # m3/m2
       init_volume_air: 30.0e-6 # m3
+      init_cz: 1.0
       gamma_alpha_velocity: 2e-4
       gamma_alpha_depth: 5e-4
       gamma_alpha_offset: 1e-10

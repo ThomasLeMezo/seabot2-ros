@@ -6,5 +6,3 @@ sudo systemctl daemon-reload
 sudo systemctl enable seabot2.driver.service
 sudo systemctl enable seabot2.record.service
 sudo systemctl enable seabot2.service
-
-cp -r ~/seabot2-ros/src/seabot2/config/* ~/config/

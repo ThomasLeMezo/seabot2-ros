@@ -97,7 +97,7 @@ void Kalman::init_kalman(){
     xhat_(2) = piston_volume_eq_init_; // Vp
     xhat_(3) = init_chi_; // chi
     xhat_(4) = init_chi2_; // chi2
-    xhat_(5) = 1.0; // Cz
+    xhat_(5) = init_cz_; // Cz
     if(enable_volume_air_)
         xhat_(6) = init_volume_air_;
     else
@@ -123,7 +123,7 @@ void Kalman::init_kalman(){
     gamma_alpha_(4,4) = pow(gamma_alpha_chi2_, 2); // Compressibility 2
     gamma_alpha_(5,5) = pow(gamma_alpha_cz_, 2); // cz
     if(enable_volume_air_)
-        gamma_alpha_(6,6) = pow(gamma_init_volume_air_, 2); // cz
+        gamma_alpha_(6,6) = pow(gamma_alpha_volume_air_, 2); // cz
     else
         gamma_alpha_(6,6) = 0;
 
