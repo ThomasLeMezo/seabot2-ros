@@ -17,5 +17,3 @@ control:
       delta_position_lb: -0.005 # m
       delta_position_ub: 0.005 # m
 
-      enable_volume_air: true
-

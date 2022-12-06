@@ -15,6 +15,7 @@ find_package(pressure_bme280_driver REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(seabot2_power_driver REQUIRED)
 find_package(seabot2_piston_driver REQUIRED)
+find_package(std_msgs REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}

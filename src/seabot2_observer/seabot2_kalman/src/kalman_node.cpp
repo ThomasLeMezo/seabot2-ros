@@ -140,8 +140,8 @@ void KalmanNode::publish_data() {
     msg.chi2 = x(4);
     msg.cz = x(5);
     msg.volume_air = x(6);
-    if(x(1)!=-1.0)
-        msg.offset_total = x(2)+x(6)/(x(1)+1.0)+x(3)*x(1) + x(4)*pow(x(1),2);
+    if(k_.pressure_>0.)
+        msg.offset_total = x(2)+x(6)*k_.temperature_/k_.pressure_+x(3)*x(1) + x(4)*pow(x(1),2);
     msg.header.stamp = k_.time_last_predict_;
 
     msg.variance[0] = k_.gamma_forcast_(0,0);

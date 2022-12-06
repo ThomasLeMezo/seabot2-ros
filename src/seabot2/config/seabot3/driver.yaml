@@ -1,11 +1,11 @@
 driver:
   pressure_ms5803_node:
     ros__parameters:
-      enable: true
+      enable: false
 
   pressure_ms5837_node:
     ros__parameters:
-      enable: false
+      enable: true
 
   thruster_node:
     ros__parameters:

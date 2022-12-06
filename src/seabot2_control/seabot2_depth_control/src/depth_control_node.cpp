@@ -42,7 +42,6 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("delta_position_lb", delta_position_lb_);
     this->declare_parameter<double>("delta_position_ub", delta_position_ub_);
     this->declare_parameter<bool>("control_filter", control_filter_);
-    this->declare_parameter<bool>("enable_volume_air", enable_volume_air_);
 
 
     physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
@@ -68,7 +67,6 @@ void DepthControlNode::init_parameters() {
     delta_position_lb_ = this->get_parameter_or("delta_position_lb", delta_position_lb_);
     delta_position_ub_ = this->get_parameter_or("delta_position_ub", delta_position_ub_);
     control_filter_ = this->get_parameter_or("control_filter", control_filter_);
-    enable_volume_air_ = this->get_parameter_or("enable_volume_air", enable_volume_air_);
 
     /// Computed parameters
     Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
@@ -86,10 +84,7 @@ void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &m
     x(4) = msg.chi;
     x(5) = msg.chi2;
     x(6) = msg.cz;
-    if(enable_volume_air_)
-        x(7) = msg.volume_air;
-    else
-        x(7) = 0.;
+    x(7) = msg.volume_air;
     time_last_kalman_callback_ = this->now();
 }
 
@@ -104,7 +99,7 @@ void DepthControlNode::piston_callback(const seabot2_piston_driver::msg::PistonS
 
 void DepthControlNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
     depth_fusion_ = msg.depth;
-    pressure_ = msg.pressure;
+    pressure_ = msg.pressure*1e5;
 }
 
 void DepthControlNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
@@ -130,6 +125,8 @@ void DepthControlNode::init_interfaces() {
             "/driver/piston", 10, std::bind(&DepthControlNode::piston_callback, this, _1));
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&DepthControlNode::depth_callback, this, _1));
+    subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+            "/observer/temperature", 10, std::bind(&DepthControlNode::temperature_callback, this, _1));
     subscriber_mission_data_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
             "/mission/waypoint", 10, std::bind(&DepthControlNode::waypoint_callback, this, _1));
     subscriber_safety_data_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
@@ -167,7 +164,7 @@ double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double
     double dde = -alpha*beta*de*T;
     double dT = -2.*de*tanh(e)*T;
     double dx1=0.0;
-    if(enable_volume_air_ && pressure_>0)
+    if(pressure_>0.)
         dx1 = -A*(x3+x4+x8*temperature_/pressure_-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
     else
         dx1 = -A*(x3+x4-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
@@ -331,7 +328,7 @@ void DepthControlNode::timer_callback() {
 }
 
 void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
-    msg.temperature;
+    temperature_ = msg.temperature + 273.15;
 }
 
 

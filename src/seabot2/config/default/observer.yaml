@@ -24,23 +24,23 @@ observer:
       piston_volume_eq_init: 100e-6 # m3
       init_chi: 0.0 # m3/m
       init_chi2: 0.0 # m3/m2
-      init_volume_air: 30.0e-6 # m3
-      init_cz: 1.0
+      init_volume_air: 2e-2
+      init_cz: 2.0
       gamma_alpha_velocity: 2e-4
       gamma_alpha_depth: 5e-4
-      gamma_alpha_offset: 1e-10
+      gamma_alpha_offset: 1e-08
       gamma_alpha_chi: 1e-15
       gamma_alpha_chi2: 1e-15
-      gamma_alpha_cz: 1e-3
-      gamma_alpha_volume_air: 1e-2
+      gamma_alpha_cz: 0.01
+      gamma_alpha_volume_air: 1e-07
       gamma_init_velocity: 1.0
       gamma_init_depth: 1.0
-      gamma_init_offset: 1e-5
+      gamma_init_offset: 1e-6
       gamma_init_chi: 1e-10
       gamma_init_chi2: 1e-10
-      gamma_init_cz: 0.1
-      gamma_init_volume_air: 5e-4
-      gamma_beta_depth: 1.0e-2
+      gamma_init_cz: 1.0
+      gamma_init_volume_air: 0.1
+      gamma_beta_depth: 5.0e-3
 
       enable_volume_air: true
 

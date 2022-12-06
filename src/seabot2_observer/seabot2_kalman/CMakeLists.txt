@@ -16,6 +16,7 @@ find_package(std_msgs REQUIRED)
 find_package(seabot2_density REQUIRED)
 find_package(temperature_tsys01_driver REQUIRED)
 find_package(seabot2_depth_filter REQUIRED)
+find_package(std_msgs REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
