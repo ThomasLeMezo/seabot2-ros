@@ -59,8 +59,7 @@ def generate_launch_description():
         executable='gpsd_node',
         namespace='driver',
         name='gpsd_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(gpsd_node)
 
@@ -69,8 +68,7 @@ def generate_launch_description():
         executable='bme280_node',
         namespace='driver',
         name='bme280_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(bme280_node)
 
@@ -79,8 +77,7 @@ def generate_launch_description():
         executable='pressure_ms5803_node',
         namespace='driver',
         name='pressure_ms5803_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     if pressure_external == PressureExternalSensor.ms5803:
         list_node.append(ms5803_node)
@@ -90,8 +87,7 @@ def generate_launch_description():
         executable='pressure_ms5837_node',
         namespace='driver',
         name='pressure_ms5837_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     if pressure_external == PressureExternalSensor.ms5837:
         list_node.append(ms5837_node)
@@ -101,8 +97,7 @@ def generate_launch_description():
         executable='light_node',
         namespace='driver',
         name='light_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(light_node)
 
@@ -111,8 +106,7 @@ def generate_launch_description():
         executable='piston_node',
         namespace='driver',
         name='piston_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(piston_node)
 
@@ -121,8 +115,7 @@ def generate_launch_description():
         executable='power_node',
         namespace='driver',
         name='power_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(power_node)
 
@@ -131,8 +124,7 @@ def generate_launch_description():
         executable='screen_node',
         namespace='driver',
         name='screen_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(screen_node)
 
@@ -141,8 +133,7 @@ def generate_launch_description():
         executable='thruster_node',
         namespace='driver',
         name='thruster_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(thruster_node)
 
@@ -151,8 +142,7 @@ def generate_launch_description():
         executable='bluerobotics_ping_node',
         namespace='driver',
         name='ping_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(ping_node)
 
@@ -161,8 +151,7 @@ def generate_launch_description():
         executable='temperature_tsys01_node',
         namespace='driver',
         name='temperature_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
     list_node.append(temperature_node)
 

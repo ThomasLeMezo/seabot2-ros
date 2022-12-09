@@ -17,6 +17,7 @@
   <build_depend>pressure_bme280_driver</build_depend>
   <build_depend>seabot2_power_driver</build_depend>
   <build_depend>seabot2_piston_driver</build_depend>
+  <build_depend>seabot2_mission</build_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
@@ -26,6 +27,7 @@
   <exec_depend>pressure_bme280_driver</exec_depend>
   <exec_depend>seabot2_power_driver</exec_depend>
   <exec_depend>seabot2_piston_driver</exec_depend>
+  <exec_depend>seabot2_mission</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

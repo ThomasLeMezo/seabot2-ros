@@ -15,8 +15,7 @@ def generate_launch_description():
 
     bag = ExecuteProcess(
         cmd=['ros2', 'bag', 'record', '-a'],
-        output='screen',
-        respawn=True
+        output='screen'
     )
 
     return LaunchDescription([

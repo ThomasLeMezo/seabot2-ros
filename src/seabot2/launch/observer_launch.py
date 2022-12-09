@@ -29,8 +29,7 @@ def generate_launch_description():
         executable='depth_pose_node',
         namespace='observer',
         name='depth_pose_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     internal_sensor_filter_node = Node(
@@ -38,8 +37,7 @@ def generate_launch_description():
         executable='filter_internal_sensor_node',
         namespace='observer',
         name='filter_internal_sensor_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     temperature_filter_node = Node(
@@ -47,8 +45,7 @@ def generate_launch_description():
         executable='filter_temperature_node',
         namespace='observer',
         name='filter_temperature_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     kalman_node = Node(
@@ -56,8 +53,7 @@ def generate_launch_description():
         executable='kalman_node',
         namespace='observer',
         name='kalman_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     lambert_node = Node(
@@ -65,8 +61,7 @@ def generate_launch_description():
         executable='lambert_node',
         namespace='observer',
         name='lambert_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     power_filter_node = Node(
@@ -74,8 +69,7 @@ def generate_launch_description():
         executable='filter_power_node',
         namespace='observer',
         name='filter_power_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     density_node = Node(
@@ -83,8 +77,7 @@ def generate_launch_description():
         executable='density_node',
         namespace='observer',
         name='density_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     return LaunchDescription([

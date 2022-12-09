@@ -12,8 +12,8 @@ control:
       hold_velocity_enter: 0.01 # m/s
 
       control_filter: false
-      delta_velocity_lb: -0.005 # m/s
-      delta_velocity_ub: 0.005 # m/s
-      delta_position_lb: -0.005 # m
-      delta_position_ub: 0.005 # m
+      delta_velocity_lb: -1e-3 # m/s
+      delta_velocity_ub: 1e-3 # m/s
+      delta_position_lb: -10e-3 # m
+      delta_position_ub: 10e-3 # m
 

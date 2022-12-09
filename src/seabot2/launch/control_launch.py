@@ -28,8 +28,7 @@ def generate_launch_description():
         executable='depth_control_node',
         namespace='control',
         name='depth_control_node',
-        parameters=parameters_file_list,
-        respawn=True
+        parameters=parameters_file_list
     )
 
     return LaunchDescription([
