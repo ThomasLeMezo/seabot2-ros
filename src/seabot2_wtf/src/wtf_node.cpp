@@ -1,4 +1,4 @@
-#include "seabot2_safety/wtf_node.hpp"
+#include "seabot2_wtf/wtf_node.hpp"
 #include "sys/sysinfo.h"
 #include <ctime>
 #include <iomanip>
@@ -14,18 +14,20 @@ WtfNode::WtfNode()
             loop_dt_, std::bind(&WtfNode::timer_callback, this));
 
     initscr();
-    windows_robot_             = subwin(stdscr, 5, 88, 0, 0);
-    windows_safety_             = subwin(stdscr, 14, 44, 6, 0);
-    windows_internal_pressure_  = subwin(stdscr, 7, 44, 21, 0);
-    windows_power_              = subwin(stdscr, 13, 44, 29, 0);
-    windows_mission_            = subwin(stdscr, 15, 44, 6, 45);
-    windows_depth_             = subwin(stdscr, 8, 44, 22, 45);
-    windows_piston_             = subwin(stdscr, 15, 44, 31, 45);
+    windows_robot_              = subwin(stdscr, 5, 88, 0, 0);
+    windows_safety_             = subwin(stdscr, 14, 44, 5, 0);
+    windows_internal_pressure_  = subwin(stdscr, 7, 44, 19, 0);
+    windows_power_              = subwin(stdscr, 13, 44, 26, 0);
+    windows_depth_control_      = subwin(stdscr, 11, 44, 39, 0);
+    windows_mission_            = subwin(stdscr, 15, 44, 5, 45);
+    windows_depth_              = subwin(stdscr, 8, 44, 20, 45);
+    windows_piston_             = subwin(stdscr, 15, 44, 28, 45);
 
     box(windows_robot_, ACS_VLINE, ACS_HLINE);
     box(windows_safety_, ACS_VLINE, ACS_HLINE);
     box(windows_internal_pressure_, ACS_VLINE, ACS_HLINE);
     box(windows_power_, ACS_VLINE, ACS_HLINE);
+    box(windows_depth_control_, ACS_VLINE, ACS_HLINE);
     box(windows_depth_, ACS_VLINE, ACS_HLINE);
     box(windows_piston_, ACS_VLINE, ACS_HLINE);
     box(windows_mission_, ACS_VLINE, ACS_HLINE);
@@ -34,6 +36,7 @@ WtfNode::WtfNode()
     mvwprintw(windows_safety_, 1, 1, "SAFETY");
     mvwprintw(windows_internal_pressure_, 1, 1, "INTERNAL PRESSURE");
     mvwprintw(windows_power_, 1, 1, "POWER");
+    mvwprintw(windows_depth_control_, 1, 1, "DEPTH CONTROL");
     mvwprintw(windows_depth_, 1, 1, "DEPTH");
     mvwprintw(windows_piston_, 1, 1, "PISTON");
     mvwprintw(windows_mission_, 1, 1, "MISSION");
@@ -92,6 +95,12 @@ void WtfNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
     msg_first_received_waypoint_ = true;
 }
 
+void WtfNode::depth_control_callback(const seabot2_depth_control::msg::DepthControlDebug &msg){
+    msg_depth_control_ = msg;
+    time_last_depth_control_ = this->now();
+    msg_first_received_depth_control_ = true;
+}
+
 void WtfNode::init_interfaces() {
 
     subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
@@ -111,6 +120,9 @@ void WtfNode::init_interfaces() {
 
     subscriber_mission_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
             "/mission/waypoint", 10, std::bind(&WtfNode::waypoint_callback, this, _1));
+
+    subscriber_control_debug_ = this->create_subscription<seabot2_depth_control::msg::DepthControlDebug>(
+            "/control/depth_control_debug", 10, std::bind(&WtfNode::depth_control_callback, this, _1));
 }
 
 void WtfNode::update_internal_pressure_windows(){
@@ -305,6 +317,32 @@ void WtfNode::update_piston(){
     }
 }
 
+void WtfNode::update_depth_control(){
+    if(msg_first_received_depth_control_) {
+        mvwprintw(windows_depth_control_, 1, 30, to_string((this->now() - time_last_depth_control_).seconds()).c_str());
+
+        mvwprintw(windows_depth_control_, 3, 1, "position");
+        mvwprintw(windows_depth_control_, 3, 30, to_string(msg_piston_data_.position).c_str());
+
+        mvwprintw(windows_depth_control_, 4, 1, "u");
+        mvwprintw(windows_depth_control_, 4, 30, to_string(msg_depth_control_.u).c_str());
+
+        mvwprintw(windows_depth_control_, 5, 1, "y");
+        mvwprintw(windows_depth_control_, 5, 30, to_string(msg_depth_control_.y).c_str());
+
+        mvwprintw(windows_depth_control_, 6, 1, "dy");
+        mvwprintw(windows_depth_control_, 6, 30, to_string(msg_depth_control_.dy).c_str());
+
+        mvwprintw(windows_depth_control_, 7, 1, "piston_set_point");
+        mvwprintw(windows_depth_control_, 7, 30, to_string(msg_depth_control_.piston_set_point).c_str());
+
+        mvwprintw(windows_depth_control_, 8, 1, "mode");
+        mvwprintw(windows_depth_control_, 8, 30, to_string(msg_depth_control_.mode).c_str());
+
+        wrefresh(windows_depth_control_);
+    }
+}
+
 void WtfNode::update_robot(){
 
     mvwprintw(windows_robot_, 1, 20, to_string((this->now()).seconds()).c_str());
@@ -326,6 +364,7 @@ void WtfNode::timer_callback() {
     update_depth();
     update_piston();
     update_robot();
+    update_depth_control();
 }
 
 int main(int argc, char *argv[]) {

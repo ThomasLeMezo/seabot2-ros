@@ -10,6 +10,7 @@
 #include "seabot2_safety/msg/safety_status.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_depth_control/msg/depth_control_debug.hpp"
 #include <ncurses.h>
 
 using namespace std::chrono_literals;
@@ -31,6 +32,7 @@ private:
     WINDOW *windows_internal_pressure_;
     WINDOW *windows_depth_;
     WINDOW *windows_power_;
+    WINDOW *windows_depth_control_;
     WINDOW *windows_piston_;
     WINDOW *windows_mission_;
 
@@ -42,6 +44,7 @@ private:
     seabot2_power_driver::msg::PowerState msg_power_data_;
     seabot2_piston_driver::msg::PistonState msg_piston_data_;
     seabot2_mission::msg::Waypoint msg_waypoint_;
+    seabot2_depth_control::msg::DepthControlDebug msg_depth_control_;
 
     rclcpp::Time time_last_safety_ = this->now();
     rclcpp::Time time_last_depth_data_ = this->now();
@@ -49,6 +52,7 @@ private:
     rclcpp::Time time_last_power_data_ = this->now();
     rclcpp::Time time_last_piston_data_ = this->now();
     rclcpp::Time time_last_waypoint_ = this->now();
+    rclcpp::Time time_last_depth_control_ = this->now();
 
     bool msg_first_received_safety_ = false;
     bool msg_first_received_depth_data_ = false;
@@ -56,6 +60,7 @@ private:
     bool msg_first_received_power_data_ = false;
     bool msg_first_received_piston_data_ = false;
     bool msg_first_received_waypoint_ = false;
+    bool msg_first_received_depth_control_ = false;
 
     /// Interfaces
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
@@ -64,6 +69,7 @@ private:
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_piston_data_;
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_;
+    rclcpp::Subscription<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr subscriber_control_debug_;
 
     /**
      *  Init and get parameters of the Node
@@ -118,6 +124,12 @@ private:
 
     /**
      *
+     * @param msg
+     */
+    void depth_control_callback(const seabot2_depth_control::msg::DepthControlDebug &msg);
+
+    /**
+     *
      */
     void update_safety_windows();
 
@@ -150,6 +162,11 @@ private:
      *
      */
     void update_robot();
+
+    /**
+     *
+     */
+    void update_depth_control();
 
 };
 #endif //BUILD_WTF_NODE_HPP
