@@ -1,5 +1,7 @@
 # sudo systemctl daemon-reload
 # sudo systemctl enable seabot2.driver.service
+# View Logs
+# journalctl -u seabot2.service
 
 [Unit]
 Description= Launch seabot2 algorithms
@@ -10,6 +12,7 @@ User=pi
 Group=pi
 UMask=022
 ExecStart=/bin/zsh -c "source /home/pi/.zshrc && ros2 launch seabot2 seabot_launch.py"
+TimeoutStopSec=5
 
 [Install]
 WantedBy=multi-user.target

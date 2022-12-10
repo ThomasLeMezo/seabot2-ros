@@ -60,7 +60,12 @@ public:
 
     void setI2CPeriph(const std::string &i2CPeriph);
 
-    enum state_piston { PISTON_SEARCH_SWITCH_BOTTOM, PISTON_RELEASE_SWITCH_BOTTOM, PISTON_BACK_SWITCH_BOTTOM, PISTON_REGULATION, PISTON_EXIT};
+    enum state_piston { PISTON_SEARCH_SWITCH_BOTTOM=0,
+                        PISTON_RELEASE_SWITCH_BOTTOM=1,
+                        PISTON_BACK_SWITCH_BOTTOM=2,
+                        PISTON_REGULATION=3,
+                        PISTON_EXIT=4
+    };
 
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
@@ -68,7 +73,7 @@ private:
     int file_ = 0; /// File to the i2c port
     std::string i2c_periph_ = "/dev/i2c-1";
     int i2c_addr_ = 0x1E;
-    const int code_version_ = 0x03; /// Code version of the expected hardware
+    const int code_version_ = 0x04; /// Code version of the expected hardware
     uint8_t pic_code_version_=0; /// Code version read from the hardware
 
 public:
@@ -81,7 +86,7 @@ public:
     int position_last_ = 0;
     bool switch_top_ = false;
     bool switch_bottom_ = false;
-    int state_ = 0;
+    int state_ = PISTON_SEARCH_SWITCH_BOTTOM;
     bool enable_ = false;
     int position_set_point_ = 0;
     float battery_voltage_ = 0;

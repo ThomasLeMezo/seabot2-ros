@@ -55,7 +55,7 @@ private:
     bool msg_first_received_internal_sensor_filter_ = false;
     bool msg_first_received_power_data_ = false;
     bool msg_first_received_piston_data_ = false;
-    bool msg_first_received_waypoint_ = true;
+    bool msg_first_received_waypoint_ = false;
 
     /// Interfaces
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;

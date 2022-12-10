@@ -47,7 +47,6 @@ void SafetyNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg)
     depth_ = msg.depth;
     velocity_ = msg.velocity;
     depth_last_received_ = msg.header.stamp;
-    depth_last_received_ = msg.header.stamp;
 }
 
 void SafetyNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg){

@@ -6,3 +6,4 @@ sudo systemctl daemon-reload
 sudo systemctl enable seabot2.driver.service
 sudo systemctl enable seabot2.record.service
 sudo systemctl enable seabot2.service
+sudo systemctl enable fake-hwclock.service

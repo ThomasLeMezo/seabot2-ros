@@ -1,9 +1,20 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch import LaunchService
 from launch.actions import IncludeLaunchDescription
 from launch.actions import ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.event_handlers import (OnExecutionComplete, OnProcessExit,
+                                   OnProcessIO, OnProcessStart, OnShutdown)
+from launch.actions import (DeclareLaunchArgument, EmitEvent, ExecuteProcess,
+                            LogInfo, RegisterEventHandler, TimerAction)
+from launch.events import Shutdown
+from launch.substitutions import (EnvironmentVariable, FindExecutable,
+                                  LaunchConfiguration, LocalSubstitution,
+                                  PythonExpression)
+
+import sys
 
 def generate_launch_description():
     home_path = os.path.expanduser('~')
@@ -15,9 +26,16 @@ def generate_launch_description():
 
     bag = ExecuteProcess(
         cmd=['ros2', 'bag', 'record', '-a'],
-        output='screen'
+        output='both',
+        shell=True
     )
 
     return LaunchDescription([
-        bag
+        bag,
     ])
+#
+# if __name__ == '__main__':
+#     global ls
+#     ls = LaunchService(argv=sys.argv)
+#     ls.include_launch_description(generate_launch_description())
+#     sys.exit(ls.run())

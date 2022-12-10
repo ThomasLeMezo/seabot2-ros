@@ -1,5 +1,7 @@
 #include "seabot2_safety/wtf_node.hpp"
 #include "sys/sysinfo.h"
+#include <ctime>
+#include <iomanip>
 
 using namespace placeholders;
 
@@ -304,7 +306,14 @@ void WtfNode::update_piston(){
 }
 
 void WtfNode::update_robot(){
-    mvwprintw(windows_robot_, 1, 30, to_string((this->now()).seconds()).c_str());
+
+    mvwprintw(windows_robot_, 1, 20, to_string((this->now()).seconds()).c_str());
+
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    stringstream ss;
+    ss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+    mvwprintw(windows_robot_, 1, 40, ss.str().c_str());
 
     wrefresh(windows_robot_);
 }
