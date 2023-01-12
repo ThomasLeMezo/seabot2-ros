@@ -79,6 +79,12 @@ public:
     int set_light_enable(const bool &enable) const;
 
     /**
+     * Get the light enable status  of the seabot2
+     * @return
+     */
+    bool Light::get_light_enable() const;
+
+    /**
      * Set Power of the led
      * @param val in 0 to 199
      */

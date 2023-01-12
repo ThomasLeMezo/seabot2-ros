@@ -18,6 +18,7 @@ LogParameterNode::LogParameterNode()
     rclcpp::sleep_for(5s);
 
     record_parameters();
+
 }
 
 void LogParameterNode::init_parameters() {

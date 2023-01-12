@@ -10,6 +10,8 @@ LightNode::LightNode()
 
     light_.i2c_open();
 
+    light_is_on_ = light_.get_light_enable();
+
     timer_ = this->create_wall_timer(
             loop_dt_, std::bind(&LightNode::timer_callback, this));
 

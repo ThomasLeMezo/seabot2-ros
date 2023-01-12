@@ -118,7 +118,6 @@ void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &m
 }
 
 void DepthControlNode::init_interfaces() {
-
     subscriber_kalman_data_ = this->create_subscription<seabot2_kalman::msg::KalmanState>(
             "/observer/kalman", 10, std::bind(&DepthControlNode::kalman_callback, this, _1));
     subscriber_state_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(

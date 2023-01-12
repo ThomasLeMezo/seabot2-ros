@@ -105,66 +105,66 @@ private:
     void power_callback(const seabot2_power_driver::msg::PowerState &msg);
 
     /**
-     *
+     *  Piston callback
      * @param msg
      */
     void piston_callback(const seabot2_piston_driver::msg::PistonState &msg);
 
     /**
-     *
+     *  Safety callback
      * @param msg
      */
     void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
 
     /**
-     *
+     *  Waypoint callback
      * @param msg
      */
     void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
 
     /**
-     *
+     *  Control debug callback
      * @param msg
      */
     void depth_control_callback(const seabot2_depth_control::msg::DepthControlDebug &msg);
 
     /**
-     *
+     *  Update safety windows
      */
     void update_safety_windows();
 
     /**
-     *
+     * Update mission windows
      */
     void update_mission_windows();
 
     /**
-     *
+     *  Update internal pressure windows
      */
     void update_internal_pressure_windows();
 
     /**
-     *
+     * Update power windows
      */
     void update_power();
 
     /**
-     *
+     *  Update depth windows
      */
     void update_depth();
 
     /**
-     *
+     * Update piston windows
      */
     void update_piston();
 
     /**
-     *
+     * Update robot info windows
      */
     void update_robot();
 
     /**
-     *
+     * Update depth windows
      */
     void update_depth_control();
 

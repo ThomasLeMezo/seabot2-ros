@@ -4,7 +4,7 @@ safety:
       loop_dt: 1000 # ms
       internal_humidity_limit: 70. # %
       internal_pressure_limit: 800. # mbar
-      battery_volt_limit: 12. # V
+      battery_volt_limit: 12.5 # V
       depth_flash_surface: 0.5 # m
       depth_limit_max_: 110.0 # m
       depth_no_data_warning: 1000 # ms

@@ -34,6 +34,14 @@ int Light::set_light_enable(const bool &enable) const{
         return EXIT_SUCCESS;
 }
 
+bool Light::get_light_enable() const{
+    int is_enable = i2c_smbus_read_byte_data(file_, REGISTER_LIGHT_ENABLE);
+    if(is_enable<0){
+        RCLCPP_WARN(n_->get_logger(), "[Light_driver] I2C bus Failure - Get light enable");
+    }
+    return is_enable>0;
+}
+
 void Light::set_power(const __u8 &val) const {
     if(val<199) {
         if (i2c_smbus_write_byte_data(file_, REGISTER_LIGHT_POWER, val) < 0)

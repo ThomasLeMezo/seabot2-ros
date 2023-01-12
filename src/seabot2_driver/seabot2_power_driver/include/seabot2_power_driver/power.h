@@ -62,7 +62,7 @@ private:
     int file_ = 0; /// File to the i2c port
     std::string i2c_periph_ = "/dev/i2c-1";
     int i2c_addr_ = 0x39;
-    const int code_version_ = 0x04; /// Code version of the expected hardware
+    const int code_version_ = 0x05; /// Code version of the expected hardware
     uint8_t pic_code_version_=0; /// Code version read from the hardware
 
     std::array<double, 4> R1_= {820, 330, 220, 180};

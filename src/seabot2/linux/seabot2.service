@@ -5,6 +5,9 @@
 
 [Unit]
 Description= Launch seabot2 algorithms
+After=multi-user.target
+After=network-online.target
+Requires=network-online.target
 
 [Service]
 #ExecStartPre=/bin/sleep 15
