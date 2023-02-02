@@ -58,6 +58,7 @@ void SafetyNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme
 
 void SafetyNode::power_callback(const seabot2_power_driver::msg::PowerState &msg){
     battery_volt_ = msg.battery_volt;
+    power_state_ = msg.power_state;
     battery_last_received_ = msg.header.stamp;
 }
 
@@ -170,6 +171,11 @@ bool SafetyNode::test_battery(){
         safety_batteries_limit_ &= false;
         safety_published_frequency_ &= false;
         RCLCPP_WARN(this->get_logger(), "[Safety_node] No battery data received");
+    }
+    if(power_state_ != static_cast<int>(POWER_STATE_STATUS::POWER_ON)){
+        is_valid &= false;
+        safety_batteries_limit_ &= false;
+        RCLCPP_WARN(this->get_logger(), "[Safety_node] Power state not ok");
     }
     return is_valid;
 }

@@ -56,6 +56,8 @@ private:
     rclcpp::Time battery_last_received_ = this->now();
     std::chrono::milliseconds battery_no_data_warning_ = 10s;
     double battery_volt_limit_ = 12.5;
+    int power_state_ = 0;
+    enum  class POWER_STATE_STATUS {IDLE=0, MEASURE_VOLTAGE=1, POWER_ON=2, WAIT_TO_SLEEP=3, POWER_SLEEP=4};
 
     double depth_flash_surface_ = 0.5;
     bool flash_surface_enable_ = false;
