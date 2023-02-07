@@ -27,16 +27,19 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<double>("battery_volt_limit", battery_volt_limit_);
     this->declare_parameter<double>("depth_flash_surface", depth_flash_surface_);
     this->declare_parameter<double>("depth_limit_max", depth_limit_max_);
+    this->declare_parameter<double>("max_depth_reset_zero", max_depth_reset_zero_);
     this->declare_parameter<int>("depth_no_data_warning", depth_no_data_warning_.count());
     this->declare_parameter<int>("battery_no_data_warning", battery_no_data_warning_.count());
     this->declare_parameter<int>("internal_no_data_warning", internal_no_data_warning_.count());
     this->declare_parameter<int>("piston_no_data_warning", piston_no_data_warning_.count());
+
 
     internal_humidity_limit_ = this->get_parameter_or("internal_humidity_limit", internal_humidity_limit_);
     internal_pressure_limit_ = this->get_parameter_or("internal_pressure_limit", internal_pressure_limit_);
     battery_volt_limit_ = this->get_parameter_or("battery_volt_limit", battery_volt_limit_);
     depth_flash_surface_ = this->get_parameter_or("depth_flash_surface", depth_flash_surface_);
     depth_limit_max_ = this->get_parameter_or("depth_limit_max", depth_limit_max_);
+    max_depth_reset_zero_ = this->get_parameter_or("max_depth_reset_zero", max_depth_reset_zero_);
     depth_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("depth_no_data_warning", depth_no_data_warning_.count()));
     battery_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("battery_no_data_warning", battery_no_data_warning_.count()));
     internal_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("internal_no_data_warning", internal_no_data_warning_.count()));

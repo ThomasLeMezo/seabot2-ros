@@ -35,7 +35,8 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
                 is_new_waypoint = true;
                 is_first_waypoint_ = false;
             }
-            if(t_now >= waypoints_[current_waypoint_].time_end){ /// Test if next waypoint is reached
+            while(t_now >= waypoints_[current_waypoint_].time_end
+                    && current_waypoint_ < waypoints_.size()){ /// Test if next waypoint is reached
                 is_new_waypoint = true;
                 current_waypoint_++;
             }
@@ -93,19 +94,6 @@ void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time 
     duration_next_waypoint_ = waypoints_[current_waypoint_].time_end - t_now;
 }
 
-void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
-    mission_enable_ = false;
-    wp.depth = 0.0;
-    wp.north = waypoints_[current_waypoint_].north + offset_north_;
-    wp.east = waypoints_[current_waypoint_].east + offset_east_;
-
-    wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
-    wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
-    wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
-    wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
-    duration_next_waypoint_ = time_start_ - t_now;
-}
-
 void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp){
     if(mission_enable_)
         RCLCPP_INFO(n_->get_logger(),"[Mission] End of waypoints");
@@ -120,6 +108,19 @@ void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp){
     wp.seafloor_landing = false;
 
     duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
+}
+
+void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
+    mission_enable_ = false;
+    wp.depth = 0.0;
+    wp.north = waypoints_[current_waypoint_].north + offset_north_;
+    wp.east = waypoints_[current_waypoint_].east + offset_east_;
+
+    wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
+    wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
+    wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
+    wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
+    duration_next_waypoint_ = time_start_ - t_now;
 }
 
 

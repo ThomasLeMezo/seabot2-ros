@@ -5,5 +5,5 @@ mission:
       mission_file_name: "mission.xml"
       flash_next_waypoint_time: 15.0 # s
       flash_number: 2
-      limit_velocity_default: 0.02 # m/s
+      limit_velocity_default: 0.1 # m/s
       approach_velocity_default: 1.0

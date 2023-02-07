@@ -7,3 +7,12 @@ sudo systemctl enable seabot2.driver.service
 sudo systemctl enable seabot2.record.service
 sudo systemctl enable seabot2.service
 sudo systemctl enable fake-hwclock.service
+
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+
+sudo mkdir -p /opt/bin
+cd /opt/bin
+sudo ln -s /home/pi/seabot2-ros/src/seabot2/linux/wtf.sh wtf
+
+

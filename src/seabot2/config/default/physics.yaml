@@ -1,8 +1,8 @@
 /**:
   ros__parameters:
     physics_g: 9.807 #  g-force (m/s2)
-    physics_salinity: 35.0
-    physics_rho: 1025.0 # water density (kg/m3)
+    physics_salinity: 0.0 # 35.0
+    physics_rho: 1000.0 # water density (kg/m3)
 
     physics_velocity_limit: 0.5 # maximum velocity of the seabot (m/s)
 

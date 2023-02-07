@@ -34,6 +34,7 @@ double FilterPowerNode::compute_filter(deque<double> queue) const {
 void FilterPowerNode::power_callback(const seabot2_power_driver::msg::PowerState &msg) {
     seabot2_power_driver::msg::PowerState msg_filter;
     msg_filter.header.stamp = msg.header.stamp;
+    msg_filter.power_state = msg.power_state;
 
     /// Add new data to deque
     battery_volt_memory_.push_front(msg.battery_volt);
