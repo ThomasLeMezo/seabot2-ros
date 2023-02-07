@@ -35,8 +35,8 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
                 is_new_waypoint = true;
                 is_first_waypoint_ = false;
             }
-            while(t_now >= waypoints_[current_waypoint_].time_end
-                    && current_waypoint_ < waypoints_.size()){ /// Test if next waypoint is reached
+            while(current_waypoint_ < waypoints_.size() &&
+                  t_now >= waypoints_[current_waypoint_].time_end){ /// Test if next waypoint is reached
                 is_new_waypoint = true;
                 current_waypoint_++;
             }
@@ -123,6 +123,22 @@ void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Ti
     duration_next_waypoint_ = time_start_ - t_now;
 }
 
+bool Mission::is_new_mission_file(const std::string &file_xml, const std::string &folder_path){
+    try {
+        fs::path p1 = folder_path + "/" + file_xml;
+        std::filesystem::file_time_type ft = std::filesystem::last_write_time(p1);
+        if ((ft.time_since_epoch() - file_time_.time_since_epoch()).count() != 0) {
+            file_time_ = ft;
+            RCLCPP_INFO(n_->get_logger(), "[Seabot_Mission] New mission file detected");
+            return true;
+        } else {
+            return false;
+        }
+    }
+    catch (...){
+        return false;
+    }
+}
 
 int Mission::load_mission(const std::string &file_xml, const std::string &folder_path){
     if(folder_path.empty())

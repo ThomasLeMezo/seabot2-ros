@@ -11,6 +11,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include "seabot2_mission/msg/waypoint.hpp"
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 class Waypoint{
 
 public:
@@ -64,6 +67,14 @@ public:
        * @param depth
        */
     bool compute_command(seabot2_mission::msg::Waypoint &wp);
+
+    /**
+     * Test if mission file was updated
+     * @param file_xml
+     * @param folder_path
+     * @return
+     */
+    bool is_new_mission_file(const std::string &file_xml, const std::string &folder_path);
 
     /**
      * Load mission file
@@ -121,6 +132,8 @@ private:
     bool mission_enable_ = false;
     bool update_mission_ = true;
     rclcpp::Duration duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
+
+    std::filesystem::file_time_type file_time_;
 
     rclcpp::Time time_start_;
     double offset_north_ = 0.0;

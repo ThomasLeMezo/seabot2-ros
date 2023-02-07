@@ -27,8 +27,8 @@ private:
     /// Variable
     /// Mission
     Mission mission_;
-    string mission_file_name_ = "mission_test.xml";
-    string mission_path_;
+    string mission_file_name_ = "mission.xml";
+    string mission_path_ = "./";
     bool mission_enable_ = true;
     double flash_next_waypoint_time_ = 5.0;
     int flash_number_ = 2;

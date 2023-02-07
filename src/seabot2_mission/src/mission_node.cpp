@@ -10,6 +10,7 @@ MissionNode::MissionNode()
     init_interfaces();
 
     rclcpp::sleep_for(1s); // Wait to be sure to log mission data
+    mission_.is_new_mission_file(mission_file_name_, mission_path_);
     mission_.load_mission(mission_file_name_, mission_path_);
 
     timer_ = this->create_wall_timer(
@@ -81,6 +82,10 @@ void MissionNode::call_light(){
 }
 
 void MissionNode::timer_callback() {
+    if(mission_.is_new_mission_file(mission_file_name_, mission_path_)){
+        mission_.load_mission(mission_file_name_, mission_path_);
+    }
+
     seabot2_mission::msg::Waypoint wp_msg;
     bool is_new_waypoint = mission_.compute_command(wp_msg);
 
