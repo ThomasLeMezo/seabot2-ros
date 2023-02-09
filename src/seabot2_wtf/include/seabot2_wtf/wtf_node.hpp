@@ -26,6 +26,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::milliseconds loop_dt_ = 1s; /// loop dt
 
+    string hostname_ = "Seabot";
+
     /// Variable
     WINDOW *windows_robot_;
     WINDOW *windows_safety_;

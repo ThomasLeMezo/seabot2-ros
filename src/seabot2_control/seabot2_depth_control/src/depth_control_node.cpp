@@ -1,5 +1,6 @@
 #include "seabot2_depth_control/depth_control_node.hpp"
 #include <algorithm>    // std::sort
+#include <cmath>
 
 using namespace std::placeholders;
 
@@ -104,11 +105,12 @@ void DepthControlNode::depth_callback(const seabot2_depth_filter::msg::DepthPose
 
 void DepthControlNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
     emergency_ = !msg.global_safety_valid;
+    limit_depth_ = msg.limit_depth;
 }
 
 void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
     if(msg.mission_enable)
-        depth_set_point_ = msg.depth;
+        depth_set_point_ = std::min(msg.depth, limit_depth_);
     else
         depth_set_point_ = 0.0;
 

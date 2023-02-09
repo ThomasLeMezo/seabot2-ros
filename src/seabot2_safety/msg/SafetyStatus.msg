@@ -8,4 +8,6 @@ bool piston
 bool zero_depth
 float32 cpu
 float32 ram
+float32 bathy
+float32 limit_depth
 

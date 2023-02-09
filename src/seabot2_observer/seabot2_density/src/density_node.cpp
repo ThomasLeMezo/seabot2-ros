@@ -46,8 +46,10 @@ void DensityNode::timer_callback() {
 /// ( i.e. absolute pressure - 10.1325 dbar )
 
     water_density_ = ts.gsw_rho_t_exact(salinity_, temperature_, sea_pressure_*10.0);
+    water_sound_speed_ = ts.gsw_sound_speed_t_exact(salinity_, temperature_, sea_pressure_*10.0);
     seabot2_density::msg::Density msg;
     msg.density = water_density_;
+    msg.sound_speed = water_sound_speed_;
     msg.header.stamp = this->now();
 
     publisher_density_->publish(msg);

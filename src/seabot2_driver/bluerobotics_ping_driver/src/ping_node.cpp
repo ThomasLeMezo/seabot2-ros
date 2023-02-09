@@ -44,7 +44,7 @@ void PingNode::init_driver(){
     RCLCPP_INFO(this->get_logger(), "[Ping_node firmware_version_patch = %ui", device_->device_information.firmware_version_patch);
 
     device_->set_mode_auto(false); /// Set mode
-    device_->set_speed_of_sound(1550000); /// Set speed of sound
+    device_->set_speed_of_sound(static_cast<int>(round(speed_of_sound_*1e3))); /// Set speed of sound
     device_->set_ping_interval(200); /// Set interval
     device_->set_gain_setting(1); /// Set gain
 
@@ -105,6 +105,13 @@ void PingNode::init_parameters() {
     enable_ping_ = this->get_parameter_or("enable_ping", enable_ping_);
 }
 
+void PingNode::sound_speed_callback(const seabot2_density::msg::Density &msg){
+    if(msg.sound_speed != speed_of_sound_){
+        speed_of_sound_ = msg.sound_speed;
+        device_->set_speed_of_sound(static_cast<int>(round(speed_of_sound_*1e3))); /// Set speed of sound
+    }
+}
+
 void PingNode::ping_enable_callback(const std::shared_ptr<rmw_request_id_t> request_header,
                                                    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                                                    std::shared_ptr<std_srvs::srv::SetBool::Response> response){
@@ -131,6 +138,8 @@ void PingNode::init_interfaces() {
                                                                                  std::placeholders::_1,
                                                                                  std::placeholders::_2,
                                                                                  std::placeholders::_3));
+    subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
+            "/observer/density", 10, std::bind(&PingNode::sound_speed_callback, this, std::placeholders::_1));
 }
 
 int main(int argc, char *argv[]) {

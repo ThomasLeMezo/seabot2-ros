@@ -7,6 +7,7 @@
 #include <abstract-link.h>
 #include <bluerobotics_ping_driver/msg/profile.hpp>
 #include "std_srvs/srv/set_bool.hpp"
+#include <seabot2_density/msg/density.hpp>
 
 using namespace std::chrono_literals;
 
@@ -27,6 +28,7 @@ private:
     /// Topics / Services
     rclcpp::Publisher<bluerobotics_ping_driver::msg::Profile>::SharedPtr publisher_profile_;
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_ping_enable_;
+    rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
 
     /// Variables
     std::string uart_port_ = "/dev/ping1D";
@@ -36,7 +38,7 @@ private:
 
     bool enable_ping_ = false;
     bool mode_auto_ = false; /// mode
-    int speed_of_sound_ = 1550000; /// speed of sound [mm/s]
+    double speed_of_sound_ = 1550.0; /// speed of sound [m/s]
     int ping_interval_ = 200; /// interval [ms]
     int gain_setting_ = 1; /// gain [1, 2, 3, 4, 5, 6]
 
@@ -66,6 +68,11 @@ private:
                               const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                               std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
+    /**
+     *  Callback of the sound speed
+     * @param msg
+     */
+    void sound_speed_callback(const seabot2_density::msg::Density &msg);
 };
 
 #endif //BUILD_PING_NODE_H

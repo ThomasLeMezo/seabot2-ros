@@ -13,6 +13,7 @@
 #include "std_srvs/srv/set_bool.hpp"
 #include "seabot2_safety/msg/safety_status.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
+#include <bluerobotics_ping_driver/msg/profile.hpp>
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -76,6 +77,15 @@ private:
     std::chrono::milliseconds depth_reset_delay_wait_ = 10s;
     bool is_zero_depth_once_ = false;
 
+    double ping_altitude_ = 0.0;
+    double ping_confidence_ = 0.0;
+    rclcpp::Time ping_last_time_received_ = this->now();
+    double robot_height_ping_ = 1.1;
+    double offset_max_depth_ = 2.0;
+    double bathy_ = 0.0;
+    double limit_depth_default_ = 100.0;
+    double limit_depth_ = 100.0;
+    std::chrono::milliseconds ping_no_data_warning_ = 4s;
 
     /// Interfaces
     rclcpp::Publisher<seabot2_safety::msg::SafetyStatus>::SharedPtr publisher_safety_;
@@ -84,6 +94,7 @@ private:
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_piston_data_;
+    rclcpp::Subscription<bluerobotics_ping_driver::msg::Profile>::SharedPtr subscriber_profile_data_;
 
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_zero_pressure_;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_flash_surface_;
@@ -128,6 +139,12 @@ private:
     void piston_callback(const seabot2_piston_driver::msg::PistonState &msg);
 
     /**
+     * Profile callback
+     * @param msg
+     */
+    void profile_callback(const bluerobotics_ping_driver::msg::Profile &msg);
+
+    /**
      *
      * @return
      */
@@ -156,6 +173,11 @@ private:
      * @return
      */
     bool test_internal_data();
+
+    /**
+     *  Test max depth
+     */
+    void test_depth_max();
 
     /**
      * Detect if surface is reached

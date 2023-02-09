@@ -16,6 +16,7 @@ find_package(std_srvs REQUIRED)
 find_package(seabot2_power_driver REQUIRED)
 find_package(seabot2_piston_driver REQUIRED)
 find_package(seabot2_mission REQUIRED)
+find_package(bluerobotics_ping_driver REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Curses REQUIRED)
 
@@ -37,6 +38,7 @@ ament_target_dependencies(safety_node
         seabot2_power_driver
         seabot2_piston_driver
         std_srvs
+        bluerobotics_ping_driver
 )
 target_link_libraries(safety_node "${cpp_typesupport_target}")
 

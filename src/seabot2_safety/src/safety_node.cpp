@@ -32,7 +32,10 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<int>("battery_no_data_warning", battery_no_data_warning_.count());
     this->declare_parameter<int>("internal_no_data_warning", internal_no_data_warning_.count());
     this->declare_parameter<int>("piston_no_data_warning", piston_no_data_warning_.count());
-
+    this->declare_parameter<int>("ping_no_data_warning", ping_no_data_warning_.count());
+    this->declare_parameter<double>("robot_height_ping", robot_height_ping_);
+    this->declare_parameter<double>("offset_max_depth", offset_max_depth_);
+    this->declare_parameter<double>("limit_depth_default", limit_depth_default_);
 
     internal_humidity_limit_ = this->get_parameter_or("internal_humidity_limit", internal_humidity_limit_);
     internal_pressure_limit_ = this->get_parameter_or("internal_pressure_limit", internal_pressure_limit_);
@@ -44,6 +47,10 @@ void SafetyNode::init_parameters() {
     battery_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("battery_no_data_warning", battery_no_data_warning_.count()));
     internal_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("internal_no_data_warning", internal_no_data_warning_.count()));
     piston_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("piston_no_data_warning", piston_no_data_warning_.count()));
+    ping_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("ping_no_data_warning", ping_no_data_warning_.count()));
+    robot_height_ping_ = this->get_parameter_or("robot_height_ping", robot_height_ping_);
+    offset_max_depth_ = this->get_parameter_or("offset_max_depth", offset_max_depth_);
+    limit_depth_default_ = this->get_parameter_or("limit_depth_default", limit_depth_default_);
 }
 
 void SafetyNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
@@ -71,6 +78,12 @@ void SafetyNode::piston_callback(const seabot2_piston_driver::msg::PistonState &
     piston_state_ = msg.state;
 }
 
+void SafetyNode::profile_callback(const bluerobotics_ping_driver::msg::Profile &msg){
+    ping_altitude_ = msg.distance/1e3;
+    ping_confidence_ = msg.confidence;
+    ping_last_time_received_ = msg.header.stamp;
+}
+
 void SafetyNode::init_interfaces() {
     publisher_safety_ =  this->create_publisher<seabot2_safety::msg::SafetyStatus>("safety", 1);
 
@@ -85,6 +98,9 @@ void SafetyNode::init_interfaces() {
 
     subscriber_piston_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
             "/driver/piston", 10, std::bind(&SafetyNode::piston_callback, this, _1));
+
+    subscriber_profile_data_ = this->create_subscription<bluerobotics_ping_driver::msg::Profile>(
+            "/driver/profile", 10, std::bind(&SafetyNode::profile_callback, this, _1));
 
     client_zero_pressure_ = this->create_client<std_srvs::srv::Trigger>("/observer/zero_pressure");
 
@@ -283,6 +299,21 @@ void SafetyNode::get_ram_cpu(){
     ram_ = physMemUsed;
 }
 
+void SafetyNode::test_depth_max(){
+    bathy_ = depth_ + ping_altitude_ + robot_height_ping_;
+
+    if(this->now()-ping_last_time_received_ < ping_no_data_warning_ &&
+        this->now()-depth_last_received_ < depth_no_data_warning_){
+        if (ping_confidence_ > 0.9) {
+            limit_depth_ = bathy_ - offset_max_depth_;
+        }
+    }
+    else{
+        limit_depth_ = limit_depth_default_;
+    }
+
+}
+
 void SafetyNode::timer_callback() {
 
     /// ToDo :
@@ -315,6 +346,8 @@ void SafetyNode::timer_callback() {
     msg.zero_depth = safety_zero_depth_;
     msg.cpu = cpu_;
     msg.ram = ram_;
+    msg.depth_limit = limit_depth_;
+    msg.bathy = bathy_;
     publisher_safety_->publish(msg);
 }
 

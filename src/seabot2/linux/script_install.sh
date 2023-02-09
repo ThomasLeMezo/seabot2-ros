@@ -10,9 +10,10 @@ sudo systemctl enable fake-hwclock.service
 
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 
-
 sudo mkdir -p /opt/bin
 cd /opt/bin
 sudo ln -s /home/pi/seabot2-ros/src/seabot2/linux/wtf.sh wtf
+gsettings set org.gnome.desktop.lockdown disable-lock-screen true
+gsettings set org.gnome.desktop.lockdown disable-log-out true
 
-
+# @reboot screen -dmS wtf_daemon zsh -c "wtf"

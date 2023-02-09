@@ -36,6 +36,7 @@ private:
 
     /// Variable
     bool emergency_ = true;
+    float limit_depth_ = 100.0;
 
     /// Physical characteristics
     double physics_rho_ =  1025.0;

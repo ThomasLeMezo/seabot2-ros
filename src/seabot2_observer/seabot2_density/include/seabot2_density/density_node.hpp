@@ -24,6 +24,7 @@ private:
     double temperature_ = 12.0;
     double salinity_ = 0.;
     double water_density_ = 1000.0;
+    double water_sound_speed_ = 1500.0;
 
     TeosSea ts;
 

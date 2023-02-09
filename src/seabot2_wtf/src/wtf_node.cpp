@@ -2,6 +2,7 @@
 #include "sys/sysinfo.h"
 #include <ctime>
 #include <iomanip>
+#include <unistd.h>
 
 using namespace placeholders;
 
@@ -9,6 +10,10 @@ WtfNode::WtfNode()
         : Node("wtf_node"){
     init_parameters();
     init_interfaces();
+
+    char hostname[40];
+    gethostname(hostname, 40);
+    hostname_ = hostname;
 
     timer_ = this->create_wall_timer(
             loop_dt_, std::bind(&WtfNode::timer_callback, this));
@@ -352,6 +357,7 @@ void WtfNode::update_robot(){
     stringstream ss;
     ss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
     mvwprintw(windows_robot_, 1, 40, ss.str().c_str());
+    mvwprintw(windows_robot_, 2, 2, hostname_.c_str());
 
     wrefresh(windows_robot_);
 }

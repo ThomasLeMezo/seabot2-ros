@@ -20,6 +20,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(seabot2_density REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -35,7 +36,9 @@ add_executable(bluerobotics_ping_node src/ping_node.cpp)
 ament_target_dependencies(bluerobotics_ping_node
         rclcpp
         std_msgs
-        std_srvs)
+        std_srvs
+        seabot2_density
+        )
 
 target_link_libraries(bluerobotics_ping_node "${cpp_typesupport_target}"
         DEVICE
