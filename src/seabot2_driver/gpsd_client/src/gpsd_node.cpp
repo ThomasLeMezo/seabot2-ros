@@ -30,15 +30,16 @@ GpsdNode::~GpsdNode() {
         gps_->~gpsmm();
         free(gps_);
     }
-
 }
 
 void GpsdNode::init_parameters() {
     this->declare_parameter<long>("loop_dt", loop_dt_.count());
-    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
-
     this->declare_parameter<string>("frame_id", frame_id_);
+    this->declare_parameter<bool>("publish_when_no_fix", publish_when_no_fix_);
+
     frame_id_ = this->get_parameter_or("frame_id", frame_id_);
+    publish_when_no_fix_ = this->get_parameter_or("publish_when_no_fix", publish_when_no_fix_);
+    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 }
 
 void GpsdNode::init_interfaces() {
@@ -67,11 +68,11 @@ void GpsdNode::process_data(struct gps_data_t* p) {
     msg.mode = p->fix.mode;
     msg.time = p->fix.time.tv_sec+p->fix.time.tv_nsec*1e-9;
 
-    if(p->fix.mode >= MODE_2D) {
+    if(publish_when_no_fix_ || p->fix.mode >= MODE_2D) {
         msg.latitude = p->fix.latitude;
         msg.longitude = p->fix.longitude;
 
-        msg.altitude = p->fix.altitude;
+        msg.altitude = p->fix.altHAE;
 
         msg.track = p->fix.track;
         msg.speed = p->fix.speed;
@@ -81,6 +82,8 @@ void GpsdNode::process_data(struct gps_data_t* p) {
         msg.vdop = p->dop.vdop;
         msg.tdop = p->dop.tdop;
         msg.gdop = p->dop.gdop;
+
+        //msg.satellites_visible = p->satellites_visible;
 
         if(!isnan(p->fix.eph))
             msg.err = p->fix.eph;
@@ -92,14 +95,12 @@ void GpsdNode::process_data(struct gps_data_t* p) {
             msg.err_speed = p->fix.eps;
         if(!isnan(p->fix.ept))
             msg.err_time = p->fix.ept;
-    }
 
-    if(p->fix.mode >= MODE_2D){
         publisher_fix_->publish(msg);
         last_msg_no_fix_ = false;
     }
 
-    if(p->fix.mode == MODE_NO_FIX){
+    if(!publish_when_no_fix_ && p->fix.mode < MODE_2D){
         /// Send a last message before stopping sending message when there is no fix
         if(!last_msg_no_fix_)
             publisher_fix_->publish(msg);

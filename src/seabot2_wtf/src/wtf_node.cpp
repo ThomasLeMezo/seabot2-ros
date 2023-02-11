@@ -6,6 +6,10 @@
 
 using namespace placeholders;
 
+#define COLOR_DEFAULT 1
+#define COLOR_VALID 2
+#define COLOR_NOT_VALID 3
+
 WtfNode::WtfNode()
         : Node("wtf_node"){
     init_parameters();
@@ -19,14 +23,22 @@ WtfNode::WtfNode()
             loop_dt_, std::bind(&WtfNode::timer_callback, this));
 
     initscr();
+    use_default_colors();
+    start_color();
+    init_pair(COLOR_DEFAULT, -1, -1);
+    init_pair(COLOR_VALID, -1, COLOR_GREEN);
+    init_pair(COLOR_NOT_VALID, -1, COLOR_RED);
+
     windows_robot_              = subwin(stdscr, 5, 88, 0, 0);
-    windows_safety_             = subwin(stdscr, 14, 44, 5, 0);
-    windows_internal_pressure_  = subwin(stdscr, 7, 44, 19, 0);
-    windows_power_              = subwin(stdscr, 13, 44, 26, 0);
-    windows_depth_control_      = subwin(stdscr, 11, 44, 39, 0);
+    windows_safety_             = subwin(stdscr, 15, 44, 5, 0);
+    windows_internal_pressure_  = subwin(stdscr, 7, 44, 20, 0);
+    windows_power_              = subwin(stdscr, 13, 44, 27, 0);
+    windows_depth_control_      = subwin(stdscr, 11, 44, 40, 0);
+
     windows_mission_            = subwin(stdscr, 15, 44, 5, 45);
     windows_depth_              = subwin(stdscr, 8, 44, 20, 45);
     windows_piston_             = subwin(stdscr, 15, 44, 28, 45);
+    windows_gnss_               = subwin(stdscr, 8, 44, 43, 45);
 
     box(windows_robot_, ACS_VLINE, ACS_HLINE);
     box(windows_safety_, ACS_VLINE, ACS_HLINE);
@@ -36,6 +48,7 @@ WtfNode::WtfNode()
     box(windows_depth_, ACS_VLINE, ACS_HLINE);
     box(windows_piston_, ACS_VLINE, ACS_HLINE);
     box(windows_mission_, ACS_VLINE, ACS_HLINE);
+    box(windows_gnss_, ACS_VLINE, ACS_HLINE);
 
     mvwprintw(windows_robot_, 1, 1, "SEABOT");
     mvwprintw(windows_safety_, 1, 1, "SAFETY");
@@ -45,18 +58,13 @@ WtfNode::WtfNode()
     mvwprintw(windows_depth_, 1, 1, "DEPTH");
     mvwprintw(windows_piston_, 1, 1, "PISTON");
     mvwprintw(windows_mission_, 1, 1, "MISSION");
+    mvwprintw(windows_gnss_, 1, 1, "GNSS");
 
     refresh();
 }
 
 WtfNode::~WtfNode(){
     endwin();
-//    free(windows_safety_);
-//    free(windows_internal_pressure_);
-//    free(windows_power_);
-//    free(windows_depth_);
-//    free(windows_piston_);
-//    free(windows_mission_);
 }
 
 void WtfNode::init_parameters() {
@@ -106,6 +114,12 @@ void WtfNode::depth_control_callback(const seabot2_depth_control::msg::DepthCont
     msg_first_received_depth_control_ = true;
 }
 
+void WtfNode::gnss_callback(const gpsd_client::msg::GpsFix &msg){
+    msg_gnss_ = msg;
+    time_last_gnss_ = this->now();
+    msg_first_received_gnss_ = true;
+}
+
 void WtfNode::init_interfaces() {
 
     subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
@@ -128,6 +142,9 @@ void WtfNode::init_interfaces() {
 
     subscriber_control_debug_ = this->create_subscription<seabot2_depth_control::msg::DepthControlDebug>(
             "/control/depth_control_debug", 10, std::bind(&WtfNode::depth_control_callback, this, _1));
+
+    subscriber_gnss_ = this->create_subscription<gpsd_client::msg::GpsFix>(
+            "/driver/fix", 10, std::bind(&WtfNode::gnss_callback, this, _1));
 }
 
 void WtfNode::update_internal_pressure_windows(){
@@ -188,39 +205,61 @@ void WtfNode::update_mission_windows(){
     }
 }
 
+std::string WtfNode::set_color_valid(WINDOW *w, bool valid, std::string text){
+    if(valid){
+        wattron(w, COLOR_PAIR(COLOR_VALID));
+        return (text=="")?"True ":text;
+    } else {
+        wattron(w, COLOR_PAIR(COLOR_NOT_VALID));
+        return (text=="")?"False":text;
+    }
+}
+
 void WtfNode::update_safety_windows(){
     if(msg_first_received_safety_) {
         mvwprintw(windows_safety_, 1, 30, to_string((this->now() - time_last_safety_).seconds()).c_str());
 
         mvwprintw(windows_safety_, 3, 1, "global_safety_valid");
-        mvwprintw(windows_safety_, 3, 30, msg_safety_.global_safety_valid ? "True " : "False");
+        mvwprintw(windows_safety_, 3, 30, set_color_valid(windows_safety_, msg_safety_.global_safety_valid).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 4, 1, "published_frequency");
-        mvwprintw(windows_safety_, 4, 30, msg_safety_.published_frequency ? "True " : "False");
+        mvwprintw(windows_safety_, 4, 30, set_color_valid(windows_safety_, msg_safety_.published_frequency).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 5, 1, "depth_limit");
-        mvwprintw(windows_safety_, 5, 30, msg_safety_.depth_limit ? "True " : "False");
+        mvwprintw(windows_safety_, 5, 30, set_color_valid(windows_safety_, msg_safety_.depth_limit).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 6, 1, "batteries_limit");
-        mvwprintw(windows_safety_, 6, 30, msg_safety_.batteries_limit ? "True " : "False");
+        mvwprintw(windows_safety_, 6, 30, set_color_valid(windows_safety_, msg_safety_.batteries_limit).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 7, 1, "depressurization");
-        mvwprintw(windows_safety_, 7, 30, msg_safety_.depressurization ? "True " : "False");
+        mvwprintw(windows_safety_, 7, 30, set_color_valid(windows_safety_, msg_safety_.depressurization).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 8, 1, "seafloor");
-        mvwprintw(windows_safety_, 8, 30, msg_safety_.seafloor ? "True " : "False");
+        mvwprintw(windows_safety_, 8, 30, set_color_valid(windows_safety_, msg_safety_.seafloor).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 9, 1, "piston");
-        mvwprintw(windows_safety_, 9, 30, msg_safety_.piston ? "True " : "False");
+        mvwprintw(windows_safety_, 9, 30, set_color_valid(windows_safety_, msg_safety_.piston).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 10, 1, "zero_depth");
-        mvwprintw(windows_safety_, 10, 30, msg_safety_.zero_depth ? "True " : "False");
+        mvwprintw(windows_safety_, 10, 30, set_color_valid(windows_safety_, msg_safety_.zero_depth).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
-        mvwprintw(windows_safety_, 11, 1, "cpu");
-        mvwprintw(windows_safety_, 11, 30, to_string(msg_safety_.cpu).c_str());
+        mvwprintw(windows_safety_, 11, 1, "gnss");
+        mvwprintw(windows_safety_, 11, 30, set_color_valid(windows_safety_, (msg_gnss_.mode>msg_gnss_.MODE_NO_FIX)).c_str());
+        wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
-        mvwprintw(windows_safety_, 12, 1, "ram");
-        mvwprintw(windows_safety_, 12, 30, to_string((int)msg_safety_.ram).c_str());
+        mvwprintw(windows_safety_, 12, 1, "cpu");
+        mvwprintw(windows_safety_, 12, 30, to_string(msg_safety_.cpu).c_str());
+
+        mvwprintw(windows_safety_, 13, 1, "ram");
+        mvwprintw(windows_safety_, 13, 30, to_string((int)msg_safety_.ram).c_str());
 
         wrefresh(windows_safety_);
     }
@@ -230,20 +269,20 @@ void WtfNode::update_power(){
     if(msg_first_received_power_data_) {
         mvwprintw(windows_power_, 1, 30, to_string((this->now() - time_last_power_data_).seconds()).c_str());
 
-        mvwprintw(windows_power_, 3, 1, "cell_volt[0]");
-        mvwprintw(windows_power_, 3, 30, to_string(msg_power_data_.cell_volt[0]).c_str());
+        mvwprintw(windows_power_, 3, 1, "battery_volt");
+        mvwprintw(windows_power_, 3, 30, to_string(msg_power_data_.battery_volt).c_str());
 
-        mvwprintw(windows_power_, 4, 1, "cell_volt[1]");
-        mvwprintw(windows_power_, 4, 30, to_string(msg_power_data_.cell_volt[1]).c_str());
+        mvwprintw(windows_power_, 4, 1, "cell_volt[0]");
+        mvwprintw(windows_power_, 4, 30, to_string(msg_power_data_.cell_volt[0]).c_str());
 
-        mvwprintw(windows_power_, 5, 1, "cell_volt[2]");
-        mvwprintw(windows_power_, 5, 30, to_string(msg_power_data_.cell_volt[2]).c_str());
+        mvwprintw(windows_power_, 5, 1, "cell_volt[1]");
+        mvwprintw(windows_power_, 5, 30, to_string(msg_power_data_.cell_volt[1]).c_str());
 
-        mvwprintw(windows_power_, 6, 1, "cell_volt[3]");
-        mvwprintw(windows_power_, 6, 30, to_string(msg_power_data_.cell_volt[3]).c_str());
+        mvwprintw(windows_power_, 6, 1, "cell_volt[2]");
+        mvwprintw(windows_power_, 6, 30, to_string(msg_power_data_.cell_volt[2]).c_str());
 
-        mvwprintw(windows_power_, 7, 1, "battery_volt");
-        mvwprintw(windows_power_, 7, 30, to_string(msg_power_data_.battery_volt).c_str());
+        mvwprintw(windows_power_, 7, 1, "cell_volt[3]");
+        mvwprintw(windows_power_, 7, 30, to_string(msg_power_data_.cell_volt[3]).c_str());
 
         mvwprintw(windows_power_, 8, 1, "esc_current[0]");
         mvwprintw(windows_power_, 8, 30, to_string(msg_power_data_.esc_current[0]).c_str());
@@ -362,6 +401,27 @@ void WtfNode::update_robot(){
     wrefresh(windows_robot_);
 }
 
+void WtfNode::update_gnss(){
+    if(msg_first_received_gnss_) {
+        mvwprintw(windows_gnss_, 1, 30, to_string((this->now() - time_last_gnss_).seconds()).c_str());
+
+        mvwprintw(windows_gnss_, 3, 1, "mode");
+        mvwprintw(windows_gnss_, 3, 30, set_color_valid(windows_gnss_, (msg_gnss_.mode>msg_gnss_.MODE_NO_FIX),to_string(msg_gnss_.mode)).c_str());
+        wattron(windows_gnss_, COLOR_PAIR(COLOR_DEFAULT));
+
+        mvwprintw(windows_gnss_, 4, 1, "latitude");
+        mvwprintw(windows_gnss_, 4, 30, to_string(msg_gnss_.latitude).c_str());
+
+        mvwprintw(windows_gnss_, 5, 1, "longitude");
+        mvwprintw(windows_gnss_, 5, 30, to_string(msg_gnss_.longitude).c_str());
+
+//    mvwprintw(windows_gnss_, 6, 1, "time offset");
+//    mvwprintw(windows_gnss_, 6, 30, to_string(msg_gnss_.?).c_str());
+
+        wrefresh(windows_gnss_);
+    }
+}
+
 void WtfNode::timer_callback() {
     update_safety_windows();
     update_mission_windows();
@@ -371,6 +431,7 @@ void WtfNode::timer_callback() {
     update_piston();
     update_robot();
     update_depth_control();
+    update_gnss();
 }
 
 int main(int argc, char *argv[]) {

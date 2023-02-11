@@ -17,7 +17,7 @@ from launch.substitutions import (EnvironmentVariable, FindExecutable,
 import sys
 
 def generate_launch_description():
-    home_path = os.path.expanduser('~')
+    home_path = "/home/pi"
 
     bag_path = home_path + "/log/"
     if not os.path.exists(bag_path):

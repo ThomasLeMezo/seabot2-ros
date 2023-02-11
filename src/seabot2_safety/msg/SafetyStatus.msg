@@ -10,4 +10,5 @@ float32 cpu
 float32 ram
 float32 bathy
 float32 limit_depth
+bool gnss_fix_once
 

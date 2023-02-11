@@ -24,8 +24,8 @@ Mission::Mission(rclcpp::Node *n){
 bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
 
     bool is_new_waypoint = false;
+    rclcpp::Time t_now = n_->now();
     if(current_waypoint_ < waypoints_.size()){
-        rclcpp::Time t_now = n_->now();
         if(t_now < time_start_){ /// Wait before mission start
             waypoint_wait_start(wp, t_now);
         }
@@ -48,11 +48,11 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
                                 current_waypoint_, round(waypoints_[current_waypoint_].time_end.seconds()));
             }
             else
-                waypoint_end(wp);
+                waypoint_end(wp, t_now);
         }
     }
     else{ /// Last waypoint was reached
-        waypoint_end(wp);
+        waypoint_end(wp, t_now);
     }
 
     wp.mission_enable = mission_enable_;
@@ -94,7 +94,7 @@ void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time 
     duration_next_waypoint_ = waypoints_[current_waypoint_].time_end - t_now;
 }
 
-void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp){
+void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
     if(mission_enable_)
         RCLCPP_INFO(n_->get_logger(),"[Mission] End of waypoints");
     mission_enable_ = false;
@@ -107,7 +107,7 @@ void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp){
     wp.enable_thrusters = false;
     wp.seafloor_landing = false;
 
-    duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
+    duration_next_waypoint_ = waypoints_[waypoints_.size() - 1].time_end - t_now;
 }
 
 void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){

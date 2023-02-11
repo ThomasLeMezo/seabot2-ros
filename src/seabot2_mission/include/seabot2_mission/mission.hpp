@@ -145,7 +145,7 @@ private:
 
     rclcpp::Node *n_= nullptr;
 
-    void waypoint_end(seabot2_mission::msg::Waypoint &wp);
+    void waypoint_end(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now);
 
     void waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now);
 

@@ -5,7 +5,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    home_path = os.path.expanduser('~')
+    home_path = "/home/pi"
     parameters_file_list = []
 
     config_observer = os.path.join(

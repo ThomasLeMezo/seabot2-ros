@@ -38,6 +38,7 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("hold_depth_value_enter", hold_depth_value_enter_);
     this->declare_parameter<double>("hold_depth_value_exit", hold_depth_value_exit_);
     this->declare_parameter<double>("hold_velocity_enter", hold_velocity_enter_);
+    this->declare_parameter<double>("hold_velocity_exit", hold_velocity_exit_);
     this->declare_parameter<double>("delta_velocity_lb", delta_velocity_lb_);
     this->declare_parameter<double>("delta_velocity_ub", delta_velocity_ub_);
     this->declare_parameter<double>("delta_position_lb", delta_position_lb_);
@@ -63,6 +64,7 @@ void DepthControlNode::init_parameters() {
     hold_depth_value_enter_ = this->get_parameter_or("hold_depth_value_enter", hold_depth_value_enter_);
     hold_depth_value_exit_ = this->get_parameter_or("hold_depth_value_exit", hold_depth_value_exit_);
     hold_velocity_enter_ = this->get_parameter_or("hold_velocity_enter", hold_velocity_enter_);
+    hold_velocity_exit_ = this->get_parameter_or("hold_velocity_exit", hold_velocity_exit_);
     delta_velocity_lb_ = this->get_parameter_or("delta_velocity_lb", delta_velocity_lb_);
     delta_velocity_ub_ = this->get_parameter_or("delta_velocity_ub", delta_velocity_ub_);
     delta_position_lb_ = this->get_parameter_or("delta_position_lb", delta_position_lb_);

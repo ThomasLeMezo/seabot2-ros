@@ -13,7 +13,8 @@
 #include "std_srvs/srv/set_bool.hpp"
 #include "seabot2_safety/msg/safety_status.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
-#include <bluerobotics_ping_driver/msg/profile.hpp>
+#include "bluerobotics_ping_driver/msg/profile.hpp"
+#include "gpsd_client/msg/gps_fix.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -64,13 +65,23 @@ private:
     bool flash_surface_enable_ = false;
 
     double piston_position_ = 0.0;
+    double piston_set_point_ = 0.0;
+    bool piston_switch_top_ = false;
     int piston_state_ = 0;
     rclcpp::Time piston_last_received_ = this->now();
     std::chrono::milliseconds piston_no_data_warning_ = 1s;
     double limit_piston_position_reset_depth_ = 100.0;
+    uint16_t piston_motor_speed_= 2000;
+    uint16_t piston_motor_speed_stop_ = 2000;
+    rclcpp::Time piston_error_velocity_time_ = this->now();
+    bool piston_error_velocity_detected_ = false;
+    std::chrono::milliseconds piston_error_velocity_delay_ = 10s;
+    double piston_error_threshold_set_point_ = 1e5;
+    double piston_error_threshold_position_ = 100;
+    double piston_last_position_ = 0.0;
 
     double max_depth_reset_zero_ = 1.0; // Should take into account atmospheric pressure variations
-    double max_velocity_reset_zero_ = 0.1;
+    double max_velocity_reset_zero_ = 0.04;
     enum ZERO_DEPTH_STATUS {IDLE, WAIT_RESET};
     ZERO_DEPTH_STATUS reset_depth_status_ = ZERO_DEPTH_STATUS::IDLE;
     rclcpp::Time depth_reset_time_wait_ = this->now();
@@ -87,6 +98,13 @@ private:
     double limit_depth_ = 100.0;
     std::chrono::milliseconds ping_no_data_warning_ = 4s;
 
+    bool seabed_test_detected_ = false;
+    rclcpp::Time seabed_test_first_detected_ = this->now();
+    std::chrono::milliseconds  seabed_delay_detection = 10s;
+
+    bool gnss_fix_once_ = false;
+    int gnss_mode_ = gpsd_client::msg::GpsFix::MODE_NOT_SEEN;
+
     /// Interfaces
     rclcpp::Publisher<seabot2_safety::msg::SafetyStatus>::SharedPtr publisher_safety_;
 
@@ -95,6 +113,7 @@ private:
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_piston_data_;
     rclcpp::Subscription<bluerobotics_ping_driver::msg::Profile>::SharedPtr subscriber_profile_data_;
+    rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
 
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_zero_pressure_;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_flash_surface_;
@@ -145,6 +164,12 @@ private:
     void profile_callback(const bluerobotics_ping_driver::msg::Profile &msg);
 
     /**
+     * Gnss callback
+     * @param msg
+     */
+    void gpsd_callback(const gpsd_client::msg::GpsFix &msg);
+
+    /**
      *
      * @return
      */
@@ -178,6 +203,17 @@ private:
      *  Test max depth
      */
     void test_depth_max();
+
+    /**
+     * Test if seabed is reached
+     */
+    bool test_seabed_reached();
+
+    /**
+     * Test if gnss fix is ok
+     * @return
+     */
+    bool test_gnss_fix();
 
     /**
      * Detect if surface is reached

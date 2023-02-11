@@ -21,6 +21,7 @@ private:
     gpsmm *gps_ = nullptr;
     string frame_id_ = "gps";
     bool last_msg_no_fix_ = false;
+    bool publish_when_no_fix_ = true;
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;

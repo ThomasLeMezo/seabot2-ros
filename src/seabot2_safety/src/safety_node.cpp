@@ -36,6 +36,10 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<double>("robot_height_ping", robot_height_ping_);
     this->declare_parameter<double>("offset_max_depth", offset_max_depth_);
     this->declare_parameter<double>("limit_depth_default", limit_depth_default_);
+    this->declare_parameter<double>("max_velocity_reset_zero", max_velocity_reset_zero_);
+    this->declare_parameter<double>("piston_error_threshold_set_point", piston_error_threshold_set_point_);
+    this->declare_parameter<double>("piston_error_threshold_position", piston_error_threshold_position_);
+    this->declare_parameter<int>("piston_error_velocity_delay", piston_error_velocity_delay_.count());
 
     internal_humidity_limit_ = this->get_parameter_or("internal_humidity_limit", internal_humidity_limit_);
     internal_pressure_limit_ = this->get_parameter_or("internal_pressure_limit", internal_pressure_limit_);
@@ -51,6 +55,15 @@ void SafetyNode::init_parameters() {
     robot_height_ping_ = this->get_parameter_or("robot_height_ping", robot_height_ping_);
     offset_max_depth_ = this->get_parameter_or("offset_max_depth", offset_max_depth_);
     limit_depth_default_ = this->get_parameter_or("limit_depth_default", limit_depth_default_);
+    max_velocity_reset_zero_ = this->get_parameter_or("max_velocity_reset_zero", max_velocity_reset_zero_);
+
+    piston_error_threshold_set_point_ = this->get_parameter_or("piston_error_threshold_set_point", piston_error_threshold_set_point_);
+    piston_error_threshold_position_ = this->get_parameter_or("piston_error_threshold_position", piston_error_threshold_position_);
+    piston_error_velocity_delay_ = std::chrono::milliseconds(this->get_parameter_or("piston_error_velocity_delay", piston_error_velocity_delay_.count()));
+}
+
+void SafetyNode::gpsd_callback(const gpsd_client::msg::GpsFix &msg){
+    gnss_mode_ = msg.mode;
 }
 
 void SafetyNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
@@ -74,8 +87,11 @@ void SafetyNode::power_callback(const seabot2_power_driver::msg::PowerState &msg
 
 void SafetyNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
     piston_position_ = msg.position;
+    piston_set_point_ = msg.position_set_point;
     piston_last_received_ = msg.header.stamp;
     piston_state_ = msg.state;
+    piston_switch_top_ = msg.switch_top;
+    piston_motor_speed_ = msg.motor_speed;
 }
 
 void SafetyNode::profile_callback(const bluerobotics_ping_driver::msg::Profile &msg){
@@ -101,6 +117,9 @@ void SafetyNode::init_interfaces() {
 
     subscriber_profile_data_ = this->create_subscription<bluerobotics_ping_driver::msg::Profile>(
             "/driver/profile", 10, std::bind(&SafetyNode::profile_callback, this, _1));
+
+    subscriber_gnss_data_ = this->create_subscription<gpsd_client::msg::GpsFix>(
+            "/driver/fix", 10, std::bind(&SafetyNode::gpsd_callback, this, _1));
 
     client_zero_pressure_ = this->create_client<std_srvs::srv::Trigger>("/observer/zero_pressure");
 
@@ -207,7 +226,33 @@ bool SafetyNode::test_piston(){
         safety_piston_ &= false;
         RCLCPP_WARN(this->get_logger(), "[Safety_node] No piston data received, %f", (this->now()-piston_last_received_).seconds());
     }
+    if(piston_motor_speed_!=piston_motor_speed_stop_ // motor is running
+        && abs(piston_position_-piston_set_point_) > piston_error_threshold_set_point_ // piston is not at set point
+        && abs(piston_last_position_ - piston_position_) < piston_error_threshold_position_ // piston is not moving
+        ){
+        if(!piston_error_velocity_detected_){
+            piston_error_velocity_detected_ = true;
+            piston_error_velocity_time_ = this->now();
+        }
+        else{
+            if(this->now()-piston_error_velocity_time_ > piston_error_velocity_delay_){
+                is_valid &= false;
+                safety_piston_ &= false;
+                RCLCPP_WARN(this->get_logger(), "[Safety_node] Piston error velocity detected");
+            }
+        }
+    }
+    else{
+        piston_error_velocity_detected_ = false;
+    }
+    piston_last_position_ = piston_position_;
+
     return is_valid;
+}
+
+bool SafetyNode::test_gnss_fix(){
+    gnss_fix_once_ |= (gnss_mode_ > gpsd_client::msg::GpsFix::MODE_NO_FIX);
+    return gnss_fix_once_;
 }
 
 int SafetyNode::call_service_zero_depth(){
@@ -305,13 +350,36 @@ void SafetyNode::test_depth_max(){
     if(this->now()-ping_last_time_received_ < ping_no_data_warning_ &&
         this->now()-depth_last_received_ < depth_no_data_warning_){
         if (ping_confidence_ > 0.9) {
-            limit_depth_ = bathy_ - offset_max_depth_;
+            limit_depth_ = std::min(0.0, (bathy_ - offset_max_depth_));
+        }
+        else{
+            limit_depth_ = limit_depth_default_;
         }
     }
     else{
         limit_depth_ = limit_depth_default_;
     }
 
+}
+
+bool SafetyNode::test_seabed_reached(){
+    if(piston_switch_top_ && abs(velocity_) < max_velocity_reset_zero_){
+        if(!seabed_test_detected_) {
+            seabed_test_first_detected_ = this->now();
+            seabed_test_detected_ = true;
+        }
+        else{
+             if(this->now()-seabed_test_first_detected_ > seabed_delay_detection){
+                 safety_seafloor_ = true;
+                 return true;
+             }
+         }
+    }
+    else{
+        seabed_test_detected_ = false;
+    }
+    safety_seafloor_ = false;
+    return false;
 }
 
 void SafetyNode::timer_callback() {
@@ -332,8 +400,11 @@ void SafetyNode::timer_callback() {
     global_safety_ok_ &= test_piston();
     global_safety_ok_ &= test_zero_pressure();
     global_safety_ok_ &= test_battery();
+    global_safety_ok_ &= test_gnss_fix();
     flash_surface();
     get_ram_cpu();
+    test_depth_max();
+    global_safety_ok_ &= test_seabed_reached();
 
     seabot2_safety::msg::SafetyStatus msg;
     msg.global_safety_valid = global_safety_ok_;
@@ -346,8 +417,9 @@ void SafetyNode::timer_callback() {
     msg.zero_depth = safety_zero_depth_;
     msg.cpu = cpu_;
     msg.ram = ram_;
-    msg.depth_limit = limit_depth_;
+    msg.limit_depth = limit_depth_;
     msg.bathy = bathy_;
+    msg.gnss_fix_once = gnss_fix_once_;
     publisher_safety_->publish(msg);
 }
 

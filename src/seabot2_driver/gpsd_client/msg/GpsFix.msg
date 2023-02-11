@@ -79,3 +79,6 @@ float64 err_speed
 
 # Temporal uncertainty [ept]
 float64 err_time
+
+# Number of satellites used in solution
+#int32 satellites_visible

@@ -152,6 +152,8 @@ void KalmanNode::publish_data() {
     msg.variance[5] = k_.gamma_forcast_(5,5);
     msg.variance[6] = k_.gamma_forcast_(6,6);
 
+    msg.valid = k_.is_valid_;
+
     publisher_kalman_->publish(msg);
 }
 

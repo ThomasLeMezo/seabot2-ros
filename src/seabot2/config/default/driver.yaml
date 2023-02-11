@@ -50,7 +50,7 @@ driver:
       loop_dt: 10 #ms
       enable_ping: true
       mode_auto: true
-      speed_of_sound: 1440
+      speed_of_sound: 1440.0
 
   temperature_node:
     ros__parameters:

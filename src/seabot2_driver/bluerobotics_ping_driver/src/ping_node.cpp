@@ -91,7 +91,7 @@ void PingNode::init_parameters() {
     this->declare_parameter<std::string>("serial_port", uart_port_);
     this->declare_parameter<int>("serial_baudrate", uart_baudrate_);
     this->declare_parameter<bool>("mode_auto", mode_auto_);
-    this->declare_parameter<int>("speed_of_sound", speed_of_sound_);
+    this->declare_parameter<double>("speed_of_sound", speed_of_sound_);
     this->declare_parameter<int>("ping_interval", ping_interval_);
     this->declare_parameter<int>("gain_setting", gain_setting_);
     this->declare_parameter<bool>("enable_ping", enable_ping_);

@@ -17,3 +17,8 @@ gsettings set org.gnome.desktop.lockdown disable-lock-screen true
 gsettings set org.gnome.desktop.lockdown disable-log-out true
 
 # @reboot screen -dmS wtf_daemon zsh -c "wtf"
+
+# sudo useradd -M rosuser
+# sudo usermod -L rosuser
+# sudo usermod -a -G pi,adm,dialout,cdrom,floppy,sudo,audio,dip,video,plugdev,netdev,lxd rosuser
+# sudo chown rosuser /home/rosuser

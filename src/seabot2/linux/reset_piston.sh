@@ -3,3 +3,8 @@ i2cset -y 1 0x1E 0x05 0x00
 # Reset piston
 # i2cset -y 1 0x39 0x04 0x02
 # i2cset -y 1 0x39 0x00 0x02
+
+
+# sudo systemctl stop seabot2.driver
+# sudo systemctl stop seabot2.record
+# sudo systemctl stop seabot2

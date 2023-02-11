@@ -18,6 +18,7 @@ find_package(seabot2_piston_driver REQUIRED)
 find_package(seabot2_mission REQUIRED)
 find_package(seabot2_depth_control REQUIRED)
 find_package(seabot2_safety REQUIRED)
+find_package(gpsd_client REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Curses REQUIRED)
 
@@ -35,6 +36,7 @@ ament_target_dependencies(wtf_node
         seabot2_mission
         seabot2_depth_control
         seabot2_safety
+        gpsd_client
         std_srvs
         )
 target_link_libraries(wtf_node "${cpp_typesupport_target}" ${CURSES_LIBRARIES})

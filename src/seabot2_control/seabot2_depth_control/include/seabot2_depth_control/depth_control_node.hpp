@@ -65,9 +65,10 @@ private:
 
     /// Hold depth parameters
     bool hold_depth_enable_ = false;
-    double hold_depth_value_enter_ = 0.05; /// m
-    double hold_depth_value_exit_ = 0.1; /// m
-    double hold_velocity_enter_ = 0.01; /// m/s
+    double hold_depth_value_enter_ = 0.0; /// m
+    double hold_depth_value_exit_ = 0.0; /// m
+    double hold_velocity_enter_ = 0.0; /// m/s
+    double hold_velocity_exit_ = 0.0;
 
     double delta_velocity_lb_ = 0.;
     double delta_velocity_ub_ = 0.;

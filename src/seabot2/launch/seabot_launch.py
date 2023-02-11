@@ -6,7 +6,7 @@ from launch.actions import ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
-    home_path = os.path.expanduser('~')
+    home_path = "/home/pi"
 
     control = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(

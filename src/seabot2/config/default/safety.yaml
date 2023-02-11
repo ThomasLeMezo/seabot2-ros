@@ -2,8 +2,8 @@ safety:
   safety_node:
     ros__parameters:
       loop_dt: 1000 # ms
-      internal_humidity_limit: 70. # %
-      internal_pressure_limit: 800. # mbar
+      internal_humidity_limit: 70.0 # %
+      internal_pressure_limit: 800.0 # mbar
       battery_volt_limit: 12.5 # V
       depth_flash_surface: 0.5 # m
       depth_limit_max_: 110.0 # m
@@ -11,3 +11,6 @@ safety:
       battery_no_data_warning: 5000 # ms
       internal_no_data_warning: 1000 # ms
       piston_no_data_warning: 1000 # ms
+      limit_depth_default: 100.0 # m
+      robot_height_ping: 1.1
+      offset_max_depth: 2.0
