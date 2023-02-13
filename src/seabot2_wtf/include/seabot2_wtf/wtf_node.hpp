@@ -29,6 +29,31 @@ private:
 
     string hostname_ = "Seabot";
 
+    const array<std::string, 4> gpsd_mode_string_ = {"NOT_SEEN",
+                                                     "NO_FIX",
+                                                     "2D",
+                                                     "3D"};
+    const array<std::string, 6> piston_state_string_ = {"SEARCH_SWITCH_BOTTOM",
+                                                        "RELEASE_SWITCH_BOTTOM",
+                                                        "BACK_SWITCH_BOTTOM",
+                                                        "REGULATION",
+                                                        "EXIT",
+                                                        "BATT_LOW"};
+    const array<std::string, 6> power_state_string_ = {"IDLE",
+                                                       "MEASURE_VOLTAGE",
+                                                       "POWER_ON",
+                                                       "WAIT_TO_SLEEP",
+                                                       "SLEEP"};
+
+    const array<std::string, 8> depth_control_string_ = {"IDLE",
+                                                        "SURFACE",
+                                                        "SINK",
+                                                        "CONTROL",
+                                                        "STATIONARY",
+                                                        "EMERGENCY",
+                                                        "PISTON_ISSUE",
+                                                        "HOLD_DEPTH"};
+
     /// Variable
     WINDOW *windows_robot_;
     WINDOW *windows_safety_;

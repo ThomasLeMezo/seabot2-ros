@@ -46,6 +46,8 @@ public:
     double tick_per_turn_ =  2048*4;
     double piston_diameter_ =  0.045;
     double piston_max_tick_ =  1146880;
+    double pressure_at_surface_ = 1.01325e5;
+    const double degree_to_kelvin_ = 273.15;
 
     double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;

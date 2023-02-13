@@ -30,8 +30,12 @@ int Light::set_light_enable(const bool &enable) const{
         RCLCPP_WARN(n_->get_logger(), "[Light_driver] I2C bus Failure - Set light enable");
         return EXIT_FAILURE;
     }
-    else
-        return EXIT_SUCCESS;
+    else{ // Check if the light is enable
+        if(get_light_enable() == enable)
+            return EXIT_SUCCESS;
+        else
+            return EXIT_FAILURE;
+    }
 }
 
 bool Light::get_light_enable() const{

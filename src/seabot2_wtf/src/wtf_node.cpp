@@ -3,6 +3,7 @@
 #include <ctime>
 #include <iomanip>
 #include <unistd.h>
+#include <array>
 
 using namespace placeholders;
 
@@ -294,7 +295,7 @@ void WtfNode::update_power(){
         mvwprintw(windows_power_, 10, 30, to_string(msg_power_data_.motor_current).c_str());
 
         mvwprintw(windows_power_, 11, 1, "power_state");
-        mvwprintw(windows_power_, 11, 30, to_string(msg_power_data_.power_state).c_str());
+        mvwprintw(windows_power_, 11, 30, power_state_string_[msg_power_data_.power_state].c_str());
 
         wrefresh(windows_power_);
     }
@@ -343,7 +344,7 @@ void WtfNode::update_piston(){
         mvwprintw(windows_piston_, 8, 30, msg_piston_data_.motor_sens? "True " : "False");
 
         mvwprintw(windows_piston_, 9, 1, "state");
-        mvwprintw(windows_piston_, 9, 30, to_string(msg_piston_data_.state).c_str());
+        mvwprintw(windows_piston_, 9, 30, piston_state_string_[msg_piston_data_.state].c_str());
 
         mvwprintw(windows_piston_, 10, 1, "motor_speed_set_point");
         mvwprintw(windows_piston_, 10, 30, to_string(msg_piston_data_.motor_speed_set_point).c_str());
@@ -381,7 +382,7 @@ void WtfNode::update_depth_control(){
         mvwprintw(windows_depth_control_, 7, 30, to_string(msg_depth_control_.piston_set_point).c_str());
 
         mvwprintw(windows_depth_control_, 8, 1, "mode");
-        mvwprintw(windows_depth_control_, 8, 30, to_string(msg_depth_control_.mode).c_str());
+        mvwprintw(windows_depth_control_, 8, 30, depth_control_string_[msg_depth_control_.mode].c_str());
 
         wrefresh(windows_depth_control_);
     }
@@ -392,7 +393,7 @@ void WtfNode::update_robot(){
     mvwprintw(windows_robot_, 1, 20, to_string((this->now()).seconds()).c_str());
 
     auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
+    auto tm = *std::gmtime(&t); // localtime
     stringstream ss;
     ss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
     mvwprintw(windows_robot_, 1, 40, ss.str().c_str());
@@ -406,7 +407,7 @@ void WtfNode::update_gnss(){
         mvwprintw(windows_gnss_, 1, 30, to_string((this->now() - time_last_gnss_).seconds()).c_str());
 
         mvwprintw(windows_gnss_, 3, 1, "mode");
-        mvwprintw(windows_gnss_, 3, 30, set_color_valid(windows_gnss_, (msg_gnss_.mode>msg_gnss_.MODE_NO_FIX),to_string(msg_gnss_.mode)).c_str());
+        mvwprintw(windows_gnss_, 3, 30, gpsd_mode_string_[msg_gnss_.mode].c_str());
         wattron(windows_gnss_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_gnss_, 4, 1, "latitude");
@@ -415,8 +416,12 @@ void WtfNode::update_gnss(){
         mvwprintw(windows_gnss_, 5, 1, "longitude");
         mvwprintw(windows_gnss_, 5, 30, to_string(msg_gnss_.longitude).c_str());
 
-//    mvwprintw(windows_gnss_, 6, 1, "time offset");
-//    mvwprintw(windows_gnss_, 6, 30, to_string(msg_gnss_.?).c_str());
+        mvwprintw(windows_gnss_, 6, 1, "time (GNSS)");
+        time_t t = round(msg_gnss_.time);
+        auto tm = *std::gmtime(&t); // localtime
+        stringstream ss;
+        ss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+        mvwprintw(windows_gnss_, 6, 24, ss.str().c_str());
 
         wrefresh(windows_gnss_);
     }

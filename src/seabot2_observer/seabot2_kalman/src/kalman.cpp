@@ -157,11 +157,11 @@ void Kalman::set_new_depth_data(double depth, double velocity, const rclcpp::Tim
 }
 
 void Kalman::update_temperature(double temperature){
-    temperature_ = temperature+273.15;
+    temperature_ = temperature+degree_to_kelvin_;
 }
 
 void Kalman::update_pressure(double pressure){
-    pressure_ = (pressure*1e5);
+    pressure_ = pressure*1e5+pressure_at_surface_;
 }
 
 void Kalman::compute_kalman(bool new_depth_data, bool new_piston_data) {
