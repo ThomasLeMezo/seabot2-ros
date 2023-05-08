@@ -18,7 +18,7 @@ def test_enable_pressure(yaml_data, sensor_node_name):
                 return yaml_data['driver'][sensor_node_name]['ros__parameters']['enable']
     return False
 def generate_launch_description():
-    home_path = "/home/pi"
+    home_path = os.path.expanduser('~')
     hostname = socket.gethostname()
     parameters_file_list = []
 

@@ -5,7 +5,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    home_path = "/home/pi"
+    home_path = os.path.expanduser('~')
     parameters_file_list = []
 
     config_observer = os.path.join(
@@ -23,6 +23,14 @@ def generate_launch_description():
     )
     if os.path.exists(config_physics):
         parameters_file_list.append(config_physics)
+
+    bag_recorder = Node(
+        package='seabot2_bag_recorder',
+        executable='seabot2_recorder',
+        namespace='observer',
+        name='seabot2_recorder',
+        parameters=parameters_file_list
+    )
 
     depth_filter_node = Node(
         package='seabot2_depth_filter',
@@ -81,6 +89,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        bag_recorder,
         depth_filter_node,
         internal_sensor_filter_node,
         temperature_filter_node,
