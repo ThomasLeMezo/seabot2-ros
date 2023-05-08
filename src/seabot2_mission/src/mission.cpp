@@ -67,7 +67,6 @@ void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time 
     wp.depth = waypoints_[current_waypoint_].depth;
 
     wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
-    wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
     wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
     wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
 
@@ -101,7 +100,6 @@ void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_n
 
     wp.depth = 0.0;
     wp.limit_velocity = limit_velocity_default_;
-    wp.approach_velocity = approach_velocity_default_;
     wp.north = waypoints_[waypoints_.size() - 1].north + offset_north_;
     wp.east = waypoints_[waypoints_.size() - 1].east + offset_east_;
     wp.enable_thrusters = false;
@@ -117,7 +115,6 @@ void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Ti
     wp.east = waypoints_[current_waypoint_].east + offset_east_;
 
     wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
-    wp.approach_velocity = waypoints_[current_waypoint_].approach_velocity;
     wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
     wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
     duration_next_waypoint_ = time_start_ - t_now;
@@ -249,12 +246,6 @@ int Mission::decode_waypoint(pt::ptree::value_type &v, rclcpp::Time &last_time, 
             else
                 w.limit_velocity = limit_velocity_default_;
 
-            boost::optional<double> approach = v.second.get_optional<double>("approach_velocity");
-            if(vel.is_initialized())
-                w.approach_velocity = approach.value();
-            else
-                w.approach_velocity = approach_velocity_default_;
-
             boost::optional<bool> enable_thrusters = v.second.get_optional<bool>("enable_thrusters");
             if(enable_thrusters.is_initialized())
                 w.enable_thrusters = enable_thrusters.value();
@@ -266,7 +257,7 @@ int Mission::decode_waypoint(pt::ptree::value_type &v, rclcpp::Time &last_time, 
         last_time = w.time_end;
         waypoints_.push_back(w);
 
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Load Waypoint %zu (t_end=%li, d=%lf, E=%lf, N=%lf, vel=%f, app=%f)", waypoints_.size(), (long int)w.time_end.seconds(), w.depth, w.east, w.north, w.limit_velocity, w.approach_velocity);
+        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Load Waypoint %zu (t_end=%li, d=%lf, E=%lf, N=%lf, vel=%f, app=%f)", waypoints_.size(), (long int)w.time_end.seconds(), w.depth, w.east, w.north, w.limit_velocity);
     }
     else if(v.first == "loop"){
         const int nb_loop = v.second.get<int>("<xmlattr>.number", 1);
@@ -282,5 +273,15 @@ int Mission::decode_waypoint(pt::ptree::value_type &v, rclcpp::Time &last_time, 
         }
     }
     return EXIT_SUCCESS;
+}
+
+vector<float> Mission::get_velocity_list(){
+    vector<float> velocity_list;
+    for(auto & waypoint : waypoints_){
+        bool found = (find(velocity_list.begin(), velocity_list.end(), (float)waypoint.limit_velocity) != velocity_list.end());
+        if(!found)
+            velocity_list.push_back(waypoint.limit_velocity);
+    }
+    return velocity_list;
 }
 

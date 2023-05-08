@@ -17,6 +17,9 @@
 #include "seabot2_safety/msg/safety_status.hpp"
 #include "seabot2_density/msg/density.hpp"
 #include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+#include "seabot2_depth_control/alpha_solver.h"
+#include "seabot2_depth_control/msg/alpha_debug.hpp"
+#include "seabot2_depth_control/srv/alpha_mission.hpp"
 
 #define NB_STATES 8
 #define PISTON_STATE_OK 2
@@ -35,6 +38,8 @@ private:
     std::chrono::milliseconds loop_dt_ = 200ms; /// loop dt
 
     /// Variable
+    AlphaSolver alpha_solver_;
+
     bool emergency_ = true;
     float limit_depth_ = 100.0;
 
@@ -63,6 +68,8 @@ private:
     double motor_max_rpm_ = 38.0;
     double flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_; /// in m3/sec
 
+    double piston_flow_security_percentage_ = 0.8;
+
     /// Hold depth parameters
     bool hold_depth_enable_ = false;
     double hold_depth_value_enter_ = 0.0; /// m
@@ -82,7 +89,6 @@ private:
     bool piston_switch_bottom_ = false;
     int piston_state_ = 0;
     double piston_set_point_ = 0.;
-    double piston_set_point_old_ = 0.;
     bool is_exit_ = true;
 
     /// Callback data
@@ -119,6 +125,9 @@ private:
 
     rclcpp::Publisher<seabot2_piston_driver::msg::PistonSetPoint>::SharedPtr publisher_piston_;
     rclcpp::Publisher<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr publisher_debug_;
+    rclcpp::Publisher<seabot2_depth_control::msg::AlphaDebug>::SharedPtr publisher_alpha_debug_;
+
+    rclcpp::Service<seabot2_depth_control::srv::AlphaMission>::SharedPtr service_alpha_computation_;
 
     /**
      *  Init and get parameters of the Node
@@ -193,5 +202,15 @@ private:
      * @return
      */
     double optimize_u(std::array<double, 4> &u_tab);
+
+    /**
+     * Compute the alpha values
+     * @param request_header
+     * @param request
+     * @param response
+     */
+    void alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
+                                                         const std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Request> request,
+                                                         std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Response> response);
 };
 #endif //BUILD_DEPTH_CONTROL_NODE_HPP

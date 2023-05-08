@@ -11,6 +11,7 @@
 #include "seabot2_light_driver/srv/light.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 #include "std_srvs/srv/trigger.hpp"
+#include "seabot2_depth_control/srv/alpha_mission.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -37,12 +38,12 @@ private:
 
     /// Controller
     double limit_velocity_default_ = 0.02;
-    double approach_velocity_default_ = 1.0;
 
     /// Interfaces
     rclcpp::Publisher<seabot2_mission::msg::Waypoint>::SharedPtr publisher_waypoint_;
     rclcpp::Client<seabot2_light_driver::srv::Light>::SharedPtr client_light_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_log_parameters_;
+    rclcpp::Client<seabot2_depth_control::srv::AlphaMission>::SharedPtr client_alpha_mission_;
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_mission_reload_ ;
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_mission_enable_ ;
@@ -96,6 +97,12 @@ private:
      * Load mission
      */
     int load_mission();
+
+    /**
+     * Call alpha mission
+     * @param velocity_list
+     */
+    void call_velocity_computation(std::vector<float> &velocity_list);
 
 };
 #endif //BUILD_MISSION_NODE_HPP

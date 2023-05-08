@@ -19,13 +19,12 @@ class Waypoint{
 public:
     Waypoint(){}
 
-    Waypoint(const rclcpp::Time &time_end_param, const double &depth_param, const double &north_param, const double &east_param, const double&limit_velocity_param, const double&approach_velocity_param, const bool &enable_thrusters_param=true, const bool &seafloor_landing_param=false){
+    Waypoint(const rclcpp::Time &time_end_param, const double &depth_param, const double &north_param, const double &east_param, const double&limit_velocity_param, const bool &enable_thrusters_param=true, const bool &seafloor_landing_param=false){
         time_end = time_end_param;
         depth = depth_param;
         east = east_param;
         north = north_param;
         limit_velocity = limit_velocity_param;
-        approach_velocity = approach_velocity_param;
         enable_thrusters = enable_thrusters_param;
         seafloor_landing = seafloor_landing_param;
     }
@@ -114,6 +113,12 @@ public:
      */
     void set_approach_velocity_default(const double &vel);
 
+    /**
+     * @brief get_velocity_list
+     * @return
+     */
+    std::vector<float> get_velocity_list();
+
 private:
     /**
      * Decode a waypoint
@@ -139,7 +144,6 @@ private:
     double offset_north_ = 0.0;
     double offset_east_ = 0.0;
     double limit_velocity_default_ = 0.02;
-    double approach_velocity_default_ = 1.0;
 
     double default_time_to_start_ = 60.0;
 
@@ -166,10 +170,6 @@ inline double Mission::get_time_to_next_waypoint() const{
 
 inline void Mission::set_limit_velocity_default(const double &vel){
     limit_velocity_default_ = vel;
-}
-
-inline void Mission::set_approach_velocity_default(const double &vel){
-    approach_velocity_default_ = vel;
 }
 
 

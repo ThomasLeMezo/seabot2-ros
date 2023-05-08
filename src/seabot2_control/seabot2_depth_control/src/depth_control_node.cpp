@@ -5,7 +5,7 @@
 using namespace std::placeholders;
 
 DepthControlNode::DepthControlNode()
-        : Node("depth_control_node"){
+        : Node("depth_control_node"), alpha_solver_(){
 
     init_parameters();
     init_interfaces();
@@ -44,6 +44,7 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("delta_position_lb", delta_position_lb_);
     this->declare_parameter<double>("delta_position_ub", delta_position_ub_);
     this->declare_parameter<bool>("control_filter", control_filter_);
+    this->declare_parameter<double>("piston_flow_security_percentage", piston_flow_security_percentage_);
 
 
     physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
@@ -70,6 +71,7 @@ void DepthControlNode::init_parameters() {
     delta_position_lb_ = this->get_parameter_or("delta_position_lb", delta_position_lb_);
     delta_position_ub_ = this->get_parameter_or("delta_position_ub", delta_position_ub_);
     control_filter_ = this->get_parameter_or("control_filter", control_filter_);
+    piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage", piston_flow_security_percentage_);
 
     /// Computed parameters
     Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
@@ -77,6 +79,9 @@ void DepthControlNode::init_parameters() {
     coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
     coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
     flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_;
+
+    /// Ensuring a safety margin on the piston flow of piston_flow_security_percentage
+    alpha_solver_.update_coeff(Cf_, coeff_A_, coeff_B_, flow_max_*piston_flow_security_percentage_);
 }
 
 void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &msg) {
@@ -117,8 +122,15 @@ void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &m
         depth_set_point_ = 0.0;
 
     limit_velocity_ = msg.limit_velocity;
-    approach_velocity_ = msg.approach_velocity;
     last_waypoint_time_ = msg.header.stamp;
+
+    // Update approach velocity
+    approach_velocity_ = alpha_solver_.compute_alpha(limit_velocity_);
+
+    // Debug
+    seabot2_depth_control::msg::AlphaDebug msg_alpha_debug;
+    msg_alpha_debug.approach_velocity = approach_velocity_;
+    publisher_alpha_debug_->publish(msg_alpha_debug);
 }
 
 void DepthControlNode::init_interfaces() {
@@ -139,6 +151,20 @@ void DepthControlNode::init_interfaces() {
 
     publisher_piston_ = this->create_publisher<seabot2_piston_driver::msg::PistonSetPoint>("/driver/piston_set_point", 10);
     publisher_debug_ = this->create_publisher<seabot2_depth_control::msg::DepthControlDebug>("depth_control_debug", 10);
+    publisher_alpha_debug_ = this->create_publisher<seabot2_depth_control::msg::AlphaDebug>("alpha_debug", 10);
+
+    service_alpha_computation_ = this->create_service<seabot2_depth_control::srv::AlphaMission>("alpha_mission",
+                                                                           bind(&DepthControlNode::alpha_mission_pre_computation, this, _1, _2, _3));
+}
+
+void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
+                                      const std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Request> request,
+                                      std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Response> response){
+    RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Received velocity computation request");
+    for(auto velocity : request->velocity_limits){
+        auto result = alpha_solver_.compute_alpha(velocity);
+        RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Compute velocity for beta = %f, alpha = %f", velocity, result);
+    }
 }
 
 void DepthControlNode::density_callback(const seabot2_density::msg::Density &msg){

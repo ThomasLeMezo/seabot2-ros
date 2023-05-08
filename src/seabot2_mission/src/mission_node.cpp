@@ -30,7 +30,6 @@ void MissionNode::init_parameters() {
     this->declare_parameter<double>("flash_next_waypoint_time", flash_next_waypoint_time_);
     this->declare_parameter<int>("flash_number", flash_number_);
     this->declare_parameter<double>("limit_velocity_default", limit_velocity_default_);
-    this->declare_parameter<double>("approach_velocity_default", approach_velocity_default_);
 
 
     mission_file_name_ = this->get_parameter_or("mission_file_name", mission_file_name_);
@@ -39,7 +38,6 @@ void MissionNode::init_parameters() {
     flash_next_waypoint_time_ = this->get_parameter_or("flash_next_waypoint_time", flash_next_waypoint_time_);
     flash_number_ = this->get_parameter_or("flash_number", flash_number_);
     limit_velocity_default_ = this->get_parameter_or("limit_velocity_defualt", limit_velocity_default_);
-    approach_velocity_default_ = this->get_parameter_or("approach_velocity_default", approach_velocity_default_);
 
 }
 
@@ -57,7 +55,9 @@ void MissionNode::init_interfaces() {
 
     client_light_ = this->create_client<seabot2_light_driver::srv::Light>("/driver/light", rmw_qos_profile_services_default,callback_group_);
 
-    client_log_parameters_ = this->create_client<std_srvs::srv::Trigger>("/log_parameters", rmw_qos_profile_services_default,callback_group_);
+    client_log_parameters_ = this->create_client<std_srvs::srv::Trigger>("/observer/log_parameters", rmw_qos_profile_services_default,callback_group_);
+
+    client_alpha_mission_ =  this->create_client<seabot2_depth_control::srv::AlphaMission>("/control/alpha_mission", rmw_qos_profile_services_default,callback_group_);
 }
 
 void MissionNode::call_light(){
@@ -105,6 +105,25 @@ void MissionNode::call_log_params(){
     }
 }
 
+void MissionNode::call_velocity_computation(std::vector<float> &velocity_list){
+    auto request = std::make_shared<seabot2_depth_control::srv::AlphaMission::Request>();
+    request->velocity_limits = velocity_list;
+    client_alpha_mission_->wait_for_service(500ms);
+    if (!client_alpha_mission_->service_is_ready()) {
+        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Alpha Mission service not available");
+    }
+    else {
+        if(rclcpp::ok()) {
+            auto future = client_alpha_mission_->async_send_request(request);
+
+            // Do not wait to the result because cannont handle async call (deadlock with this node)
+        }
+        else{
+            RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");
+        }
+    }
+}
+
 int MissionNode::load_mission(){
     // Call for new ros2 bag
     // ToDO
@@ -113,7 +132,16 @@ int MissionNode::load_mission(){
     call_log_params();
 
     // Reload mission
-    return mission_.load_mission(mission_file_name_, mission_path_);
+    int ret =  mission_.load_mission(mission_file_name_, mission_path_);
+
+    if(ret==EXIT_SUCCESS){
+        vector<float> velocity_list = mission_.get_velocity_list();
+        for(auto &v: velocity_list)
+            RCLCPP_INFO(this->get_logger(), "[Mission_node] Velocity to compute : %f", v);
+        call_velocity_computation(velocity_list);
+    }
+
+    return ret;
 }
 
 void MissionNode::timer_callback() {

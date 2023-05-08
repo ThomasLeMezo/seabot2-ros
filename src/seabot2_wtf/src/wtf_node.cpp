@@ -181,26 +181,23 @@ void WtfNode::update_mission_windows(){
         mvwprintw(windows_mission_, 6, 1, "limit_velocity");
         mvwprintw(windows_mission_, 6, 30, to_string(msg_waypoint_.limit_velocity).c_str());
 
-        mvwprintw(windows_mission_, 7, 1, "approach_velocity");
-        mvwprintw(windows_mission_, 7, 30, to_string(msg_waypoint_.approach_velocity).c_str());
+        mvwprintw(windows_mission_, 7, 1, "mission_enable");
+        mvwprintw(windows_mission_, 7, 30, msg_waypoint_.mission_enable ? "True " : "False");
 
-        mvwprintw(windows_mission_, 8, 1, "mission_enable");
-        mvwprintw(windows_mission_, 8, 30, msg_waypoint_.mission_enable ? "True " : "False");
+        mvwprintw(windows_mission_, 8, 1, "enable_thrusters");
+        mvwprintw(windows_mission_, 8, 30, msg_waypoint_.enable_thrusters ? "True " : "False");
 
-        mvwprintw(windows_mission_, 9, 1, "enable_thrusters");
-        mvwprintw(windows_mission_, 9, 30, msg_waypoint_.enable_thrusters ? "True " : "False");
+        mvwprintw(windows_mission_, 9, 1, "waypoint_id");
+        mvwprintw(windows_mission_, 9, 30, to_string(msg_waypoint_.waypoint_id).c_str());
 
-        mvwprintw(windows_mission_, 10, 1, "waypoint_id");
-        mvwprintw(windows_mission_, 10, 30, to_string(msg_waypoint_.waypoint_id).c_str());
+        mvwprintw(windows_mission_, 10, 1, "waypoint_length");
+        mvwprintw(windows_mission_, 10, 30, to_string(msg_waypoint_.waypoint_length).c_str());
 
-        mvwprintw(windows_mission_, 11, 1, "waypoint_length");
-        mvwprintw(windows_mission_, 11, 30, to_string(msg_waypoint_.waypoint_length).c_str());
+        mvwprintw(windows_mission_, 11, 1, "time_to_next_waypoint");
+        mvwprintw(windows_mission_, 11, 30, to_string(msg_waypoint_.time_to_next_waypoint).c_str());
 
-        mvwprintw(windows_mission_, 12, 1, "time_to_next_waypoint");
-        mvwprintw(windows_mission_, 12, 30, to_string(msg_waypoint_.time_to_next_waypoint).c_str());
-
-        mvwprintw(windows_mission_, 13, 1, "seafloor_landing");
-        mvwprintw(windows_mission_, 13, 30, msg_waypoint_.seafloor_landing  ? "True " : "False");
+        mvwprintw(windows_mission_, 12, 1, "seafloor_landing");
+        mvwprintw(windows_mission_, 12, 30, msg_waypoint_.seafloor_landing  ? "True " : "False");
 
         wrefresh(windows_mission_);
     }
