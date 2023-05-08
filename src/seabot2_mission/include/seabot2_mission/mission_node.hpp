@@ -24,6 +24,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::milliseconds loop_dt_ = 1s; /// loop dt
 
+    rclcpp::CallbackGroup::SharedPtr callback_group_;
+
     /// Variable
     /// Mission
     Mission mission_;
@@ -40,6 +42,7 @@ private:
     /// Interfaces
     rclcpp::Publisher<seabot2_mission::msg::Waypoint>::SharedPtr publisher_waypoint_;
     rclcpp::Client<seabot2_light_driver::srv::Light>::SharedPtr client_light_;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_log_parameters_;
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_mission_reload_ ;
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_mission_enable_ ;
@@ -83,6 +86,16 @@ private:
      * Call light service
      */
     void call_light();
+
+    /**
+     * Call log params
+     */
+    void call_log_params();
+
+    /**
+     * Load mission
+     */
+    int load_mission();
 
 };
 #endif //BUILD_MISSION_NODE_HPP

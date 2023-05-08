@@ -83,7 +83,7 @@ void GpsdNode::process_data(struct gps_data_t* p) {
         msg.tdop = p->dop.tdop;
         msg.gdop = p->dop.gdop;
 
-        //msg.satellites_visible = p->satellites_visible;
+        msg.satellites_visible = p->satellites_visible;
 
         if(!isnan(p->fix.eph))
             msg.err = p->fix.eph;

@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rcl_interfaces REQUIRED)
+find_package(std_srvs REQUIRED)
 
 ### Interfaces
 ### Interfaces
@@ -26,6 +27,7 @@ ament_target_dependencies(log_parameter_node
         rclcpp
         rosidl_default_generators
         rcl_interfaces
+        std_srvs
         )
 target_link_libraries(log_parameter_node "${cpp_typesupport_target}" proj)
 

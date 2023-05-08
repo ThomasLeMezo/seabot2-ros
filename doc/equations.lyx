@@ -105,6 +105,17 @@ u
 
 \end_layout
 
+\begin_layout Standard
+\begin_inset Formula $A=\frac{\rho g}{m_{v}}$
+\end_inset
+
+,
+\begin_inset Formula $B=\frac{\rho S}{2m_{v}}$
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
 Control law
 \end_layout
@@ -206,6 +217,125 @@ T= & 1-\tanh^{2}\left(e\right)\\
 \begin_layout Standard
 \align center
 \begin_inset Formula $u=\frac{1}{A}\left(-2s\dot{y}+s^{2}y-\beta\left(\ddot{e}T+\dot{e}\dot{T}\right)-2BC_{z}\left|\dot{z}\right|\ddot{z}\right)+\dot{z}\left(\chi_{1}+2z\chi_{2}\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Compute 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ as a function of 
+\begin_inset Formula $\dot{V}_{P,\text{max}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When the trajectory is stablized, we know that 
+\begin_inset Formula $\ddot{y}=0$
+\end_inset
+
+, wich means that with 
+\begin_inset Formula $\dot{V}_{P}=u$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+-A\left(u-\chi_{1}\dot{z}-\chi_{2}2z\dot{z}\right)-2BC_{z}\left|\dot{z}\right|\ddot{z}-\beta\left(\ddot{e}T+\dot{e}\dot{T}\right) & = & 0\\
+\left(u-\chi_{1}\dot{z}-\chi_{2}2z\dot{z}\right) & = & \frac{-2BC_{z}\left|\dot{z}\right|\ddot{z}-\beta\left(\ddot{e}T+\dot{e}\dot{T}\right)}{A}\\
+u & = & \frac{-2BC_{z}\left|\dot{z}\right|\ddot{z}-\beta\left(\ddot{e}T+\dot{e}\dot{T}\right)}{A}+\chi_{1}\dot{z}+\chi_{2}2z\dot{z}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We assume 
+\begin_inset Formula $\dot{z}>0$
+\end_inset
+
+, and we neglect 
+\begin_inset Formula $\chi_{1},\chi_{2}$
+\end_inset
+
+.
+ We also have 
+\begin_inset Formula $u\leq\dot{V}_{P,\text{max}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+\dot{V}_{P,\text{max}} & \geq & \frac{-2BC_{z}\left|\dot{z}\right|\ddot{z}-\beta\left(\ddot{e}T+\dot{e}\dot{T}\right)}{A}\\
+A\dot{V}_{P,\text{max}} & \geq & -2BC_{z}\left|\dot{z}\right|\ddot{z}-\beta\left(\ddot{e}T+\dot{e}\dot{T}\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $u=\left\{ -\frac{\alpha\beta^{3}\left(2BCz\left|{\tanh{\left(\alpha\left(z-10.0\right)\right)}}\right|+\alpha\left(2-\frac{3}{\cosh^{2}{\left(\alpha\left(z-10.0\right)\right)}}\right)\right)\tanh{\left(\alpha\left(z-10.0\right)\right)}}{A\cosh^{2}{\left(\alpha\left(z-10.0\right)\right)}}\right\} $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Observations:
+\end_layout
+
+\begin_layout Itemize
+Suprisingly, if 
+\begin_inset Formula $C_{z}$
+\end_inset
+
+ increase, for 
+\begin_inset Formula $\beta$
+\end_inset
+
+ and 
+\begin_inset Formula $\alpha$
+\end_inset
+
+ set, 
+\begin_inset Formula $\dot{V}_{P}$
+\end_inset
+
+ increase to reach the target because the equilibrium at maximum velocity
+ required more volume which has to be reduced to stop.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $2.98351607369285\cdot10^{-6}\alpha\left(3\alpha\tanh^{4}{\left(\alpha z\right)}-4\alpha\tanh^{2}{\left(\alpha z\right)}+\alpha+0.419288082022075\tanh^{3}{\left(\alpha z\right)}-0.419288082022075\tanh{\left(\alpha z\right)}\right)\tanh{\left(\alpha z\right)}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $c_{1}\alpha\tanh\left(\alpha z\right)\left(3\alpha\tanh^{4}\left(\alpha z\right)-4\alpha\tanh^{2}\left(\alpha z\right)+\alpha+c_{2}\tanh^{3}\left(\alpha z\right)-c_{3}\tanh\left(\alpha z\right)\right)\leq\dot{V}_{P,\text{max}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\dot{V}_{P}=\frac{\alpha\beta^{3}\left(2BC_{z}\tanh^{3}\left(\alpha z\right)-2BC_{z}\tanh\left(\alpha z\right)+3\alpha\tanh^{4}\left(\alpha z\right)-4\alpha\tanh^{2}\left(\alpha z\right)+\alpha\right)\tanh\left(\alpha z\right)}{A}$
 \end_inset
 
 

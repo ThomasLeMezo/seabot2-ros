@@ -11,6 +11,13 @@ find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(seabot2_light_driver REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(ibex REQUIRED)
+
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+  message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -19,21 +26,37 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         )
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-### Executable
 add_executable(mission_node src/mission_node.cpp src/mission.cpp)
 ament_target_dependencies(mission_node
         rclcpp
         rosidl_default_generators
         std_srvs
         seabot2_light_driver
+        ibex
         )
 target_link_libraries(mission_node "${cpp_typesupport_target}")
-
-### Includes
 target_include_directories(mission_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
+
+
+# Ibex test
+
+
+add_executable(test_ibex src/solver.cpp)
+ament_target_dependencies(test_ibex
+        rclcpp
+        rosidl_default_generators
+        std_srvs
+        seabot2_light_driver
+        ibex
+        )
+target_link_libraries(test_ibex "${cpp_typesupport_target}" Ibex::ibex)
+target_include_directories(test_ibex PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        Ibex::ibex
+        )
 
 ### Test
 if(BUILD_TESTING)
@@ -46,6 +69,9 @@ endif()
 
 ### Install
 install(TARGETS mission_node
+        DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS test_ibex
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

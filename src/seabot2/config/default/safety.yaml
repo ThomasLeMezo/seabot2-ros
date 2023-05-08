@@ -13,4 +13,4 @@ safety:
       piston_no_data_warning: 1000 # ms
       limit_depth_default: 100.0 # m
       robot_height_ping: 1.1
-      offset_max_depth: 2.0
+      offset_max_depth: 0.5 # m

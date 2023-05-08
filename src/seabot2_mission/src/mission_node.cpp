@@ -6,12 +6,14 @@ using namespace placeholders;
 MissionNode::MissionNode()
         : Node("mission_node"), mission_(this){
 
+    callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
     init_parameters();
     init_interfaces();
 
     rclcpp::sleep_for(1s); // Wait to be sure to log mission data
     mission_.is_new_mission_file(mission_file_name_, mission_path_);
-    mission_.load_mission(mission_file_name_, mission_path_);
+    load_mission();
 
     timer_ = this->create_wall_timer(
             loop_dt_, std::bind(&MissionNode::timer_callback, this));
@@ -44,14 +46,18 @@ void MissionNode::init_parameters() {
 void MissionNode::init_interfaces() {
 
     service_mission_reload_ = this->create_service<std_srvs::srv::Trigger>("mission_reload",
-                                                                            std::bind(&MissionNode::service_mission_reload_callback, this, _1, _2, _3));
+                                                                            std::bind(&MissionNode::service_mission_reload_callback, this, _1, _2, _3),
+                                                                            rmw_qos_profile_services_default,callback_group_);
 
     service_mission_enable_ = this->create_service<std_srvs::srv::SetBool>("mission_enable",
-                                                                           std::bind(&MissionNode::service_mission_enable_callback, this, _1, _2, _3));
+                                                                           std::bind(&MissionNode::service_mission_enable_callback, this, _1, _2, _3),
+                                                                           rmw_qos_profile_services_default,callback_group_);
 
     publisher_waypoint_ = this->create_publisher<seabot2_mission::msg::Waypoint>("waypoint", 10);
 
-    client_light_ = this->create_client<seabot2_light_driver::srv::Light>("/driver/light");
+    client_light_ = this->create_client<seabot2_light_driver::srv::Light>("/driver/light", rmw_qos_profile_services_default,callback_group_);
+
+    client_log_parameters_ = this->create_client<std_srvs::srv::Trigger>("/log_parameters", rmw_qos_profile_services_default,callback_group_);
 }
 
 void MissionNode::call_light(){
@@ -81,9 +87,38 @@ void MissionNode::call_light(){
     }
 }
 
+void MissionNode::call_log_params(){
+    auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+    client_log_parameters_->wait_for_service(500ms);
+    if (!client_log_parameters_->service_is_ready()) {
+        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Log Parameters service not available");
+    }
+    else {
+        if(rclcpp::ok()) {
+            auto future = client_log_parameters_->async_send_request(request);
+
+            // Do not wait to the result because cannont handle async call (deadlock with this node)
+        }
+        else{
+            RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");
+        }
+    }
+}
+
+int MissionNode::load_mission(){
+    // Call for new ros2 bag
+    // ToDO
+
+    // Call for log of parameters
+    call_log_params();
+
+    // Reload mission
+    return mission_.load_mission(mission_file_name_, mission_path_);
+}
+
 void MissionNode::timer_callback() {
     if(mission_.is_new_mission_file(mission_file_name_, mission_path_)){
-        mission_.load_mission(mission_file_name_, mission_path_);
+        load_mission();
     }
 
     seabot2_mission::msg::Waypoint wp_msg;
@@ -102,7 +137,7 @@ void MissionNode::timer_callback() {
 void MissionNode::service_mission_reload_callback(const std::shared_ptr<rmw_request_id_t> request_header,
                                        const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
                                        std::shared_ptr<std_srvs::srv::Trigger::Response> response){
-    int error_code = mission_.load_mission(mission_file_name_, mission_path_);
+    int error_code = load_mission();
     if(error_code==EXIT_SUCCESS)
         response->success = true;
     else
@@ -117,7 +152,26 @@ void MissionNode::service_mission_enable_callback(const std::shared_ptr<rmw_requ
 
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<MissionNode>());
+    auto node = std::make_shared<MissionNode>();
+
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    executor.spin();
+
     rclcpp::shutdown();
     return 0;
 }
+
+// FILE *proc_bag_ = nullptr;
+// #include <stdio.h>
+
+//if(proc_bag_ != nullptr){
+//int ret = pclose(proc_bag_);
+//if(ret != EXIT_SUCCESS) {
+//response->success = false;
+//return;
+//}
+//}
+//
+//proc_bag_ = popen("ros2 bag record -a", "r");
+//response->success = true;

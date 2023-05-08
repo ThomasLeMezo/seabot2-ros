@@ -10,29 +10,37 @@ using namespace placeholders;
 LogParameterNode::LogParameterNode()
         : Node("log_parameter_node"){
 
+    callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
     init_parameters();
     init_interfaces();
 
     RCLCPP_INFO(this->get_logger(), "[log_parameter_node] Start Ok");
-
-    rclcpp::sleep_for(5s);
-
-    record_parameters();
-
 }
 
 void LogParameterNode::init_parameters() {
 
 }
 
+void LogParameterNode::service_record(const std::shared_ptr<rmw_request_id_t> request_header,
+                                         const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+                                         std::shared_ptr<std_srvs::srv::Trigger::Response> response){
+    record_parameters();
+    response->success = true;
+}
+
 void LogParameterNode::init_interfaces() {
     publisher_parameters_ = this->create_publisher<seabot2_log_parameters::msg::LogParameter>("parameters", 1);
 
+    service_log_parameters_ = this->create_service<std_srvs::srv::Trigger>("log_parameters",
+                                                                            bind(&LogParameterNode::service_record, this, _1, _2, _3),
+                                                                            rmw_qos_profile_services_default, callback_group_);
 }
 
 std::vector<std::string> LogParameterNode::get_param_list(const std::string &node_name){
     rclcpp::Client<rcl_interfaces::srv::ListParameters>::SharedPtr client_list =
-            this->create_client<rcl_interfaces::srv::ListParameters>(node_name+"/list_parameters");
+            this->create_client<rcl_interfaces::srv::ListParameters>(node_name+"/list_parameters",
+                                                                     rmw_qos_profile_services_default, callback_group_);
 
     auto request_list = std::make_shared<rcl_interfaces::srv::ListParameters::Request>();
     request_list->depth = 10;
@@ -43,14 +51,16 @@ std::vector<std::string> LogParameterNode::get_param_list(const std::string &nod
         RCLCPP_INFO(this->get_logger(), "[log_parameter_node] service not available, waiting again...");
     }
 
-    auto result = client_list->async_send_request(request_list);
-    // Wait for the result.
-    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) ==
-        rclcpp::FutureReturnCode::SUCCESS) {
-        return result.get()->result.names;
+    auto future = client_list->async_send_request(request_list);
+
+    auto status = future.wait_for(3s);
+    if (status == std::future_status::ready){
+        return future.get()->result.names;
     }
     else{
-        return std::vector<std::string>();
+        RCLCPP_WARN(get_logger(), "[log_parameter_node] Fail get response from param_value %s", node_name.c_str());
+        client_list->remove_pending_request(future);
+        return {};
     }
 }
 
@@ -59,7 +69,8 @@ void LogParameterNode::get_param_values(const std::string &node_name,
     if(param_name.empty())
         return;
     rclcpp::Client<rcl_interfaces::srv::GetParameters>::SharedPtr client_param_value =
-            this->create_client<rcl_interfaces::srv::GetParameters>(node_name+"/get_parameters");
+            this->create_client<rcl_interfaces::srv::GetParameters>(node_name+"/get_parameters",
+                                                                    rmw_qos_profile_services_default, callback_group_);
 
     auto request_param = std::make_shared<rcl_interfaces::srv::GetParameters::Request>();
     request_param->names = param_name;
@@ -70,20 +81,24 @@ void LogParameterNode::get_param_values(const std::string &node_name,
         RCLCPP_INFO(this->get_logger(), "[log_parameter_node] service not available, waiting again...");
     }
 
-    auto result = client_param_value->async_send_request(request_param);
-    // Wait for the result.
-    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) ==
-        rclcpp::FutureReturnCode::SUCCESS) {
+    auto future = client_param_value->async_send_request(request_param);
 
-        auto param_values = result.get()->values;
-        for(int i=0; i<param_values.size(); i++){
+    auto status = future.wait_for(3s);  //not spinning here!
+    if (status == std::future_status::ready)
+    {
+        auto param_values = future.get()->values;
+        for(size_t i=0; i<param_values.size(); i++){
             seabot2_log_parameters::msg::LogParameter msg;
             msg.node_name = node_name;
             msg.param_name = param_name[i];
             msg.value = param_values[i];
             publisher_parameters_->publish(msg);
-            rclcpp::sleep_for(100ms);
         }
+    }
+    else
+    {
+        RCLCPP_WARN(get_logger(), "[log_parameter_node] Fail get response from param_value %s", node_name.c_str());
+        client_param_value->remove_pending_request(future);
     }
 }
 
@@ -100,7 +115,6 @@ void LogParameterNode::record_parameters() {
     msg.value.type = 4;
     publisher_parameters_->publish(msg);
     RCLCPP_INFO(this->get_logger(), "[log_parameter_node] %s %s %s %i", msg.node_name.c_str(), msg.param_name.c_str(), msg.value.string_value.c_str(), msg.value.type);
-    rclcpp::sleep_for(100ms);
 
     // Get parameters
     std::string current_node_name = this->get_fully_qualified_name();
@@ -109,7 +123,6 @@ void LogParameterNode::record_parameters() {
         if(node_name.compare(current_node_name)!=0
             && node_name.find("rqt_gui") == std::string::npos
             && node_name.find("_ros2cli") == std::string::npos) {
-
             get_param_values(node_name, get_param_list(node_name));
         }
     }
@@ -118,7 +131,12 @@ void LogParameterNode::record_parameters() {
 
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<LogParameterNode>());
+    auto node = std::make_shared<LogParameterNode>();
+
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    executor.spin();
+
     rclcpp::shutdown();
     return 0;
 }

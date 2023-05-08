@@ -41,7 +41,7 @@ observer:
       gamma_init_chi2: 1e-10
       gamma_init_cz: 1.0
       gamma_init_volume_air: 0.1
-      gamma_beta_depth: 1.0e-3 # 5.0e-3 nominal
+      gamma_beta_depth: 5.0e-3 # 5.0e-3 nominal
 
       enable_volume_air: true
 
