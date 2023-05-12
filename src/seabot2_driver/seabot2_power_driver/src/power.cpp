@@ -33,20 +33,18 @@ int Power::get_all_data(){
     }
     else{
         /// ToDo : check if read by small block avoid errors ?
-        for(int i=0; i<4; i++){
+        for(int i=0; i<2; i++){
             cell_volt_[i] = ((int)buff[2*i] + ((int)(buff[2*i+1])<<8)) * CONVERT_BRIDGE_BATTERY * ((R1_[i]+R2_[i])/R1_[i]);
         }
 
         /// Cells are a cumulative sum, restore here the value of each cell
-        battery_volt_ = cell_volt_.back();
-        for(size_t i=3; i>0; i--)
-            cell_volt_[i] -= cell_volt_[i-1];
+        battery_volt_ = std::max(cell_volt_[0], cell_volt_[1]);
 
-        for(int i=4; i<6; i++){
-            esc_current_[i - 4] = (((int)buff[2 * i] + ((int)(buff[2 * i + 1]) << 8)) * CONVERT_BRIDGE_CURRENT - 3.3/2.0) * CONVERT_CURRENT_V_to_A;
+        for(int i=0; i<2; i++){ // 4,5 6,7
+            esc_current_[i] = (((int)buff[2 * i + 4] + ((int)(buff[2 * i + 1 + 4]) << 8)) * CONVERT_BRIDGE_CURRENT - 3.3/2.0) * CONVERT_CURRENT_V_to_A;
         }
-        motor_current_ = (((int)buff[12] + ((int)buff[13] << 8)) * CONVERT_BRIDGE_CURRENT -3.3/2.0) * CONVERT_CURRENT_V_to_A;
-        power_state_ = buff[14];
+        motor_current_ = (((int)buff[8] + ((int)buff[9] << 8)) * CONVERT_BRIDGE_CURRENT -3.3/2.0) * CONVERT_CURRENT_V_to_A;
+        power_state_ = buff[10];
 
         return EXIT_SUCCESS;
     }

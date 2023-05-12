@@ -116,6 +116,7 @@ void MissionNode::call_restart_bag(){
     else {
         if(rclcpp::ok()) {
             auto future = client_bag_recorder_->async_send_request(request);
+            RCLCPP_INFO(this->get_logger(), "[Mission_node] Call to restart bag");
         }
         else{
             RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");

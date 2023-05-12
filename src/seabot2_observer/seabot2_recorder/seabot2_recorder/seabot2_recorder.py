@@ -28,7 +28,7 @@ class Seabot2Recorder(Node):
             self.proc.wait()
 
         # Start the bag
-        command_line = 'ros2 bag record --all'
+        command_line = 'ros2 bag record --all --storage mcap'
         args = shlex.split(command_line)
         self.proc = subprocess.Popen(args)
 
