@@ -153,13 +153,13 @@ void DepthControlNode::init_interfaces() {
     publisher_debug_ = this->create_publisher<seabot2_depth_control::msg::DepthControlDebug>("depth_control_debug", 10);
     publisher_alpha_debug_ = this->create_publisher<seabot2_depth_control::msg::AlphaDebug>("alpha_debug", 10);
 
-    service_alpha_computation_ = this->create_service<seabot2_depth_control::srv::AlphaMission>("alpha_mission",
+    service_alpha_computation_ = this->create_service<seabot2_mission::srv::AlphaMission>("alpha_mission",
                                                                            bind(&DepthControlNode::alpha_mission_pre_computation, this, _1, _2, _3));
 }
 
 void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
-                                      const std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Request> request,
-                                      std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Response> response){
+                                      const std::shared_ptr<seabot2_mission::srv::AlphaMission::Request> request,
+                                      std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response){
     RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Received velocity computation request");
     for(auto velocity : request->velocity_limits){
         auto result = alpha_solver_.compute_alpha(velocity);

@@ -26,7 +26,6 @@ find_package(Ibex REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/DepthControlDebug.msg"
         "msg/AlphaDebug.msg"
-        "srv/AlphaMission.srv"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target

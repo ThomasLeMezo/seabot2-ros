@@ -11,11 +11,11 @@ find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(seabot2_light_driver REQUIRED)
 find_package(std_srvs REQUIRED)
-find_package(seabot2_depth_control REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/Waypoint.msg"
+        "srv/AlphaMission.srv"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target
@@ -25,7 +25,6 @@ ament_target_dependencies(mission_node
         rclcpp
         rosidl_default_generators
         std_srvs
-        seabot2_depth_control
         seabot2_light_driver
 )
 target_link_libraries(mission_node "${cpp_typesupport_target}")

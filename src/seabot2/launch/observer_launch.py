@@ -25,7 +25,7 @@ def generate_launch_description():
         parameters_file_list.append(config_physics)
 
     bag_recorder = Node(
-        package='seabot2_bag_recorder',
+        package='seabot2_recorder',
         executable='seabot2_recorder',
         namespace='observer',
         name='seabot2_recorder',

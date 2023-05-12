@@ -19,7 +19,7 @@
 #include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 #include "seabot2_depth_control/alpha_solver.h"
 #include "seabot2_depth_control/msg/alpha_debug.hpp"
-#include "seabot2_depth_control/srv/alpha_mission.hpp"
+#include "seabot2_mission/srv/alpha_mission.hpp"
 
 #define NB_STATES 8
 #define PISTON_STATE_OK 2
@@ -127,7 +127,7 @@ private:
     rclcpp::Publisher<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr publisher_debug_;
     rclcpp::Publisher<seabot2_depth_control::msg::AlphaDebug>::SharedPtr publisher_alpha_debug_;
 
-    rclcpp::Service<seabot2_depth_control::srv::AlphaMission>::SharedPtr service_alpha_computation_;
+    rclcpp::Service<seabot2_mission::srv::AlphaMission>::SharedPtr service_alpha_computation_;
 
     /**
      *  Init and get parameters of the Node
@@ -210,7 +210,7 @@ private:
      * @param response
      */
     void alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
-                                                         const std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Request> request,
-                                                         std::shared_ptr<seabot2_depth_control::srv::AlphaMission::Response> response);
+                                                         const std::shared_ptr<seabot2_mission::srv::AlphaMission::Request> request,
+                                                         std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response);
 };
 #endif //BUILD_DEPTH_CONTROL_NODE_HPP

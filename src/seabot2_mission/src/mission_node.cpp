@@ -57,7 +57,7 @@ void MissionNode::init_interfaces() {
 
     client_log_parameters_ = this->create_client<std_srvs::srv::Trigger>("/observer/log_parameters", rmw_qos_profile_services_default,callback_group_);
 
-    client_alpha_mission_ =  this->create_client<seabot2_depth_control::srv::AlphaMission>("/control/alpha_mission", rmw_qos_profile_services_default,callback_group_);
+    client_alpha_mission_ =  this->create_client<seabot2_mission::srv::AlphaMission>("/control/alpha_mission", rmw_qos_profile_services_default,callback_group_);
 
     client_bag_recorder_ = this->create_client<std_srvs::srv::Trigger>("/observer/restart_bag", rmw_qos_profile_services_default,callback_group_);
 }
@@ -125,7 +125,7 @@ void MissionNode::call_restart_bag(){
 }
 
 void MissionNode::call_velocity_computation(std::vector<float> &velocity_list){
-    auto request = std::make_shared<seabot2_depth_control::srv::AlphaMission::Request>();
+    auto request = std::make_shared<seabot2_mission::srv::AlphaMission::Request>();
     request->velocity_limits = velocity_list;
     client_alpha_mission_->wait_for_service(500ms);
     if (!client_alpha_mission_->service_is_ready()) {
