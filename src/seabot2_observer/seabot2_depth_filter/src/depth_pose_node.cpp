@@ -28,6 +28,8 @@ void DepthPoseNode::init_parameters() {
     this->declare_parameter<long>("filter_window_size", filter_window_size_);
     this->declare_parameter<long>("filter_median_remove_side_samples", filter_median_remove_side_samples_);
 
+    this->declare_parameter<double>("threshold_wrong_depth_measure", threshold_wrong_depth_measure_);
+
     this->declare_parameter<int>("zero_depth_window_size", zero_depth_window_size_);
 
     filter_velocity_window_size_ = this->get_parameter_or("filter_velocity_window_size", filter_velocity_window_size_);
@@ -35,6 +37,7 @@ void DepthPoseNode::init_parameters() {
     filter_velocity_median_remove_side_samples_ = this->get_parameter_or("filter_velocity_median_remove_side_samples", filter_velocity_median_remove_side_samples_);
     filter_window_size_ = this->get_parameter_or("filter_window_size", filter_window_size_);
     filter_median_remove_side_samples_ = this->get_parameter_or("filter_median_remove_side_samples", filter_median_remove_side_samples_);
+    threshold_wrong_depth_measure_ = this->get_parameter_or("threshold_wrong_depth_measure", threshold_wrong_depth_measure_);
 
     zero_depth_window_size_ = this->get_parameter_or("zero_depth_window_size", zero_depth_window_size_);
 }
@@ -83,13 +86,21 @@ void DepthPoseNode::pressure_callback(const seabot2_depth_filter::msg::PressureS
         double pressure_mean = pressure_sum / (double)pressure_deque_median.size();
 
         double pressure = (pressure_mean - zero_depth_);
-        double depth = pressure / (g_*rho_/1e5); /// 1e5 for Pa to Bar
+        double depth_filtered = pressure / (g_*rho_/1e5); /// 1e5 for Pa to Bar
+        double depth_measured = msg.pressure / (g_*rho_/1e5);
 
-        msg_pose.depth = depth;
         msg_pose.pressure = pressure;
 
+        /// For depth,
+        if(abs(depth_measured-depth_filtered)<threshold_wrong_depth_measure_){
+            msg_pose.depth = depth_measured;
+        }
+        else{
+            msg_pose.depth = depth_filtered;
+        }
+
         /// ************** Compute velocity ************** //
-        depth_memory_.push_front(std::pair<double,rclcpp::Time>(depth, msg.header.stamp));
+        depth_memory_.push_front(std::pair<double,rclcpp::Time>(depth_filtered, msg.header.stamp));
         if(depth_memory_.size()>(velocity_dt_gap_sample_+filter_velocity_window_size_))
             depth_memory_.pop_back();
 

@@ -3,7 +3,7 @@
 //
 
 #include "seabot2_simulator/simulator.h"
-#include <math.h>
+#include <cmath>
 #include <iostream>
 #include <chrono>
 using namespace std::chrono;

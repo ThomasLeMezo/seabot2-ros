@@ -13,6 +13,9 @@
 #include "seabot2_depth_control/msg/depth_control_debug.hpp"
 #include "gpsd_client/msg/gps_fix.hpp"
 #include <ncurses.h>
+#include "bluerobotics_ping_driver/msg/profile.hpp"
+#include "seabot2_density/msg/density.hpp"
+#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -64,6 +67,7 @@ private:
     WINDOW *windows_piston_;
     WINDOW *windows_mission_;
     WINDOW *windows_gnss_;
+    WINDOW *windows_sensors_;
 
     /// Variable
 
@@ -75,6 +79,9 @@ private:
     seabot2_mission::msg::Waypoint msg_waypoint_;
     seabot2_depth_control::msg::DepthControlDebug msg_depth_control_;
     gpsd_client::msg::GpsFix msg_gnss_;
+    bluerobotics_ping_driver::msg::Profile msg_profile_;
+    seabot2_density::msg::Density msg_density_;
+    temperature_tsys01_driver::msg::TemperatureSensorData msg_temperature_sensor_data_;
 
     rclcpp::Time time_last_safety_ = this->now();
     rclcpp::Time time_last_depth_data_ = this->now();
@@ -84,6 +91,9 @@ private:
     rclcpp::Time time_last_waypoint_ = this->now();
     rclcpp::Time time_last_depth_control_ = this->now();
     rclcpp::Time time_last_gnss_ = this->now();
+    rclcpp::Time time_last_profile_ = this->now();
+    rclcpp::Time time_last_density_ = this->now();
+    rclcpp::Time time_last_temperature_sensor_data_ = this->now();
 
     bool msg_first_received_safety_ = false;
     bool msg_first_received_depth_data_ = false;
@@ -93,6 +103,9 @@ private:
     bool msg_first_received_waypoint_ = false;
     bool msg_first_received_depth_control_ = false;
     bool msg_first_received_gnss_ = false;
+    bool msg_first_received_profile_ = false;
+    bool msg_first_received_density_ = false;
+    bool msg_first_received_temperature_sensor_data_ = false;
 
     /// Interfaces
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
@@ -103,6 +116,9 @@ private:
     rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_;
     rclcpp::Subscription<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr subscriber_control_debug_;
     rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_;
+    rclcpp::Subscription<bluerobotics_ping_driver::msg::Profile>::SharedPtr subscriber_profile_;
+    rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
+    rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_sensor_data_;
 
     /**
      *  Init and get parameters of the Node
@@ -168,6 +184,24 @@ private:
     void gnss_callback(const gpsd_client::msg::GpsFix &msg);
 
     /**
+     * Profile callback
+     * @param msg
+     */
+    void profile_callback(const bluerobotics_ping_driver::msg::Profile &msg);
+
+    /**
+     * Density callback
+     * @param msg
+     */
+    void density_callback(const seabot2_density::msg::Density &msg);
+
+    /**
+     * Temperature sensor data callback
+     * @param msg
+     */
+    void temperature_sensor_data_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg);
+
+    /**
      *  Update safety windows
      */
     void update_safety_windows();
@@ -213,9 +247,21 @@ private:
     void update_gnss();
 
     /**
+     * Update sensor windows
+     */
+    void update_sensors();
+
+    /**
      *  Update all windows
      */
-    std::string set_color_valid(WINDOW *w, bool valid, std::string text="");
+    static std::string set_color_valid(WINDOW *w, bool valid, const std::string& text="");
+
+    /**
+     *
+     * @param valid
+     * @return
+     */
+    static std::string get_bool_text(bool valid);
 
 };
 #endif //BUILD_WTF_NODE_HPP

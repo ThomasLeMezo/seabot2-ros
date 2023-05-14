@@ -21,6 +21,9 @@
   <build_depend>seabot2_depth_control</build_depend>
   <build_depend>seabot2_safety</build_depend>
   <build_depend>gpsd_client</build_depend>
+  <build_depend>bluerobotics_ping_driver</build_depend>
+  <build_depend>seabot2_density</build_depend>
+  <build_depend>temperature_tsys01_driver</build_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
@@ -33,7 +36,10 @@
   <exec_depend>seabot2_mission</exec_depend>
   <exec_depend>seabot2_depth_control</exec_depend>
   <exec_depend>seabot2_safety</exec_depend>
-  <build_depend>gpsd_client</build_depend>
+  <exec_depend>gpsd_client</exec_depend>
+  <exec_depend>bluerobotics_ping_driver</exec_depend>
+  <exec_depend>seabot2_density</exec_depend>
+  <exec_depend>temperature_tsys01_driver</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

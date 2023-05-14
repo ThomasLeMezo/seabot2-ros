@@ -63,14 +63,14 @@ private:
     std::string i2c_periph_ = "/dev/i2c-1";
     int i2c_addr_ = 0x39;
     const int code_version_ = 0x06; /// Code version of the expected hardware
-    uint8_t pic_code_version_=0; /// Code version read from the hardware
+    uint8_t pic_code_version_ = 0; /// Code version read from the hardware
 
     std::array<double, 2> R1_= {180, 180};
     std::array<double, 2> R2_= {820, 820};
 
 public:
     /// Variables
-    std::array<float, 4> cell_volt_{};
+    std::array<float, 2> cell_volt_{};
     double battery_volt_;
     std::array<float, 2> esc_current_{};
     float motor_current_ = 0.0;

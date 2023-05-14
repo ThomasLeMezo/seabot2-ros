@@ -33,6 +33,8 @@ private:
     size_t filter_window_size_ = 5;
     int filter_median_remove_side_samples_ = 1;
 
+    double threshold_wrong_depth_measure_ = 1.0;
+
     /// Velocity
     deque<pair<double, rclcpp::Time>> depth_memory_;
     size_t filter_velocity_window_size_ = 6;

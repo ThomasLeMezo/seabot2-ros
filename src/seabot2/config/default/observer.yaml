@@ -8,6 +8,7 @@ observer:
       filter_velocity_median_remove_side_samples: 1
       filter_velocity_window_size: 6
       max_depth_reset_zero: 1.25
+      threshold_wrong_depth_measure: 1.0
 
   filter_internal_sensor_node:
     ros__parameters:
@@ -41,7 +42,7 @@ observer:
       gamma_init_chi2: 1e-10
       gamma_init_cz: 1.0
       gamma_init_volume_air: 0.1
-      gamma_beta_depth: 5.0e-3 # 5.0e-3 nominal
+      gamma_beta_depth: 1.0e-2 # 5.0e-3 nominal (to be tuned)
 
       enable_volume_air: true
 

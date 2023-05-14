@@ -59,7 +59,7 @@ public:
      */
     Matrix<double, SIMU_NB_STATES, 1> x_ = Matrix<double, SIMU_NB_STATES, 1>::Zero();
     int motor_cmd_ = MOTOR_STOP;
-    double temperature_, sea_pressure_, salinity_, rho_, g_;
+    double temperature_{}, sea_pressure_{}, salinity_{}, rho_{}, g_{};
 
     unsigned long int nb_steps = 0;
 
@@ -163,7 +163,7 @@ public:
     int piston_set_point_ = 0;
 
     /// Fusion
-    double fusion_depth_, fusion_velocity_;
+    double fusion_depth_{}, fusion_velocity_{};
 };
 
 

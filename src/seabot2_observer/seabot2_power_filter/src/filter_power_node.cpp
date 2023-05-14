@@ -41,7 +41,7 @@ void FilterPowerNode::power_callback(const seabot2_power_driver::msg::PowerState
     motor_current_memory_.push_front(msg.motor_current);
     for(size_t i=0; i<2; i++)
         esc_current_memory_[i].push_front(msg.esc_current[i]);
-    for(size_t i=0; i<4; i++)
+    for(size_t i=0; i<2; i++)
         cell_volt_memory_[i].push_front(msg.cell_volt[i]);
 
     if(battery_volt_memory_.size()>filter_window_size_) {
@@ -49,7 +49,7 @@ void FilterPowerNode::power_callback(const seabot2_power_driver::msg::PowerState
         motor_current_memory_.pop_back();
         for(size_t i=0; i<2; i++)
             esc_current_memory_[i].pop_back();
-        for(size_t i=0; i<4; i++)
+        for(size_t i=0; i<2; i++)
             cell_volt_memory_[i].pop_back();
     }
 
@@ -59,7 +59,7 @@ void FilterPowerNode::power_callback(const seabot2_power_driver::msg::PowerState
         msg_filter.header.stamp = msg.header.stamp;
         for(size_t i=0; i<2; i++)
             msg_filter.esc_current[i] = compute_filter(esc_current_memory_[i]);
-        for(size_t i=0; i<4; i++)
+        for(size_t i=0; i<2; i++)
             msg_filter.cell_volt[i] = compute_filter(cell_volt_memory_[i]);
         publisher_power_data_->publish(msg_filter);
     }
