@@ -257,7 +257,7 @@ int Mission::decode_waypoint(pt::ptree::value_type &v, rclcpp::Time &last_time, 
         last_time = w.time_end;
         waypoints_.push_back(w);
 
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Load Waypoint %zu (t_end=%li, d=%lf, E=%lf, N=%lf, vel=%f, app=%f)", waypoints_.size(), (long int)w.time_end.seconds(), w.depth, w.east, w.north, w.limit_velocity);
+        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Load Waypoint %zu (t_end=%li, d=%lf, E=%lf, N=%lf, vel=%f)", waypoints_.size(), (long int)w.time_end.seconds(), w.depth, w.east, w.north, w.limit_velocity);
     }
     else if(v.first == "loop"){
         const int nb_loop = v.second.get<int>("<xmlattr>.number", 1);

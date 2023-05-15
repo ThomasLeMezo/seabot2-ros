@@ -40,6 +40,7 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<double>("piston_error_threshold_set_point", piston_error_threshold_set_point_);
     this->declare_parameter<double>("piston_error_threshold_position", piston_error_threshold_position_);
     this->declare_parameter<int>("piston_error_velocity_delay", piston_error_velocity_delay_.count());
+    this->declare_parameter<int>("seabed_delay_detection", seabed_delay_detection_.count());
 
     internal_humidity_limit_ = this->get_parameter_or("internal_humidity_limit", internal_humidity_limit_);
     internal_pressure_limit_ = this->get_parameter_or("internal_pressure_limit", internal_pressure_limit_);
@@ -56,6 +57,7 @@ void SafetyNode::init_parameters() {
     offset_max_depth_ = this->get_parameter_or("offset_max_depth", offset_max_depth_);
     limit_depth_default_ = this->get_parameter_or("limit_depth_default", limit_depth_default_);
     max_velocity_reset_zero_ = this->get_parameter_or("max_velocity_reset_zero", max_velocity_reset_zero_);
+    seabed_delay_detection_ = std::chrono::milliseconds(this->get_parameter_or("seabed_delay_detection", seabed_delay_detection_.count()));
 
     piston_error_threshold_set_point_ = this->get_parameter_or("piston_error_threshold_set_point", piston_error_threshold_set_point_);
     piston_error_threshold_position_ = this->get_parameter_or("piston_error_threshold_position", piston_error_threshold_position_);
@@ -369,15 +371,24 @@ bool SafetyNode::test_seabed_reached(){
             seabed_test_detected_ = true;
         }
         else{
-             if(this->now()-seabed_test_first_detected_ > seabed_delay_detection){
+             if(this->now()-seabed_test_first_detected_ > seabed_delay_detection_){
                  safety_seafloor_ = false;
-                 return true;
              }
          }
     }
     else{
-        seabed_test_detected_ = false;
-        safety_seafloor_ = true;
+        if(seabed_test_detected_){
+            /// Remain in safety state for 2 times the seabed delay detection
+            /// to allow the seabot to go up
+            safety_seafloor_ = false;
+            if(this->now()-seabed_test_first_detected_ > 2 * seabed_delay_detection_) {
+                seabed_test_detected_ = false;
+            }
+        }
+        else{
+            safety_seafloor_ = true;
+        }
+
     }
     return safety_seafloor_;
 }

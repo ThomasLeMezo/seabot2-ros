@@ -225,7 +225,7 @@ void WtfNode::update_mission_windows(){
         mvwprintw(windows_mission_, 10, 25, "%d", msg_waypoint_.waypoint_length);
 
         mvwprintw(windows_mission_, 11, 1, "time_to_next_waypoint");
-        mvwprintw(windows_mission_, 11, 25, "%d", static_cast<int>(round(msg_waypoint_.time_to_next_waypoint)));
+        mvwprintw(windows_mission_, 11, 25, "%6d", static_cast<int>(round(msg_waypoint_.time_to_next_waypoint)));
 
         mvwprintw(windows_mission_, 12, 1, "seafloor_landing");
         mvwprintw(windows_mission_, 12, 25, "%s", get_bool_text(msg_waypoint_.seafloor_landing).c_str());

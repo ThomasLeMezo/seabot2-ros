@@ -45,6 +45,8 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("delta_position_ub", delta_position_ub_);
     this->declare_parameter<bool>("control_filter", control_filter_);
     this->declare_parameter<double>("piston_flow_security_percentage", piston_flow_security_percentage_);
+    this->declare_parameter<bool>("enable_flow_max", enable_flow_max_);
+    this->declare_parameter<bool>("debug", debug_);
 
 
     physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
@@ -72,6 +74,8 @@ void DepthControlNode::init_parameters() {
     delta_position_ub_ = this->get_parameter_or("delta_position_ub", delta_position_ub_);
     control_filter_ = this->get_parameter_or("control_filter", control_filter_);
     piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage", piston_flow_security_percentage_);
+    enable_flow_max_ = this->get_parameter_or("enable_flow_max", enable_flow_max_);
+    debug_ = this->get_parameter_or("debug", debug_);
 
     /// Computed parameters
     Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
@@ -93,6 +97,7 @@ void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &m
     x(5) = msg.chi2;
     x(6) = msg.cz;
     x(7) = msg.volume_air;
+    offset_total_ = msg.offset_total;
     time_last_kalman_callback_ = this->now();
 }
 
@@ -173,7 +178,7 @@ void DepthControlNode::density_callback(const seabot2_density::msg::Density &msg
     coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
 }
 
-double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double set_point, double limit_velocity, double approach_velocity){
+double DepthControlNode::compute_u(double set_point, double limit_velocity){
     const double x1 = x(0); /// dz
     const double x2 = x(1); /// z
     const double x3 = x(2); /// piston volume
@@ -185,18 +190,14 @@ double DepthControlNode::compute_u(const Matrix<double, NB_STATES, 1> &x, double
     const double A = coeff_A_;
     const double B = coeff_B_;
     const double beta = limit_velocity;
-    const double alpha = approach_velocity;
+    const double alpha = approach_velocity_;
 
     double e = alpha*(set_point-x2);
     double de = -alpha*x1;
     double T = 1.0 - pow(tanh(e), 2);
     double dde = -alpha*beta*de*T;
     double dT = -2.*de*tanh(e)*T;
-    double dx1=0.0;
-    if(pressure_>0.)
-        dx1 = -A*(x3+x4+x8*temperature_/pressure_-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
-    else
-        dx1 = -A*(x3+x4-(x5*x2+x6*pow(x2,2)))-B*x7*abs(x1)*x1;
+    double dx1 = -A*(x3+offset_total_)-B*x7*abs(x1)*x1;
 
     double y = x1-beta*tanh(e);
     double dy = dx1 - beta*de*T;
@@ -229,7 +230,7 @@ void DepthControlNode::timer_callback() {
         regulation_state_ = STATE_SURFACE;
 //    if(piston_state_!=PISTON_STATE_OK)
 //        regulation_state_ = STATE_PISTON_ISSUE;
-    if((this->now()-last_waypoint_time_)>last_waypoint_max_delay_)
+    if((this->now()-last_waypoint_time_)>last_waypoint_max_delay_ && !debug_)
         depth_set_point_ = 0.0;
 
     switch(regulation_state_){
@@ -240,6 +241,7 @@ void DepthControlNode::timer_callback() {
             u = 0.;
             piston_set_point_ = 0;
             is_exit_ = true;
+            RCLCPP_INFO(this->get_logger(), "[Depth_control_node] depth = %0.1f, emergency=%b, debug=%b", depth_set_point_, emergency_, debug_);
             break;
         case STATE_SINK:
             is_exit_ = false;
@@ -249,7 +251,7 @@ void DepthControlNode::timer_callback() {
                 u = flow_piston_sink_;
 
                 /// Compute the position of the piston to be at equilibrium
-                double position_eq = (x(3)+x(7)/(0. + 1.0))/ tick_to_volume_; /// Assuming no compressibility effect
+                double position_eq = offset_total_ / tick_to_volume_; /// Assuming no compressibility effect
 
                 /// First move to position_eq and the slowly decrease piston volume by flow_piston_sink_
                 if(position_eq - piston_position_ > 2.*piston_reach_position_dead_zone_) { /// position reached
@@ -277,25 +279,23 @@ void DepthControlNode::timer_callback() {
                     if(control_filter_) {
                         /// Compute several commands according to velocity acceptable bounds
                         /// ToDo : modify tolerance wrt distance to set point ?
-                        array<double, 4> u_tab;
-                        u_tab[0] = compute_u(x, depth_set_point_, limit_velocity_ + delta_velocity_lb_,
-                                             approach_velocity_);
-                        u_tab[1] = compute_u(x, depth_set_point_, limit_velocity_ + delta_velocity_ub_,
-                                             approach_velocity_);
-                        u_tab[2] = compute_u(x, depth_set_point_ + delta_position_lb_, limit_velocity_,
-                                             approach_velocity_);
-                        u_tab[3] = compute_u(x, depth_set_point_ + delta_position_ub_, limit_velocity_,
-                                             approach_velocity_);
+                        array<double, 4> u_tab{};
+                        u_tab[0] = compute_u(depth_set_point_, limit_velocity_ + delta_velocity_lb_);
+                        u_tab[1] = compute_u(depth_set_point_, limit_velocity_ + delta_velocity_ub_);
+                        u_tab[2] = compute_u(depth_set_point_ + delta_position_lb_, limit_velocity_);
+                        u_tab[3] = compute_u(depth_set_point_ + delta_position_ub_, limit_velocity_);
 
                         /// Find best command
                         u = optimize_u(u_tab);
                     }
                     else
-                        u = compute_u(x, depth_set_point_, limit_velocity_, approach_velocity_);
+                        u = compute_u(depth_set_point_, limit_velocity_);
 
                     /// Mechanical limits (in = v_min, out = v_max)
-                    if((piston_switch_top_ && u<0) || (piston_switch_bottom_ && u>0))
+                    if((piston_switch_top_ && u<0) || (piston_switch_bottom_ && u>0)){
                         u = 0.0;
+                        piston_set_point_ = piston_position_;
+                    }
 
                     /// Limitation of u according to engine capabilities
                     u = std::clamp(u, -flow_max_, flow_max_);

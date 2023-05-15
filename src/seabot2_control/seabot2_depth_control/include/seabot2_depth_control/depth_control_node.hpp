@@ -37,6 +37,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::milliseconds loop_dt_ = 200ms; /// loop dt
 
+    bool debug_ = false;
+
     /// Variable
     AlphaSolver alpha_solver_;
 
@@ -91,11 +93,14 @@ private:
     double piston_set_point_ = 0.;
     bool is_exit_ = true;
 
+    bool enable_flow_max_ = true;
+
     /// Callback data
     rclcpp::Time time_last_kalman_callback_ = this->now();
     rclcpp::Time time_last_piston_callback_ = this->now();
     // [Velocity; Depth; Volume; Offset, chi, chi2, Cz]
     Matrix<double, NB_STATES, 1> x = Matrix<double, NB_STATES, 1>::Zero();
+    double offset_total_ = 100.0e-6;
     double depth_fusion_ = 0.0;
     double depth_set_point_ = 0.0;
     double limit_velocity_ = 0.0;
@@ -194,14 +199,14 @@ private:
      * @param approach_velocity
      * @return
      */
-    double compute_u(const Matrix<double, NB_STATES, 1> &x, double set_point, double limit_velocity, double approach_velocity=1.0);
+    double compute_u(double set_point, double limit_velocity);
 
     /**
      *
      * @param u_tab
      * @return
      */
-    double optimize_u(std::array<double, 4> &u_tab);
+    static double optimize_u(std::array<double, 4> &u_tab);
 
     /**
      * Compute the alpha values

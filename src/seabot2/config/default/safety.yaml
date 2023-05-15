@@ -14,3 +14,4 @@ safety:
       limit_depth_default: 100.0 # m
       robot_height_ping: 1.1
       offset_max_depth: 0.5 # m
+      seabed_delay_detection: 30000 # ms

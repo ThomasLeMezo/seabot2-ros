@@ -26,7 +26,7 @@ void Kalman::update_density(double physics_rho){
     coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
 }
 
-Matrix<double,NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u){
+Matrix<double,NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u) const{
     Matrix<double,NB_STATES, 1> dx = Matrix<double,NB_STATES, 1>::Zero();
 
     /// ToDo : change equation to assert PV = nRT => V = nR(T/P) and take into account Temperature and Pressure instead of only depth
@@ -134,7 +134,7 @@ void Kalman::init_kalman(){
     Ck_(0, 1) = 1.;
 }
 
-bool Kalman::is_out_of_range(const Matrix<double, NB_STATES, 1> &xhat){
+bool Kalman::is_out_of_range(const Matrix<double, NB_STATES, 1> &xhat) const{
     bool is_out = false;
     if(xhat(2) != std::clamp(xhat(2), -piston_max_volume_, piston_max_volume_))
         is_out = true;

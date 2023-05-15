@@ -100,7 +100,7 @@ private:
 
     bool seabed_test_detected_ = false;
     rclcpp::Time seabed_test_first_detected_ = this->now();
-    std::chrono::milliseconds  seabed_delay_detection = 10s;
+    std::chrono::milliseconds seabed_delay_detection_ = 30s;
 
     bool gnss_fix_once_ = false;
     int gnss_mode_ = gpsd_client::msg::GpsFix::MODE_NOT_SEEN;

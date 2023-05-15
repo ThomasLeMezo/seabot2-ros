@@ -95,7 +95,7 @@ public:
     double piston_set_point_ = 0.;
 
     double temperature_=288.15; /// in K
-    double pressure_; /// in Pa
+    double pressure_{}; /// in Pa
 
 public:
     /// Kalman variables
@@ -132,7 +132,7 @@ private:
  * @return
  */
     Matrix<double,NB_STATES, 1> f_dyn(const Matrix<double,NB_STATES,1> &x,
-                                      const Matrix<double,NB_COMMAND, 1> &u);
+                                      const Matrix<double,NB_COMMAND, 1> &u) const;
 
     /**
      *
@@ -156,7 +156,7 @@ private:
      * @param gamma_beta
      * @param Ck
      */
-    void kalman_correc(Matrix<double,NB_STATES, 1> &x,
+    static void kalman_correc(Matrix<double,NB_STATES, 1> &x,
                        Matrix<double,NB_STATES,NB_STATES> &gamma,
                        const Matrix<double,NB_MESURES, 1> &y,
                        const Matrix<double,NB_MESURES,NB_MESURES> &gamma_beta,
@@ -173,7 +173,7 @@ private:
      * @param xhat
      * @return
      */
-    bool is_out_of_range(const Matrix<double, NB_STATES, 1> &xhat);
+    bool is_out_of_range(const Matrix<double, NB_STATES, 1> &xhat) const;
 
 public:
     /**
