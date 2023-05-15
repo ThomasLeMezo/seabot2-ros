@@ -363,23 +363,23 @@ void SafetyNode::test_depth_max(){
 }
 
 bool SafetyNode::test_seabed_reached(){
-    if(piston_switch_top_ && abs(velocity_) < max_velocity_reset_zero_){
+    if(piston_switch_top_ && (abs(velocity_) < max_velocity_reset_zero_)){
         if(!seabed_test_detected_) {
             seabed_test_first_detected_ = this->now();
             seabed_test_detected_ = true;
         }
         else{
              if(this->now()-seabed_test_first_detected_ > seabed_delay_detection){
-                 safety_seafloor_ = true;
+                 safety_seafloor_ = false;
                  return true;
              }
          }
     }
     else{
         seabed_test_detected_ = false;
+        safety_seafloor_ = true;
     }
-    safety_seafloor_ = false;
-    return false;
+    return safety_seafloor_;
 }
 
 void SafetyNode::timer_callback() {
