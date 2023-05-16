@@ -99,7 +99,7 @@ void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_n
     mission_enable_ = false;
 
     wp.depth = 0.0;
-    wp.limit_velocity = limit_velocity_default_;
+    wp.limit_velocity = waypoints_[waypoints_.size() - 1].limit_velocity;
     wp.north = waypoints_[waypoints_.size() - 1].north + offset_north_;
     wp.east = waypoints_[waypoints_.size() - 1].east + offset_east_;
     wp.enable_thrusters = false;

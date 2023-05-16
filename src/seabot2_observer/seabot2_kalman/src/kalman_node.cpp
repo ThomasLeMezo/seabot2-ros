@@ -65,7 +65,8 @@ void KalmanNode::init_parameters() {
     k_.piston_volume_eq_init_ = this->get_parameter_or("piston_volume_eq_init", k_.piston_volume_eq_init_);
     k_.init_chi_ = this->get_parameter_or("init_chi", k_.init_chi_);
     k_.init_chi2_ = this->get_parameter_or("init_chi2", k_.init_chi2_);
-    k_.init_volume_air_ = this->get_parameter_or("init_volume_air", k_.init_volume_air_);
+    double volume_air = this->get_parameter_or("init_volume_air", k_.init_volume_air_);
+    k_.init_volume_air_ = volume_air*k_.pressure_/k_.temperature_;
     k_.init_cz_ = this->get_parameter_or("init_cz", k_.init_cz_);
 
     k_.gamma_alpha_velocity_ = this->get_parameter_or("gamma_alpha_velocity", k_.gamma_alpha_velocity_);
@@ -83,7 +84,8 @@ void KalmanNode::init_parameters() {
     k_.gamma_init_chi_ = this->get_parameter_or("gamma_init_chi", k_.gamma_init_chi_);
     k_.gamma_init_chi2_ = this->get_parameter_or("gamma_init_chi2", k_.gamma_init_chi2_);
     k_.gamma_init_cz_ = this->get_parameter_or("gamma_init_cz", k_.gamma_init_cz_);
-    k_.gamma_init_volume_air_ = this->get_parameter_or("gamma_init_volume_air", k_.gamma_init_volume_air_);
+    double gamma_init_volume_air = this->get_parameter_or("gamma_init_volume_air", k_.gamma_init_volume_air_);
+    k_.gamma_init_volume_air_ = gamma_init_volume_air*k_.pressure_/k_.temperature_;
 
     k_.gamma_beta_depth_ = this->get_parameter_or("gamma_beta_depth", k_.gamma_beta_depth_);
 

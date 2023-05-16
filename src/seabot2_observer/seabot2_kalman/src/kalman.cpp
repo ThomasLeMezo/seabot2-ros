@@ -29,8 +29,6 @@ void Kalman::update_density(double physics_rho){
 Matrix<double,NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u) const{
     Matrix<double,NB_STATES, 1> dx = Matrix<double,NB_STATES, 1>::Zero();
 
-    /// ToDo : change equation to assert PV = nRT => V = nR(T/P) and take into account Temperature and Pressure instead of only depth
-
     if(enable_volume_air_ && pressure_>0.)
         dx(0) = -coeff_A_*(u(0)+x(2)+x(6)*temperature_/pressure_-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     else

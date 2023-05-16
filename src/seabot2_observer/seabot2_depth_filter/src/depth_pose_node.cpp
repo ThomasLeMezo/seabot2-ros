@@ -48,7 +48,7 @@ void DepthPoseNode::service_zero_pressure_callback(const std::shared_ptr<rmw_req
     if(!pressure_zero_depth_deque_.empty()){
         zero_depth_ = std::accumulate(pressure_zero_depth_deque_.begin(), pressure_zero_depth_deque_.end(), 0.0);
         zero_depth_ /= (double)pressure_zero_depth_deque_.size();
-        RCLCPP_INFO(this->get_logger(),"[Depth_pose_node] Zero_depth = %f", zero_depth_);
+//        RCLCPP_INFO(this->get_logger(),"[Depth_pose_node] Zero_depth = %f", zero_depth_);
         response->success = true;
     }
     else

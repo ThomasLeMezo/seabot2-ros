@@ -130,7 +130,10 @@ void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &m
     last_waypoint_time_ = msg.header.stamp;
 
     // Update approach velocity
-    approach_velocity_ = alpha_solver_.compute_alpha(limit_velocity_);
+    if(msg.mission_enable)
+        approach_velocity_ = alpha_solver_.compute_alpha(limit_velocity_);
+    else
+        approach_velocity_ = 1.0;
 
     // Debug
     seabot2_depth_control::msg::AlphaDebug msg_alpha_debug;

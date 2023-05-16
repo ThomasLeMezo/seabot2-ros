@@ -62,7 +62,7 @@ public:
     double init_chi_ = 0.0; /// m3/m
     double init_chi2_ = 0.0; /// m3/m2
     double init_cz_ = 1.0;
-    double init_volume_air_ = 5e-4; /// m3/m
+    double init_volume_air_ = 3.5e-3; /// (V*P/T)
     bool enable_volume_air_ = true;
 
     double gamma_alpha_velocity_ =  1e-3; // 1e-5
@@ -94,8 +94,8 @@ public:
     rclcpp::Time piston_stamp_;
     double piston_set_point_ = 0.;
 
-    double temperature_=288.15; /// in K
-    double pressure_{}; /// in Pa
+    double temperature_=288.15; /// in K (15°C)
+    double pressure_ = 101325.0 ; /// in Pa (1013.23 hPa)
 
 public:
     /// Kalman variables

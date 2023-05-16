@@ -33,7 +33,6 @@ public:
     double east = 0.0;
     double depth = 0.0;
     double limit_velocity = 0.0;
-    double approach_velocity = 1.0;
     bool  enable_thrusters = true;
     bool seafloor_landing = false;
     rclcpp::Time time_end;
@@ -106,12 +105,6 @@ public:
      * @param vel
      */
     void set_limit_velocity_default(const double &vel);
-
-    /**
-     * @brief set_approach_velocity_default
-     * @param vel
-     */
-    void set_approach_velocity_default(const double &vel);
 
     /**
      * @brief get_velocity_list

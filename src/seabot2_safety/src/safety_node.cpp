@@ -185,7 +185,7 @@ bool SafetyNode::test_zero_pressure() {
                     is_zero_depth_once_ = true;
                     reset_depth_status_ = IDLE;
                     safety_zero_depth_ = true;
-                    RCLCPP_INFO(this->get_logger(), "[Safety_node] Call zero depth");
+                    //RCLCPP_INFO(this->get_logger(), "[Safety_node] Call zero depth");
                 }
             }
             else if(!is_valid_conditions){

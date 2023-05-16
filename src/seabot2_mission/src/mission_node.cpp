@@ -31,13 +31,11 @@ void MissionNode::init_parameters() {
     this->declare_parameter<int>("flash_number", flash_number_);
     this->declare_parameter<double>("limit_velocity_default", limit_velocity_default_);
 
-
     mission_file_name_ = this->get_parameter_or("mission_file_name", mission_file_name_);
     mission_path_ = this->get_parameter_or("mission_path", mission_path_);
-
     flash_next_waypoint_time_ = this->get_parameter_or("flash_next_waypoint_time", flash_next_waypoint_time_);
     flash_number_ = this->get_parameter_or("flash_number", flash_number_);
-    limit_velocity_default_ = this->get_parameter_or("limit_velocity_defualt", limit_velocity_default_);
+    limit_velocity_default_ = this->get_parameter_or("limit_velocity_default", limit_velocity_default_);
 
 }
 
@@ -134,7 +132,7 @@ void MissionNode::call_velocity_computation(std::vector<float> &velocity_list){
     else {
         if(rclcpp::ok()) {
             auto future = client_alpha_mission_->async_send_request(request);
-
+            rclcpp::sleep_for(2s);
             // Do not wait to the result because cannont handle async call (deadlock with this node)
         }
         else{
@@ -148,9 +146,6 @@ int MissionNode::load_mission(){
     call_restart_bag();
     rclcpp::sleep_for(1s); // Wait for the change of bag
 
-    // Call for log of parameters
-    call_log_params();
-
     // Reload mission
     int ret =  mission_.load_mission(mission_file_name_, mission_path_);
 
@@ -160,6 +155,9 @@ int MissionNode::load_mission(){
             RCLCPP_INFO(this->get_logger(), "[Mission_node] Velocity to compute : %f", v);
         call_velocity_computation(velocity_list);
     }
+
+    // Call for log of parameters
+    call_log_params();
 
     return ret;
 }

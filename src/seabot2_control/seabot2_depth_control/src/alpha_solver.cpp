@@ -31,6 +31,7 @@ double AlphaSolver::compute_alpha(const double velocity_limit) {
     if(exist.first)
         return exist.second;
     else {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Start compute new alpha (velocity_limit = %f)", velocity_limit);
         auto beta = Interval(velocity_limit);
         IntervalVector x_init(2);
         x_init[0] = Interval(0., z_search_max_); // z
