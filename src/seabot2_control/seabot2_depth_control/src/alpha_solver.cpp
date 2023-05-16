@@ -6,6 +6,7 @@
 #include <iostream>
 #include "ibex/ibex_Function.h"
 #include "ibex/ibex_SepFwdBwd.h"
+#include "rclcpp/rclcpp.hpp"
 
 #include <chrono>
 
@@ -91,7 +92,7 @@ double AlphaSolver::compute_alpha(const double velocity_limit) {
                 }
             }
         }
-
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Compute alpha = %f for velocity_limit = %f", v_out[1].lb(), velocity_limit);
         if(!::isnan(v_out[1].lb())) {
             add_to_memory(velocity_limit, v_out[1].lb());
             return v_out[1].lb();

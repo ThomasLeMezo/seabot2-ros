@@ -70,7 +70,7 @@ private:
     double motor_max_rpm_ = 38.0;
     double flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_; /// in m3/sec
 
-    double piston_flow_security_percentage_ = 0.8;
+    double piston_flow_security_percentage_ = 0.25;
 
     /// Hold depth parameters
     bool hold_depth_enable_ = false;

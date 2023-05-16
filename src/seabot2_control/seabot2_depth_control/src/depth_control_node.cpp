@@ -182,11 +182,11 @@ double DepthControlNode::compute_u(double set_point, double limit_velocity){
     const double x1 = x(0); /// dz
     const double x2 = x(1); /// z
     const double x3 = x(2); /// piston volume
-    const double x4 = x(3); /// offset
+//    const double x4 = x(3); /// offset
     const double x5 = x(4); /// chi1
     const double x6 = x(5); /// chi2
     const double x7 = x(6); /// Cf
-    const double x8 = x(7); /// V_air
+//    const double x8 = x(7); /// V_air
     const double A = coeff_A_;
     const double B = coeff_B_;
     const double beta = limit_velocity;
@@ -241,7 +241,6 @@ void DepthControlNode::timer_callback() {
             u = 0.;
             piston_set_point_ = 0;
             is_exit_ = true;
-            RCLCPP_INFO(this->get_logger(), "[Depth_control_node] depth = %0.1f, emergency=%b, debug=%b", depth_set_point_, emergency_, debug_);
             break;
         case STATE_SINK:
             is_exit_ = false;

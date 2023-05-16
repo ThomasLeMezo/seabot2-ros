@@ -93,7 +93,7 @@ void LogParameterNode::get_param_values(const std::string &node_name,
             msg.param_name = param_name[i];
             msg.value = param_values[i];
             publisher_parameters_->publish(msg);
-            rclcpp::sleep_for(10ms);
+            rclcpp::sleep_for(100ms);
         }
     }
     else

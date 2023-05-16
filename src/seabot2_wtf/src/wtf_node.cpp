@@ -184,13 +184,13 @@ void WtfNode::update_internal_pressure_windows(){
         mvwprintw(windows_internal_pressure_, 1, 25, "%0.2f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
         mvwprintw(windows_internal_pressure_, 3, 1, "pressure");
-        mvwprintw(windows_internal_pressure_, 3, 25, "%0.0f", msg_internal_sensor_filter_.pressure);
+        mvwprintw(windows_internal_pressure_, 3, 25, "%4.0f", msg_internal_sensor_filter_.pressure);
 
         mvwprintw(windows_internal_pressure_, 4, 1, "temperature");
-        mvwprintw(windows_internal_pressure_, 4, 25, "%0.2f", msg_internal_sensor_filter_.temperature);
+        mvwprintw(windows_internal_pressure_, 4, 25, "%2.2f", msg_internal_sensor_filter_.temperature);
 
         mvwprintw(windows_internal_pressure_, 5, 1, "humidity");
-        mvwprintw(windows_internal_pressure_, 5, 25, "%0.0f", msg_internal_sensor_filter_.humidity);
+        mvwprintw(windows_internal_pressure_, 5, 25, "%2.0f", msg_internal_sensor_filter_.humidity);
 
         wrefresh(windows_internal_pressure_);
     }
