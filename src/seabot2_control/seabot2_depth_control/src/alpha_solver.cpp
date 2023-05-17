@@ -28,7 +28,9 @@ void AlphaSolver::add_to_memory(const double beta, const double alpha) {
 
 double AlphaSolver::compute_alpha(const double velocity_limit) {
     auto exist = exist_in_memory(velocity_limit);
-    if(exist.first)
+    if(velocity_limit<=0)
+        return 1.0;
+    else if(exist.first)
         return exist.second;
     else {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Start compute new alpha (velocity_limit = %f)", velocity_limit);

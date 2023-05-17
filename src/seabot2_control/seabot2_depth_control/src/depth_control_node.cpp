@@ -7,6 +7,8 @@ using namespace std::placeholders;
 DepthControlNode::DepthControlNode()
         : Node("depth_control_node"), alpha_solver_(){
 
+    callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+
     init_parameters();
     init_interfaces();
 
@@ -46,8 +48,8 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<bool>("control_filter", control_filter_);
     this->declare_parameter<double>("piston_flow_security_percentage", piston_flow_security_percentage_);
     this->declare_parameter<bool>("enable_flow_max", enable_flow_max_);
+    this->declare_parameter<double>("cf_estimation", Cf_);
     this->declare_parameter<bool>("debug", debug_);
-
 
     physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
     physics_g_ = this->get_parameter_or("physics_g", physics_g_);
@@ -75,13 +77,14 @@ void DepthControlNode::init_parameters() {
     control_filter_ = this->get_parameter_or("control_filter", control_filter_);
     piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage", piston_flow_security_percentage_);
     enable_flow_max_ = this->get_parameter_or("enable_flow_max", enable_flow_max_);
+    Cf_ = this->get_parameter_or("cf_estimation", Cf_);
     debug_ = this->get_parameter_or("debug", debug_);
 
     /// Computed parameters
-    Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
+    S_ = M_PI*pow(robot_diameter_/2.0, 2);
     tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
     coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
+    coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
     flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_;
 
     /// Ensuring a safety margin on the piston flow of piston_flow_security_percentage
@@ -362,11 +365,15 @@ void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg
     temperature_ = msg.temperature + 273.15;
 }
 
-
-
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<DepthControlNode>());
+
+    auto node = std::make_shared<DepthControlNode>();
+
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    executor.spin();
+
     rclcpp::shutdown();
     return 0;
 }

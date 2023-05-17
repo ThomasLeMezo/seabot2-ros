@@ -23,6 +23,11 @@ WtfNode::WtfNode()
             loop_dt_, std::bind(&WtfNode::timer_callback, this));
 
     initscr();
+    getmaxyx(stdscr,windows_max_y_,windows_max_x_);
+    /// | - - - x
+    /// |
+    /// y
+    RCLCPP_INFO(this->get_logger(), "Windows size: %d, %d", windows_max_y_, windows_max_x_);
     use_default_colors();
     start_color();
     init_pair(COLOR_DEFAULT, -1, -1);
@@ -30,46 +35,50 @@ WtfNode::WtfNode()
     init_pair(COLOR_NOT_VALID, -1, COLOR_RED);
 
     /// height, width, point_x, point_y
-    windows_robot_              = subwin(stdscr, 5, 122, 0, 0);
-    windows_safety_             = subwin(stdscr, 15, 38, 5, 0);
-    windows_internal_pressure_  = subwin(stdscr, 7, 38, 20, 0);
-    windows_power_              = subwin(stdscr, 13, 38, 27, 0);
-    windows_depth_control_      = subwin(stdscr, 11, 38, 40, 0);
-
-    windows_mission_            = subwin(stdscr, 15, 44, 5, 39);
-    windows_depth_              = subwin(stdscr, 8, 44, 20, 39);
-    windows_piston_             = subwin(stdscr, 15, 44, 28, 39);
-    windows_gnss_               = subwin(stdscr, 8, 44, 43, 39);
-
-    windows_sensors_               = subwin(stdscr, 15, 38, 5, 84);
-
+    windows_robot_              = subwin(stdscr, windows_default_y_, windows_max_x_, 0, 0);
     box(windows_robot_, ACS_VLINE, ACS_HLINE);
-    box(windows_safety_, ACS_VLINE, ACS_HLINE);
-    box(windows_internal_pressure_, ACS_VLINE, ACS_HLINE);
-    box(windows_power_, ACS_VLINE, ACS_HLINE);
-    box(windows_depth_control_, ACS_VLINE, ACS_HLINE);
-    box(windows_depth_, ACS_VLINE, ACS_HLINE);
-    box(windows_piston_, ACS_VLINE, ACS_HLINE);
-    box(windows_mission_, ACS_VLINE, ACS_HLINE);
-    box(windows_gnss_, ACS_VLINE, ACS_HLINE);
-    box(windows_sensors_, ACS_VLINE, ACS_HLINE);
-
     mvwprintw(windows_robot_, 1, 1, "SEABOT");
-    mvwprintw(windows_safety_, 1, 1, "SAFETY");
-    mvwprintw(windows_internal_pressure_, 1, 1, "INTERNAL PRESSURE");
-    mvwprintw(windows_power_, 1, 1, "POWER");
-    mvwprintw(windows_depth_control_, 1, 1, "DEPTH CONTROL");
-    mvwprintw(windows_depth_, 1, 1, "DEPTH");
-    mvwprintw(windows_piston_, 1, 1, "PISTON");
-    mvwprintw(windows_mission_, 1, 1, "MISSION");
-    mvwprintw(windows_gnss_, 1, 1, "GNSS");
-    mvwprintw(windows_sensors_, 1, 1, "SENSORS");
+
+    windows_safety_             = create_new_sub_window(15, 40, "SAFETY");
+    windows_internal_pressure_  = create_new_sub_window(7, 40, "INTERNAL PRESSURE");
+    windows_power_              = create_new_sub_window(13, 40, "POWER");
+    windows_depth_control_      = create_new_sub_window(11, 40, "DEPTH CONTROL");
+
+    windows_mission_            = create_new_sub_window(15, 40, "DEPTH");
+    windows_depth_              = create_new_sub_window(8, 40, "PISTON");
+    windows_piston_             = create_new_sub_window(15, 40, "MISSION");
+    windows_gnss_               = create_new_sub_window(8, 40, "GNSS");
+
+    windows_sensors_            = create_new_sub_window(5, 40, "SENSORS");
 
     refresh();
 }
 
 WtfNode::~WtfNode(){
     endwin();
+}
+
+WINDOW *WtfNode::create_new_sub_window(int height, int width, const string &name){
+    WINDOW *local_win;
+
+    int end_y = windows_current_y_ + height;
+    if(end_y > windows_max_y_){
+        windows_current_y_ = windows_default_y_;
+        windows_current_x_ += windows_width_max_ + 1;
+        windows_width_max_ = 0;
+    }
+
+    int start_x = windows_current_x_;
+
+    local_win = subwin(stdscr,height, width, windows_current_y_, start_x);
+
+    windows_width_max_ = max(windows_width_max_, width);
+    windows_current_y_ += height;
+
+    box(local_win, ACS_VLINE, ACS_HLINE);
+    mvwprintw(local_win, 1, 1, name.c_str());
+
+    return local_win;
 }
 
 void WtfNode::init_parameters() {

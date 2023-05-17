@@ -13,3 +13,5 @@
     robot_diameter: 0.125 # m
     piston_max_tick: 1146880.0 # ticks
     robot_mass: 12.6 # kg
+
+    cf_estimation: 4.0 # drag coeff (conservative value)

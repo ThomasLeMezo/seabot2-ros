@@ -69,6 +69,11 @@ private:
     WINDOW *windows_gnss_;
     WINDOW *windows_sensors_;
 
+    int windows_max_y_{}, windows_max_x_{};
+    int windows_default_y_=4;
+    int windows_current_y_ = windows_default_y_, windows_current_x_{};
+    int windows_width_max_{};
+
     /// Variable
 
     seabot2_safety::msg::SafetyStatus msg_safety_;
@@ -262,6 +267,11 @@ private:
      * @return
      */
     static std::string get_bool_text(bool valid);
+
+    /**
+     *  Create new sub window
+     */
+    WINDOW * create_new_sub_window(int height, int width, const string &name);
 
 };
 #endif //BUILD_WTF_NODE_HPP
