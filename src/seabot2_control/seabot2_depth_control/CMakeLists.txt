@@ -32,7 +32,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ### Executable
-add_executable(depth_control_node src/depth_control_node.cpp src/alpha_solver.cpp)
+add_executable(depth_control_node src/depth_control_node.cpp src/alpha_solver.cpp src/depth_control.cpp)
 ament_target_dependencies(depth_control_node
         rclcpp
         rosidl_default_generators

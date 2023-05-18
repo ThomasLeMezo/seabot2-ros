@@ -5,7 +5,7 @@
 using namespace std::placeholders;
 
 DepthControlNode::DepthControlNode()
-        : Node("depth_control_node"), alpha_solver_(){
+        : Node("depth_control_node"), dc_(this->now()){
 
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
@@ -19,128 +19,107 @@ DepthControlNode::DepthControlNode()
 }
 
 void DepthControlNode::init_parameters() {
-    this->declare_parameter<int>("loop_dt_", loop_dt_.count());
+    this->declare_parameter<int>("loop_dt_", static_cast<int>(loop_dt_.count()));
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 
-    this->declare_parameter<double>("physics_rho", physics_rho_);
-    this->declare_parameter<double>("physics_g", physics_g_);
-    this->declare_parameter<double>("robot_mass", robot_mass_);
-    this->declare_parameter<double>("robot_diameter", robot_diameter_);
-    this->declare_parameter<double>("screw_thread", screw_thread_);
-    this->declare_parameter<double>("tick_per_turn", tick_per_turn_);
-    this->declare_parameter<double>("motor_max_rpm_", motor_max_rpm_);
-    this->declare_parameter<double>("piston_diameter", piston_diameter_);
-    this->declare_parameter<double>("piston_max_tick_value", piston_max_tick_value_);
-    this->declare_parameter<double>("root_regulation", root_regulation_);
-    this->declare_parameter<double>("limit_depth_regulation", limit_depth_control_);
-    this->declare_parameter<double>("flow_piston_sink", flow_piston_sink_);
-    this->declare_parameter<double>("piston_hysteresis", piston_hysteresis_);
-    this->declare_parameter<double>("piston_max_velocity", flow_max_);
-    this->declare_parameter<bool>("hold_depth_enable", hold_depth_enable_);
-    this->declare_parameter<double>("hold_depth_value_enter", hold_depth_value_enter_);
-    this->declare_parameter<double>("hold_depth_value_exit", hold_depth_value_exit_);
-    this->declare_parameter<double>("hold_velocity_enter", hold_velocity_enter_);
-    this->declare_parameter<double>("hold_velocity_exit", hold_velocity_exit_);
-    this->declare_parameter<double>("delta_velocity_lb", delta_velocity_lb_);
-    this->declare_parameter<double>("delta_velocity_ub", delta_velocity_ub_);
-    this->declare_parameter<double>("delta_position_lb", delta_position_lb_);
-    this->declare_parameter<double>("delta_position_ub", delta_position_ub_);
-    this->declare_parameter<bool>("control_filter", control_filter_);
-    this->declare_parameter<double>("piston_flow_security_percentage", piston_flow_security_percentage_);
-    this->declare_parameter<bool>("enable_flow_max", enable_flow_max_);
-    this->declare_parameter<double>("cf_estimation", Cf_);
-    this->declare_parameter<bool>("debug", debug_);
+    this->declare_parameter<double>("physics_rho", dc_.physics_rho_);
+    this->declare_parameter<double>("physics_g", dc_.physics_g_);
+    this->declare_parameter<double>("robot_mass", dc_.robot_mass_);
+    this->declare_parameter<double>("robot_diameter", dc_.robot_diameter_);
+    this->declare_parameter<double>("screw_thread", dc_.screw_thread_);
+    this->declare_parameter<double>("tick_per_turn", dc_.tick_per_turn_);
+    this->declare_parameter<double>("motor_max_rpm_", dc_.motor_max_rpm_);
+    this->declare_parameter<double>("piston_diameter", dc_.piston_diameter_);
+    this->declare_parameter<double>("piston_max_tick_value", dc_.piston_max_tick_value_);
+    this->declare_parameter<double>("root_regulation", dc_.root_regulation_);
+    this->declare_parameter<double>("limit_depth_regulation", dc_.limit_depth_control_);
+    this->declare_parameter<double>("flow_piston_sink", dc_.flow_piston_sink_);
+    this->declare_parameter<double>("piston_hysteresis", dc_.piston_hysteresis_);
+    this->declare_parameter<double>("piston_max_velocity", dc_.flow_max_);
+    this->declare_parameter<bool>("hold_depth_enable", dc_.hold_depth_enable_);
+    this->declare_parameter<double>("hold_depth_value_enter", dc_.hold_depth_value_enter_);
+    this->declare_parameter<double>("hold_depth_value_exit", dc_.hold_depth_value_exit_);
+    this->declare_parameter<double>("hold_velocity_enter", dc_.hold_velocity_enter_);
+    this->declare_parameter<double>("hold_velocity_exit", dc_.hold_velocity_exit_);
+    this->declare_parameter<double>("delta_velocity_lb", dc_.delta_velocity_lb_);
+    this->declare_parameter<double>("delta_velocity_ub", dc_.delta_velocity_ub_);
+    this->declare_parameter<double>("delta_position_lb", dc_.delta_position_lb_);
+    this->declare_parameter<double>("delta_position_ub", dc_.delta_position_ub_);
+    this->declare_parameter<bool>("control_filter", dc_.control_filter_);
+    this->declare_parameter<double>("piston_flow_security_percentage", dc_.piston_flow_security_percentage_);
+    this->declare_parameter<bool>("enable_flow_max", dc_.enable_flow_max_);
+    this->declare_parameter<double>("cf_estimation", dc_.Cf_);
+    this->declare_parameter<bool>("debug", dc_.debug_);
 
-    physics_rho_ = this->get_parameter_or("physics_rho", physics_rho_);
-    physics_g_ = this->get_parameter_or("physics_g", physics_g_);
-    robot_mass_ = this->get_parameter_or("physics_mass", robot_mass_);
-    robot_diameter_ = this->get_parameter_or("robot_diameter", robot_diameter_);
-    screw_thread_ = this->get_parameter_or("screw_thread", screw_thread_);
-    tick_per_turn_ = this->get_parameter_or("tick_per_turn", tick_per_turn_);
-    motor_max_rpm_ = this->get_parameter_or("motor_max_rpm_", motor_max_rpm_);
-    piston_diameter_ = this->get_parameter_or("piston_diameter", piston_diameter_);
-    piston_max_tick_value_ = this->get_parameter_or("piston_max_tick_value", piston_max_tick_value_);
-    root_regulation_ = this->get_parameter_or("root_regulation", root_regulation_);
-    limit_depth_control_ = this->get_parameter_or("limit_depth_control", limit_depth_control_);
-    flow_piston_sink_ = this->get_parameter_or("flow_piston_sink", flow_piston_sink_);
-    piston_hysteresis_ = this->get_parameter_or("piston_hysteresis", piston_hysteresis_);
-    flow_max_ = this->get_parameter_or("piston_max_velocity", flow_max_);
-    hold_depth_enable_ = this->get_parameter_or("hold_depth_enable", hold_depth_enable_);
-    hold_depth_value_enter_ = this->get_parameter_or("hold_depth_value_enter", hold_depth_value_enter_);
-    hold_depth_value_exit_ = this->get_parameter_or("hold_depth_value_exit", hold_depth_value_exit_);
-    hold_velocity_enter_ = this->get_parameter_or("hold_velocity_enter", hold_velocity_enter_);
-    hold_velocity_exit_ = this->get_parameter_or("hold_velocity_exit", hold_velocity_exit_);
-    delta_velocity_lb_ = this->get_parameter_or("delta_velocity_lb", delta_velocity_lb_);
-    delta_velocity_ub_ = this->get_parameter_or("delta_velocity_ub", delta_velocity_ub_);
-    delta_position_lb_ = this->get_parameter_or("delta_position_lb", delta_position_lb_);
-    delta_position_ub_ = this->get_parameter_or("delta_position_ub", delta_position_ub_);
-    control_filter_ = this->get_parameter_or("control_filter", control_filter_);
-    piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage", piston_flow_security_percentage_);
-    enable_flow_max_ = this->get_parameter_or("enable_flow_max", enable_flow_max_);
-    Cf_ = this->get_parameter_or("cf_estimation", Cf_);
-    debug_ = this->get_parameter_or("debug", debug_);
+    dc_.physics_rho_ = this->get_parameter_or("physics_rho", dc_.physics_rho_);
+    dc_.physics_g_ = this->get_parameter_or("physics_g", dc_.physics_g_);
+    dc_.robot_mass_ = this->get_parameter_or("physics_mass", dc_.robot_mass_);
+    dc_.robot_diameter_ = this->get_parameter_or("robot_diameter", dc_.robot_diameter_);
+    dc_.screw_thread_ = this->get_parameter_or("screw_thread", dc_.screw_thread_);
+    dc_.tick_per_turn_ = this->get_parameter_or("tick_per_turn", dc_.tick_per_turn_);
+    dc_.motor_max_rpm_ = this->get_parameter_or("motor_max_rpm_", dc_.motor_max_rpm_);
+    dc_.piston_diameter_ = this->get_parameter_or("piston_diameter", dc_.piston_diameter_);
+    dc_.piston_max_tick_value_ = this->get_parameter_or("piston_max_tick_value", dc_.piston_max_tick_value_);
+    dc_.root_regulation_ = this->get_parameter_or("root_regulation", dc_.root_regulation_);
+    dc_.limit_depth_control_ = this->get_parameter_or("limit_depth_control", dc_.limit_depth_control_);
+    dc_.flow_piston_sink_ = this->get_parameter_or("flow_piston_sink", dc_.flow_piston_sink_);
+    dc_.piston_hysteresis_ = this->get_parameter_or("piston_hysteresis", dc_.piston_hysteresis_);
+    dc_.flow_max_ = this->get_parameter_or("piston_max_velocity", dc_.flow_max_);
+    dc_.hold_depth_enable_ = this->get_parameter_or("hold_depth_enable", dc_.hold_depth_enable_);
+    dc_.hold_depth_value_enter_ = this->get_parameter_or("hold_depth_value_enter", dc_.hold_depth_value_enter_);
+    dc_.hold_depth_value_exit_ = this->get_parameter_or("hold_depth_value_exit", dc_.hold_depth_value_exit_);
+    dc_.hold_velocity_enter_ = this->get_parameter_or("hold_velocity_enter", dc_.hold_velocity_enter_);
+    dc_.hold_velocity_exit_ = this->get_parameter_or("hold_velocity_exit", dc_.hold_velocity_exit_);
+    dc_.delta_velocity_lb_ = this->get_parameter_or("delta_velocity_lb", dc_.delta_velocity_lb_);
+    dc_.delta_velocity_ub_ = this->get_parameter_or("delta_velocity_ub", dc_.delta_velocity_ub_);
+    dc_.delta_position_lb_ = this->get_parameter_or("delta_position_lb", dc_.delta_position_lb_);
+    dc_.delta_position_ub_ = this->get_parameter_or("delta_position_ub", dc_.delta_position_ub_);
+    dc_.control_filter_ = this->get_parameter_or("control_filter", dc_.control_filter_);
+    dc_.piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage", dc_.piston_flow_security_percentage_);
+    dc_.enable_flow_max_ = this->get_parameter_or("enable_flow_max", dc_.enable_flow_max_);
+    dc_.Cf_ = this->get_parameter_or("cf_estimation", dc_.Cf_);
+    dc_.debug_ = this->get_parameter_or("debug", dc_.debug_);
 
-    /// Computed parameters
-    S_ = M_PI*pow(robot_diameter_/2.0, 2);
-    tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
-    flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_;
-
-    /// Ensuring a safety margin on the piston flow of piston_flow_security_percentage
-    alpha_solver_.update_coeff(Cf_, coeff_A_, coeff_B_, flow_max_*piston_flow_security_percentage_);
+    dc_.update_coeff();
 }
 
 void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &msg) {
-    x(0) = msg.velocity;
-    x(1) = msg.depth;
-//    x(2) -> piston volume
-    x(3) = msg.offset;
-    x(4) = msg.chi;
-    x(5) = msg.chi2;
-    x(6) = msg.cz;
-    x(7) = msg.volume_air;
-    offset_total_ = msg.offset_total;
-    time_last_kalman_callback_ = this->now();
+    dc_.update_state(msg.velocity,
+                     msg.depth,
+                     msg.offset,
+                     msg.chi,
+                     msg.chi2,
+                     msg.cz,
+                     msg.volume_air,
+                     msg.offset_total,
+                     msg.header.stamp);
 }
 
 void DepthControlNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
-    piston_position_ = msg.position;
-    piston_switch_top_ = msg.switch_top;
-    piston_switch_bottom_ = msg.switch_bottom;
-    piston_state_ = msg.state;
-    x(2) = -piston_position_*tick_to_volume_;
-    time_last_piston_callback_ = this->now();
+    dc_.update_piston(msg.position,
+                      msg.switch_top,
+                      msg.switch_bottom,
+                      msg.state,
+                      msg.header.stamp);
 }
 
 void DepthControlNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
-    depth_fusion_ = msg.depth;
-    pressure_ = msg.pressure*1e5;
+    dc_.update_depth(msg.depth, msg.pressure);
 }
 
 void DepthControlNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
-    emergency_ = !msg.global_safety_valid;
-    limit_depth_ = msg.limit_depth;
+    dc_.update_safety(!msg.global_safety_valid, msg.limit_depth);
 }
 
 void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
-    if(msg.mission_enable)
-        depth_set_point_ = std::min(msg.depth, limit_depth_);
-    else
-        depth_set_point_ = 0.0;
-
-    limit_velocity_ = msg.limit_velocity;
-    last_waypoint_time_ = msg.header.stamp;
-
-    // Update approach velocity
-    if(msg.mission_enable)
-        approach_velocity_ = alpha_solver_.compute_alpha(limit_velocity_);
-    else
-        approach_velocity_ = 1.0;
+    dc_.update_waypoint(msg.depth,
+                        msg.limit_velocity,
+                        msg.header.stamp,
+                        msg.mission_enable);
 
     // Debug
     seabot2_depth_control::msg::AlphaDebug msg_alpha_debug;
-    msg_alpha_debug.approach_velocity = approach_velocity_;
+    msg_alpha_debug.approach_velocity = static_cast<float>(dc_.approach_velocity_);
     publisher_alpha_debug_->publish(msg_alpha_debug);
 }
 
@@ -173,197 +152,40 @@ void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_r
                                       std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response){
     RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Received velocity computation request");
     for(auto velocity : request->velocity_limits){
-        auto result = alpha_solver_.compute_alpha(velocity);
+        auto result = dc_.alpha_solver_.compute_alpha(velocity);
         RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Compute velocity for beta = %f, alpha = %f", velocity, result);
     }
 }
 
 void DepthControlNode::density_callback(const seabot2_density::msg::Density &msg){
-    physics_rho_ = msg.density;
-    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
+    dc_.update_density(msg.density);
 }
 
-double DepthControlNode::compute_u(double set_point, double limit_velocity){
-    const double x1 = x(0); /// dz
-    const double x2 = x(1); /// z
-    const double x3 = x(2); /// piston volume
-//    const double x4 = x(3); /// offset
-    const double x5 = x(4); /// chi1
-    const double x6 = x(5); /// chi2
-    const double x7 = x(6); /// Cf
-//    const double x8 = x(7); /// V_air
-    const double A = coeff_A_;
-    const double B = coeff_B_;
-    const double beta = limit_velocity;
-    const double alpha = approach_velocity_;
-
-    double e = alpha*(set_point-x2);
-    double de = -alpha*x1;
-    double T = 1.0 - pow(tanh(e), 2);
-    double dde = -alpha*beta*de*T;
-    double dT = -2.*de*tanh(e)*T;
-    double dx1 = -A*(x3+offset_total_)-B*x7*abs(x1)*x1;
-
-    double y = x1-beta*tanh(e);
-    double dy = dx1 - beta*de*T;
-    double s = root_regulation_;
-
-    debug_msg_.y = y;
-    debug_msg_.dy = dy;
-
-    double u = (1./A)* (-2.*s*dy+pow(s,2)*y-beta*(dde*T+de*dT)-2*B*x7*abs(x1)*dx1)+x1*(x5+2.*x6*x2);
-    return u;
-}
-
-double DepthControlNode::optimize_u(std::array<double, 4> &u_tab){
-    sort(u_tab.begin(), u_tab.end());
-    if(u_tab[0]<0.0 && u_tab[u_tab.size()-1]>0.0) // Case one positive, one negative => do not move
-        return 0.0;
-    else{ // Else choose the control that minimizes u
-        sort(u_tab.begin(), u_tab.end(), [](int i, int j) { return abs(i) < abs(j); });
-        return u_tab[0];
-    }
+void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
+    dc_.update_temperature(msg.temperature);
 }
 
 void DepthControlNode::timer_callback() {
 
-    double u = 0.;
     double dt = (std::chrono::duration<double>(loop_dt_)).count();
 
-    /// Analyze specific cases
-    if(emergency_)
-        regulation_state_ = STATE_SURFACE;
-//    if(piston_state_!=PISTON_STATE_OK)
-//        regulation_state_ = STATE_PISTON_ISSUE;
-    if((this->now()-last_waypoint_time_)>last_waypoint_max_delay_ && !debug_)
-        depth_set_point_ = 0.0;
+    dc_.state_machine_step(dt, this->now());
 
-    switch(regulation_state_){
-        case STATE_SURFACE:
-            /// Wait at surface until the waypoint is under the limit depth of regulation
-            if(depth_set_point_ >= limit_depth_control_ && !emergency_)
-                regulation_state_ = STATE_SINK;
-            u = 0.;
-            piston_set_point_ = 0;
-            is_exit_ = true;
-            break;
-        case STATE_SINK:
-            is_exit_ = false;
-            if(depth_set_point_<limit_depth_control_) /// Case where set point is surface
-                regulation_state_ = STATE_SURFACE;
-            else if(depth_fusion_<limit_depth_control_){ /// Case where float is between surface and limit_depth_control
-                u = flow_piston_sink_;
-
-                /// Compute the position of the piston to be at equilibrium
-                double position_eq = offset_total_ / tick_to_volume_; /// Assuming no compressibility effect
-
-                /// First move to position_eq and the slowly decrease piston volume by flow_piston_sink_
-                if(position_eq - piston_position_ > 2.*piston_reach_position_dead_zone_) { /// position reached
-                    piston_set_point_ = position_eq;
-                }
-                else{
-                    /// continue to sink until limit_depth_control_ is reached
-                    piston_set_point_ += -u*dt/(tick_to_volume_); /// (m3/s * s) / (m3/tick)
-                }
-            }
-            else { /// When limit_depth_control_ is reached
-                regulation_state_ = STATE_CONTROL;
-                piston_set_point_ = piston_position_;
-            }
-            break;
-        case STATE_CONTROL:
-            is_exit_ = false;
-            if(depth_set_point_<limit_depth_control_)
-                regulation_state_ = STATE_SURFACE;
-            else if(depth_fusion_>=limit_depth_control_){
-                /// Test if data is too old
-                if((this->now()-time_last_kalman_callback_)<safety_time_no_data_
-                   && (this->now()-time_last_piston_callback_)<safety_time_no_data_){
-
-                    if(control_filter_) {
-                        /// Compute several commands according to velocity acceptable bounds
-                        /// ToDo : modify tolerance wrt distance to set point ?
-                        array<double, 4> u_tab{};
-                        u_tab[0] = compute_u(depth_set_point_, limit_velocity_ + delta_velocity_lb_);
-                        u_tab[1] = compute_u(depth_set_point_, limit_velocity_ + delta_velocity_ub_);
-                        u_tab[2] = compute_u(depth_set_point_ + delta_position_lb_, limit_velocity_);
-                        u_tab[3] = compute_u(depth_set_point_ + delta_position_ub_, limit_velocity_);
-
-                        /// Find best command
-                        u = optimize_u(u_tab);
-                    }
-                    else
-                        u = compute_u(depth_set_point_, limit_velocity_);
-
-                    /// Mechanical limits (in = v_min, out = v_max)
-                    if((piston_switch_top_ && u<0) || (piston_switch_bottom_ && u>0)){
-                        u = 0.0;
-                        piston_set_point_ = piston_position_;
-                    }
-
-                    /// Limitation of u according to engine capabilities
-                    u = std::clamp(u, -flow_max_, flow_max_);
-
-                    /// Check next formula in the case where piston_set_point-piston_position > piston_max_velocity/frequency
-                    /// Previous form do not allow movement under 1 tick
-                    /// piston_set_point = piston_position - u/(tick_to_volume*control_loop_frequency);
-                    piston_set_point_ -= u*dt/tick_to_volume_;
-
-                    if(hold_depth_enable_ && abs(depth_set_point_-x(1))<hold_depth_value_enter_ && abs(x(0))<hold_velocity_enter_)
-                        regulation_state_ = STATE_HOLD_DEPTH;
-                }
-                else{
-                    /// Did not received state => surface
-                    u=flow_piston_sink_;
-                    piston_set_point_ += u*dt/tick_to_volume_;
-                    RCLCPP_WARN(this->get_logger(), "[Depth_control_node] Timing issue with kalmann or depth fusion");
-                }
-            }
-            else
-                regulation_state_ = STATE_SINK;
-
-            break;
-        case STATE_HOLD_DEPTH:
-            is_exit_ = false;
-            u=0.0;
-            if(abs(depth_set_point_-x(1))>=hold_depth_value_exit_)
-                regulation_state_ = STATE_CONTROL;
-            break;
-
-        case STATE_PISTON_ISSUE:
-            is_exit_ = true;
-            u = 0.0;
-            piston_set_point_ = 0;
-
-            if(!emergency_ && piston_state_ == PISTON_STATE_OK)
-                regulation_state_ = STATE_SURFACE;
-            break;
-        default:
-            break;
-    }
-
-    /// Publish data to piston & debug
-
-    piston_set_point_ = std::clamp(piston_set_point_, 0., piston_max_tick_value_);
+    /// Piston message
     seabot2_piston_driver::msg::PistonSetPoint msg_piston;
-
-    msg_piston.position = round(piston_set_point_);
-    msg_piston.exit = is_exit_;
+    msg_piston.position = round(dc_.piston_set_point_);
+    msg_piston.exit = dc_.is_exit_;
     publisher_piston_->publish(msg_piston);
 
-    /// Limit debug messages to changes
-    //if(debug_msg_.u != u || debug_msg_.piston_set_point != piston_set_point_ || debug_msg_.mode != regulation_state_) {
-        debug_msg_.mode = regulation_state_;
-        debug_msg_.u = u;
-        debug_msg_.piston_set_point = piston_set_point_;
-        publisher_debug_->publish(debug_msg_);
-    //}
+    /// Debug message
+    seabot2_depth_control::msg::DepthControlDebug debug_msg_;
+    debug_msg_.mode = dc_.regulation_state_;
+    debug_msg_.u = dc_.u_debug_;
+    debug_msg_.piston_set_point = static_cast<float>(dc_.piston_set_point_);
+    publisher_debug_->publish(debug_msg_);
 }
 
-void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
-    temperature_ = msg.temperature + 273.15;
-}
+
 
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
