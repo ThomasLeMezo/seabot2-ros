@@ -66,6 +66,7 @@ install(TARGETS kalman_node
         DESTINATION lib/${PROJECT_NAME})
 
 
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
 ### Export library
 include_directories(include/seabot2_kalman)
 add_library(kalman SHARED
@@ -88,5 +89,6 @@ install(TARGETS kalman
         LIBRARY DESTINATION lib
         PUBLIC_HEADER DESTINATION include/seabot2_kalman/seabot2_kalman/kalman
 )
+endif()
 
 ament_package()

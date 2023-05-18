@@ -90,4 +90,41 @@ install(TARGETS depth_control_node
 #install(TARGETS test_ibex
 #        DESTINATION lib/${PROJECT_NAME})
 
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+
+### Export library
+include_directories(include/seabot2_depth_control)
+add_library(depth_control SHARED
+        src/depth_control.cpp
+        src/alpha_solver.cpp
+)
+
+target_include_directories(depth_control PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+        include/seabot2_depth_control
+)
+
+set_target_properties(depth_control PROPERTIES
+        PUBLIC_HEADER include/seabot2_depth_control/depth_control.h
+        PUBLIC_HEADER include/seabot2_depth_control/alpha_solver.h
+)
+
+ament_target_dependencies(depth_control
+        rclcpp
+)
+
+target_link_libraries(depth_control
+        "${cpp_typesupport_target}"
+         Ibex::ibex
+)
+
+#ament_export_targets(depth_control HAS_LIBRARY_TARGET)
+
+install(TARGETS depth_control
+        LIBRARY DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/seabot2_depth_control/seabot2_depth_control/depth_control
+        )
+endif()
+
 ament_package()
