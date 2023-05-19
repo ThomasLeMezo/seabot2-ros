@@ -2,7 +2,7 @@
 #include "sys/ioctl.h"
 
 Thruster::~Thruster(){
-    write_cmd(MOTOR_PWM_STOP, MOTOR_PWM_STOP);
+    write_cmd((uint8_t)MOTOR_PWM_STOP, (uint8_t)MOTOR_PWM_STOP);
     close(file_);
 }
 

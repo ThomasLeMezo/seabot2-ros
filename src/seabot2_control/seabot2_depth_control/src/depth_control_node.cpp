@@ -166,10 +166,7 @@ void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg
 }
 
 void DepthControlNode::timer_callback() {
-
-    double dt = (std::chrono::duration<double>(loop_dt_)).count();
-
-    dc_.state_machine_step(dt, this->now());
+    dc_.state_machine_step(loop_dt_, this->now());
 
     /// Piston message
     seabot2_piston_driver::msg::PistonSetPoint msg_piston;

@@ -87,7 +87,7 @@ target_link_libraries(kalman "${cpp_typesupport_target}")
 
 install(TARGETS kalman
         LIBRARY DESTINATION lib
-        PUBLIC_HEADER DESTINATION include/seabot2_kalman/seabot2_kalman/kalman
+        PUBLIC_HEADER DESTINATION include/seabot2_kalman/seabot2_kalman/
 )
 endif()
 

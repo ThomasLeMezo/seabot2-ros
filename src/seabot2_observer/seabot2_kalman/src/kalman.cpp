@@ -26,7 +26,7 @@ void Kalman::update_density(double physics_rho){
     coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
 }
 
-Matrix<double,NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u) const{
+Matrix<double,Kalman::NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u) const{
     Matrix<double,NB_STATES, 1> dx = Matrix<double,NB_STATES, 1>::Zero();
 
     if(enable_volume_air_ && pressure_>0.)
@@ -48,7 +48,7 @@ void Kalman::kalman_predict(Matrix<double,NB_STATES, 1> &x,
                                 const Matrix<double,NB_STATES, NB_STATES> &gamma_alpha,
                                 const double &dt){
     if(dt <= 0.0 || dt >= 1.0){
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),  "[Kalman_node] dt issue %f", dt);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),  "[Kalman_node] dt issue %f (at time %f)", dt, time_last_predict_.seconds());
         return;
     }
 
@@ -218,6 +218,8 @@ void Kalman::compute_kalman(bool new_depth_data, bool new_piston_data) {
         xhat_(0) = fusion_velocity_;
         xhat_(1) = fusion_depth_;
         x_forcast_ = xhat_;
+        if(pressure_>0.)
+            offset_total_ = x_forcast_(2)+x_forcast_(6)*temperature_/pressure_+x_forcast_(3)*x_forcast_(1) + x_forcast_(4)*pow(x_forcast_(1),2);
         gamma_forcast_ = gamma_;
         is_valid_ = false;
     }

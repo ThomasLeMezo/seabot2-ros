@@ -105,9 +105,13 @@ target_include_directories(depth_control PUBLIC
         include/seabot2_depth_control
 )
 
+set(DEPTH_CONTROL_HEADERS
+        include/seabot2_depth_control/depth_control.h
+        include/seabot2_depth_control/alpha_solver.h
+        )
+
 set_target_properties(depth_control PROPERTIES
-        PUBLIC_HEADER include/seabot2_depth_control/depth_control.h
-        PUBLIC_HEADER include/seabot2_depth_control/alpha_solver.h
+        PUBLIC_HEADER "${DEPTH_CONTROL_HEADERS}"
 )
 
 ament_target_dependencies(depth_control
@@ -123,7 +127,7 @@ target_link_libraries(depth_control
 
 install(TARGETS depth_control
         LIBRARY DESTINATION lib
-        PUBLIC_HEADER DESTINATION include/seabot2_depth_control/seabot2_depth_control/depth_control
+        PUBLIC_HEADER DESTINATION include/seabot2_depth_control/seabot2_depth_control
         )
 endif()
 

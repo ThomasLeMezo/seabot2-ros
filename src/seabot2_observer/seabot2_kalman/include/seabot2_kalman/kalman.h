@@ -12,11 +12,11 @@
 using namespace std;
 using namespace Eigen;
 
-#define NB_MESURES 1
-#define NB_STATES 7
-#define NB_COMMAND 1
-
 class Kalman {
+public:
+    static const int NB_MESURES = 1;
+    static const int NB_STATES = 7;
+    static const int NB_COMMAND = 1;
 
 public:
     /**
@@ -113,6 +113,7 @@ public:
     Matrix<double,NB_STATES, 1> x_forcast_ = Matrix<double, NB_STATES, 1>::Zero();
     Matrix<double,NB_STATES,NB_STATES> gamma_ = Matrix<double,NB_STATES,NB_STATES>::Zero();
     Matrix<double,NB_STATES, NB_STATES> gamma_forcast_ = Matrix<double,NB_STATES,NB_STATES>::Zero();
+    double offset_total_= 0.0;
 
     Matrix<double, NB_STATES, NB_STATES> gamma_alpha_ = Matrix<double, NB_STATES, NB_STATES>::Zero();
     Matrix<double, NB_MESURES, NB_MESURES> gamma_beta_ = Matrix<double, NB_MESURES, NB_MESURES>::Zero();
@@ -126,12 +127,12 @@ public:
 private:
 
     /**
- *
- * @param x
- * @param u
- * @return
- */
-    Matrix<double,NB_STATES, 1> f_dyn(const Matrix<double,NB_STATES,1> &x,
+     *
+     * @param x
+     * @param u
+     * @return
+     */
+    [[nodiscard]] Matrix<double,NB_STATES, 1> f_dyn(const Matrix<double,NB_STATES,1> &x,
                                       const Matrix<double,NB_COMMAND, 1> &u) const;
 
     /**

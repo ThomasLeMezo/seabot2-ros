@@ -131,7 +131,7 @@ void KalmanNode::init_interfaces() {
 void KalmanNode::publish_data() {
     seabot2_kalman::msg::KalmanState msg;
 
-    const Matrix<double,NB_STATES, 1> x = k_.x_forcast_;
+    const Matrix<double,Kalman::NB_STATES, 1> x = k_.x_forcast_;
     msg.velocity = x(0);
     msg.depth = x(1);
     msg.offset = x(2);
@@ -139,8 +139,7 @@ void KalmanNode::publish_data() {
     msg.chi2 = x(4);
     msg.cz = x(5);
     msg.volume_air = x(6);
-    if(k_.pressure_>0.)
-        msg.offset_total = x(2)+x(6)*k_.temperature_/k_.pressure_+x(3)*x(1) + x(4)*pow(x(1),2);
+    msg.offset_total = k_.offset_total_;
     msg.header.stamp = k_.time_last_predict_;
 
     msg.variance[0] = k_.gamma_forcast_(0,0);

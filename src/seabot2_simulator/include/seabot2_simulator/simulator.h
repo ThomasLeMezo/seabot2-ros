@@ -7,7 +7,8 @@
 
 #include <eigen3/Eigen/Dense>
 #include "seabot2_density/teos/TeosSea.h"
-#include "seabot2_kalman/kalman/kalman.h"
+#include "seabot2_kalman/kalman.h"
+#include "seabot2_depth_control/depth_control.h"
 #include <random>
 
 //using namespace std::chrono_literals;
@@ -24,11 +25,11 @@ using namespace Eigen;
 class Simulator{
 
 public:
-        Simulator();
+        Simulator(const rclcpp::Time &start_time);
 
         Matrix<double, SIMU_NB_STATES, 1> f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm=MOTOR_STOP);
 
-        void run_simulation(double t_max=10.0);
+        void run_simulation(const rclcpp::Duration &duration=100s);
 
         double salinity_from_depth(double z);
 
@@ -46,7 +47,9 @@ public:
 
         void simulate_piston_position();
 
-        void save_data(double t);
+        void save_data(const rclcpp::Time &time);
+
+        void set_start_time(const rclcpp::Time &start_time);
 
 public:
 
@@ -59,13 +62,16 @@ public:
      */
     Matrix<double, SIMU_NB_STATES, 1> x_ = Matrix<double, SIMU_NB_STATES, 1>::Zero();
     int motor_cmd_ = MOTOR_STOP;
-    double temperature_{}, sea_pressure_{}, salinity_{}, rho_{}, g_{};
+    double temperature_{}, salinity_{}, rho_{}, g_{};
+    double sea_pressure_{}; // Sea pressure at depth z in dbar (0 dbar at depth 0.0m)
+    double abs_pressure_{}; // Absolute pressure at depth z in Pa (101325 Pa at depth 0.0m)
 
     unsigned long int nb_steps = 0;
 
     /// ************** ///
-
-    double dt_ = 1e-4;
+    rclcpp::Time start_time_= rclcpp::Time(0., RCL_STEADY_TIME);
+    rclcpp::Duration dt_ = 100us;
+    rclcpp::Time t_ = rclcpp::Time(0., RCL_STEADY_TIME);
 
     double latitude_ = 48.368894;
     const double robot_mass_ =  12.0;
@@ -132,38 +138,46 @@ public:
     #define MOTOR_PWM_MAX 4000
     #define MOTOR_V_TO_CMD MOTOR_PWM_MAX/(2*16)
     int motor_delta_speed = (100/REGULATION_LOOP_FREQ)*MOTOR_V_TO_CMD; // Limit to 100V/s, delta_speed in PWM quantum/0.02s = 250
-    double control_pwm_last_time = 0.0;
-    double control_pwm_dt = 0.02; /// 50Hz
+    rclcpp::Time control_pwm_last_time = rclcpp::Time(0., RCL_STEADY_TIME);;
+    rclcpp::Duration control_pwm_dt = 20ms; /// 50Hz
+    bool switch_top_ = false, switch_bottom_ = true;
 
     TeosSea ts;
 
     /// ******* Memory *******  ///
-    double memory_dt = 0.02;
-    double memory_last_time = 0;
-    std::vector<double> memory_time, memory_piston_position, memory_piston_velocity, memory_velocity, memory_depth;
+    rclcpp::Duration memory_dt = 20ms; /// 50Hz
+    rclcpp::Time memory_last_time = rclcpp::Time(0., RCL_STEADY_TIME);;
+    std::vector<double> memory_piston_position, memory_piston_velocity, memory_velocity, memory_depth;
+    std::vector<rclcpp::Time> memory_time;
     std::vector<double> memory_temperature, memory_salinity, memory_sea_pressure, memory_density;
     std::vector<double> memory_kalman_depth, memory_kalman_velocity, memory_kalman_offset, memory_kalman_chi,
                         memory_kalman_chi2, memory_kalman_cz, memory_kalman_air;
 
     /// Kalman ///
     Kalman k_;
+    DepthControl dc_;
 
     /// Sensors
-    double pressure_sensor_last_time = 0.0;
-    double pressure_sensor_dt = 0.2; /// s
+    rclcpp::Time pressure_sensor_last_time = rclcpp::Time(0., RCL_STEADY_TIME);;
+    rclcpp::Duration pressure_sensor_dt = 200ms; /// 5Hz
     double pressure_sensor_ = 0.; /// Simulated (noisy) value of the pressure sensor
     const double pressure_sensor_mean_ = 0.0;
     const double pressure_sensor_stddev_ = 0.01;
     std::default_random_engine generator_;
     std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
 
-    double piston_last_time_ = 0.01;
-    double piston_dt_ = 0.2;
+    /// Piston
+    rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_STEADY_TIME);;
+    rclcpp::Duration piston_dt_ = 200ms; /// 5Hz
     double piston_position_ = 0.;
     int piston_set_point_ = 0;
 
     /// Fusion
     double fusion_depth_{}, fusion_velocity_{};
+
+    /// Depth Control
+    rclcpp::Time dc_last_time_ = rclcpp::Time(0., RCL_STEADY_TIME);;
+    rclcpp::Duration dc_dt_ = 200ms; /// 5Hz
 };
 
 

@@ -10,13 +10,13 @@
 #include <cmath>
 #include "seabot2_depth_control/alpha_solver.h"
 
-#define NB_STATES 8
-#define PISTON_STATE_OK 2
-
 class DepthControl {
 
 public:
     DepthControl(const rclcpp::Time &start_time);
+
+    static const int PISTON_STATE_OK = 2;
+    static const int NB_STATES = 8;
 
     bool debug_ = false;
 
@@ -206,7 +206,7 @@ public:
      * @param current_time
      * @return the command to send to the piston
      */
-    void state_machine_step(const double &dt, const rclcpp::Time &current_time);
+    void state_machine_step(const rclcpp::Duration &dt, const rclcpp::Time &current_time);
 
 private:
 

@@ -141,7 +141,7 @@ double DepthControl::optimize_u(std::array<double, 4> &u_tab){
     }
 }
 
-void DepthControl::state_machine_step(const double &dt, const rclcpp::Time &current_time) {
+void DepthControl::state_machine_step(const rclcpp::Duration &dt, const rclcpp::Time &current_time) {
 
     double u = 0.;
 
@@ -177,7 +177,7 @@ void DepthControl::state_machine_step(const double &dt, const rclcpp::Time &curr
                 }
                 else{
                     /// continue to sink until limit_depth_control_ is reached
-                    piston_set_point_ += -u*dt/(tick_to_volume_); /// (m3/s * s) / (m3/tick)
+                    piston_set_point_ += -u*dt.seconds()/(tick_to_volume_); /// (m3/s * s) / (m3/tick)
                 }
             }
             else { /// When limit_depth_control_ is reached
@@ -220,7 +220,7 @@ void DepthControl::state_machine_step(const double &dt, const rclcpp::Time &curr
                     /// Check next formula in the case where piston_set_point-piston_position > piston_max_velocity/frequency
                     /// Previous form do not allow movement under 1 tick
                     /// piston_set_point = piston_position - u/(tick_to_volume*control_loop_frequency);
-                    piston_set_point_ -= u*dt/tick_to_volume_;
+                    piston_set_point_ -= u*dt.seconds()/tick_to_volume_;
 
                     if(hold_depth_enable_ && abs(depth_set_point_-x(1))<hold_depth_value_enter_ && abs(x(0))<hold_velocity_enter_)
                         regulation_state_ = STATE_HOLD_DEPTH;
@@ -228,7 +228,7 @@ void DepthControl::state_machine_step(const double &dt, const rclcpp::Time &curr
                 else{
                     /// Did not received state => surface
                     u=flow_piston_sink_;
-                    piston_set_point_ += u*dt/tick_to_volume_;
+                    piston_set_point_ += u*dt.seconds()/tick_to_volume_;
                     RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "[Depth_control] Timing issue with kalmann or depth fusion");
                 }
             }
@@ -248,7 +248,7 @@ void DepthControl::state_machine_step(const double &dt, const rclcpp::Time &curr
             u = 0.0;
             piston_set_point_ = 0;
 
-            if(!emergency_ && piston_state_ == PISTON_STATE_OK)
+            if(!emergency_ && piston_state_ == (int)PISTON_STATE_OK)
                 regulation_state_ = STATE_SURFACE;
             break;
         default:

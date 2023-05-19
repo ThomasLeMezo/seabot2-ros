@@ -19,6 +19,7 @@ find_package(seabot2_depth_control REQUIRED)
 find_library(LIBTEOS teos REQUIRED)
 find_library(LIBKALMAN kalman REQUIRED)
 find_library(LIBDEPTHCONTROL depth_control REQUIRED)
+find_package(Ibex REQUIRED)
 
 ### Executable
 add_executable(simulator_node src/simulator_node.cpp src/simulator.cpp)
@@ -34,12 +35,15 @@ target_link_libraries(simulator_node
         ${LIBTEOS}
         ${LIBKALMAN}
         ${LIBDEPTHCONTROL}
+        Ibex::ibex
         )
 
 ### Includes
 target_include_directories(simulator_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:include>
+        Ibex::ibex
+        )
 
 ### Test
 if(BUILD_TESTING)

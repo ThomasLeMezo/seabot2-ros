@@ -347,6 +347,7 @@ void SafetyNode::get_ram_cpu(){
 }
 
 void SafetyNode::test_depth_max(){
+    /// Todo : add a filter and ping_confidence condition !
     bathy_ = depth_ + ping_altitude_ + robot_height_ping_;
 
     if(this->now()-ping_last_time_received_ < ping_no_data_warning_ &&

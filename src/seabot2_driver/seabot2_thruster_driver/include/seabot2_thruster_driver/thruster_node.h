@@ -26,8 +26,8 @@ private:
     rclcpp::Time manual_velocity_time_last_;
 
     /// I2C send
-    uint8_t cmd_left_last_ = MOTOR_PWM_STOP;
-    uint8_t cmd_right_last_ = MOTOR_PWM_STOP;
+    uint8_t cmd_left_last_ = Thruster::MOTOR_PWM_STOP;
+    uint8_t cmd_right_last_ = Thruster::MOTOR_PWM_STOP;
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
@@ -79,8 +79,8 @@ private:
      * @return
      */
     inline uint8_t invert_cmd(const uint8_t &cmd){
-        int tmp = -(static_cast<int>(cmd) - MOTOR_PWM_STOP);
-        return static_cast<uint8_t>(MOTOR_PWM_STOP + tmp);
+        int tmp = -(static_cast<int>(cmd) - (int)Thruster::MOTOR_PWM_STOP);
+        return static_cast<uint8_t>((uint8_t)Thruster::MOTOR_PWM_STOP + tmp);
     }
 };
 

@@ -92,8 +92,8 @@ void ThrusterNode::timer_callback() {
 }
 
 uint8_t ThrusterNode::convert_to_pwm(const double &u) const{
-    int cmd = static_cast<int>(round(u*coeff_cmd_to_pwm_ + MOTOR_PWM_STOP));
-    return std::clamp(cmd, MIN_PWM, MAX_PWM);
+    uint8_t cmd = static_cast<uint8_t>(round(u*coeff_cmd_to_pwm_ + (uint8_t)Thruster::MOTOR_PWM_STOP));
+    return std::clamp(cmd, (uint8_t)Thruster::MIN_PWM, (uint8_t)Thruster::MAX_PWM);
 }
 
 void ThrusterNode::init_parameters() {

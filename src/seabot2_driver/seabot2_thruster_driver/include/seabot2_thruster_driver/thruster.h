@@ -14,14 +14,14 @@ extern "C" {
 #include <i2c/smbus.h>
 }
 
-#define MOTOR_PWM_STOP 150
-#define MAX_PWM 190
-#define MIN_PWM 110
-
-#define ENABLE_MOTOR 0x10
-
 class Thruster
 {
+public:
+    static const uint8_t MOTOR_PWM_STOP = 150;
+    static const uint8_t MAX_PWM = 190;
+    static const uint8_t MIN_PWM = 110;
+    static const uint8_t ENABLE_MOTOR = 0x10;
+
 public:
     /**
      * @brief Thruster
