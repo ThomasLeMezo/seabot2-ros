@@ -15,10 +15,14 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(seabot2_density REQUIRED)
 find_package(seabot2_kalman REQUIRED)
 find_package(seabot2_depth_control REQUIRED)
+find_package(seabot2_mission REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+find_package(seabot2_piston_driver REQUIRED)
 
 find_library(LIBTEOS teos REQUIRED)
 find_library(LIBKALMAN kalman REQUIRED)
 find_library(LIBDEPTHCONTROL depth_control REQUIRED)
+find_library(LIBMISSION mission REQUIRED)
 find_package(Ibex REQUIRED)
 
 ### Executable
@@ -29,12 +33,16 @@ ament_target_dependencies(simulator_node
         seabot2_density
         seabot2_kalman
         seabot2_depth_control
+        seabot2_mission
+        rosbag2_cpp
+        seabot2_piston_driver
 )
 target_link_libraries(simulator_node
         "${cpp_typesupport_target}"
         ${LIBTEOS}
         ${LIBKALMAN}
         ${LIBDEPTHCONTROL}
+        ${LIBMISSION}
         Ibex::ibex
         )
 

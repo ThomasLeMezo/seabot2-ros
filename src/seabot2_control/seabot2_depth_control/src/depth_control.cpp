@@ -6,7 +6,10 @@
 
 DepthControl::DepthControl(const rclcpp::Time &start_time)
         : alpha_solver_(){
+    set_start_time(start_time);
+}
 
+void DepthControl::set_start_time(const rclcpp::Time &start_time){
     time_last_kalman_callback_ = start_time;
     time_last_piston_callback_ = start_time;
     last_waypoint_time_ = start_time;

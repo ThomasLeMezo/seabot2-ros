@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 class Waypoint{
 
 public:
-    Waypoint(){}
+    Waypoint()= default;
 
     Waypoint(const rclcpp::Time &time_end_param, const double &depth_param, const double &north_param, const double &east_param, const double&limit_velocity_param, const bool &enable_thrusters_param=true, const bool &seafloor_landing_param=false){
         time_end = time_end_param;
@@ -44,19 +44,7 @@ public:
     /**
        * @brief Mission
        */
-    Mission(rclcpp::Node *n);
-
-    //    /**
-    //     * @brief load_mission
-    //     * @param filename
-    //     */
-    //    void load_mission(const std::string &file_name);
-
-    /**
-       * @brief update_mission
-       * @return
-       */
-    bool update_mission();
+    Mission()= default;
 
     /**
        * @brief compute_command
@@ -64,7 +52,7 @@ public:
        * @param east
        * @param depth
        */
-    bool compute_command(seabot2_mission::msg::Waypoint &wp);
+    bool compute_command(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
 
     /**
      * Test if mission file was updated
@@ -80,7 +68,8 @@ public:
      * @param folder_path
      * @return error code
      */
-    int load_mission(const std::string &file_xml, const std::string &folder_path="");
+    int load_mission(const std::string &file_xml, const std::string &folder_path="",
+                     const rclcpp::Time &start_time_if_not_given=rclcpp::Time(0., RCL_STEADY_TIME));
 
     /**
      * @brief is_mission_enable
@@ -112,6 +101,22 @@ public:
      */
     std::vector<float> get_velocity_list();
 
+    /**
+     * @brief get_start_time
+     * @return
+     */
+    [[nodiscard]] rclcpp::Time get_start_time() const{
+        return time_start_;
+    }
+
+    /**
+     * @brief get_end_time
+     * @return
+     */
+    [[nodiscard]] rclcpp::Time get_end_time() const{
+        return time_end_;
+    }
+
 private:
     /**
      * Decode a waypoint
@@ -133,20 +138,19 @@ private:
 
     std::filesystem::file_time_type file_time_;
 
-    rclcpp::Time time_start_;
+    rclcpp::Time time_start_ = rclcpp::Time(0., RCL_STEADY_TIME);
+    rclcpp::Time time_end_ = rclcpp::Time(0., RCL_STEADY_TIME);
     double offset_north_ = 0.0;
     double offset_east_ = 0.0;
     double limit_velocity_default_ = 0.02;
 
     double default_time_to_start_ = 60.0;
 
-    rclcpp::Node *n_= nullptr;
+    void waypoint_end(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
 
-    void waypoint_end(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now);
+    void waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
 
-    void waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now);
-
-    void waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now);
+    void waypoint_current(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
 };
 
 inline bool Mission::is_mission_enable() const{

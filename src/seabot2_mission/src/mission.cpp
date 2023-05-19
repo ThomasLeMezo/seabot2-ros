@@ -17,14 +17,9 @@ namespace pt = boost::property_tree;
 namespace bt = boost::posix_time;
 namespace gt = boost::gregorian;
 
-Mission::Mission(rclcpp::Node *n){
-    n_ = n;
-}
-
-bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
+bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
 
     bool is_new_waypoint = false;
-    rclcpp::Time t_now = n_->now();
     if(current_waypoint_ < waypoints_.size()){
         if(t_now < time_start_){ /// Wait before mission start
             waypoint_wait_start(wp, t_now);
@@ -44,7 +39,7 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
             if(current_waypoint_ < waypoints_.size()) { /// Verify end of waypoint list
                 waypoint_current(wp, t_now);
                 if(is_new_waypoint)
-                    RCLCPP_INFO(n_->get_logger(), "[Mission] Start following waypoint %lu (ending at %f)",
+                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[Mission] Start following waypoint %lu (ending at %f)",
                                 current_waypoint_, round(waypoints_[current_waypoint_].time_end.seconds()));
             }
             else
@@ -63,7 +58,7 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp){
     return is_new_waypoint;
 }
 
-void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
+void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
     wp.depth = waypoints_[current_waypoint_].depth;
 
     wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
@@ -93,9 +88,9 @@ void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, rclcpp::Time 
     duration_next_waypoint_ = waypoints_[current_waypoint_].time_end - t_now;
 }
 
-void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
+void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
     if(mission_enable_)
-        RCLCPP_INFO(n_->get_logger(),"[Mission] End of waypoints");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Mission] End of waypoints");
     mission_enable_ = false;
 
     wp.depth = 0.0;
@@ -108,7 +103,7 @@ void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_n
     duration_next_waypoint_ = waypoints_[waypoints_.size() - 1].time_end - t_now;
 }
 
-void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, rclcpp::Time &t_now){
+void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
     mission_enable_ = false;
     wp.depth = 0.0;
     wp.north = waypoints_[current_waypoint_].north + offset_north_;
@@ -126,7 +121,7 @@ bool Mission::is_new_mission_file(const std::string &file_xml, const std::string
         std::filesystem::file_time_type ft = std::filesystem::last_write_time(p1);
         if ((ft.time_since_epoch() - file_time_.time_since_epoch()).count() != 0) {
             file_time_ = ft;
-            RCLCPP_INFO(n_->get_logger(), "[Seabot_Mission] New mission file detected");
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[Seabot_Mission] New mission file detected");
             return true;
         } else {
             return false;
@@ -137,17 +132,17 @@ bool Mission::is_new_mission_file(const std::string &file_xml, const std::string
     }
 }
 
-int Mission::load_mission(const std::string &file_xml, const std::string &folder_path){
+int Mission::load_mission(const std::string &file_xml, const std::string &folder_path, const rclcpp::Time &start_time_if_not_given){
     if(folder_path.empty())
         file_name_ = file_xml;
     else
         file_name_ = folder_path + "/" + file_xml;
     pt::ptree tree;
-    RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Read xml file : %s", file_name_.c_str());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Read xml file : %s", file_name_.c_str());
     try {
         pt::read_xml(file_name_, tree);
     } catch (std::exception const&  ex) {
-        RCLCPP_FATAL(n_->get_logger(),"[Seabot_Mission] %s", ex.what());
+        RCLCPP_FATAL(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] %s", ex.what());
         return EXIT_FAILURE;
     }
 
@@ -156,16 +151,16 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
     try{
         offset_north_ = tree.get_child("mission.offset.north").get_value<double>();
     } catch (std::exception const&  ex){
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] No north offset defined %s", ex.what());
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] No north offset defined %s", ex.what());
     }
 
     try{
         offset_east_ = tree.get_child("mission.offset.east").get_value<double>();
     } catch (std::exception const&  ex){
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] No east offset defined %s", ex.what());
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] No east offset defined %s", ex.what());
     }
 
-    time_start_ = n_->now() + rclcpp::Duration::from_seconds(default_time_to_start_);
+    time_start_ = start_time_if_not_given + rclcpp::Duration::from_seconds(default_time_to_start_);
     // Read special offset time
     try{
         const int year = tree.get_child("mission.offset.start_time_utc.year").get_value<int>();
@@ -177,18 +172,18 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
         bt::ptime t1(gt::date(year,month,day),bt::time_duration(hour,min,0));
         time_start_ = rclcpp::Time(to_time_t(t1), 0, RCL_ROS_TIME);
 
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Start time = %f", time_start_.seconds());
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Start time = %f", time_start_.seconds());
     } catch (std::exception const&  ex){
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] No time offset defined %s - Set now + %f s", ex.what(), default_time_to_start_);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] No time offset defined %s - Set now + %f s", ex.what(), default_time_to_start_);
     }
 
-    rclcpp::Time last_time = time_start_;
+    time_end_ = time_start_;
     current_waypoint_ = 0;
     is_first_waypoint_ = true;
 
     int return_code = EXIT_SUCCESS;
     BOOST_FOREACH(pt::ptree::value_type &v, tree.get_child("mission.paths")){
-                    return_code &= decode_waypoint(v, last_time, 0.0);
+                    return_code &= decode_waypoint(v, time_end_, 0.0);
                     if(return_code == EXIT_FAILURE)
                         break;
                 }
@@ -251,13 +246,13 @@ int Mission::decode_waypoint(pt::ptree::value_type &v, rclcpp::Time &last_time, 
                 w.enable_thrusters = enable_thrusters.value();
         }
         catch(std::exception const&  ex) {
-            RCLCPP_FATAL(n_->get_logger(),"[Seabot_Mission] Wrong xml file %s", ex.what());
+            RCLCPP_FATAL(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Wrong xml file %s", ex.what());
             return EXIT_FAILURE;
         }
         last_time = w.time_end;
         waypoints_.push_back(w);
 
-        RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Load Waypoint %zu (t_end=%li, d=%lf, E=%lf, N=%lf, vel=%f)", waypoints_.size(), (long int)w.time_end.seconds(), w.depth, w.east, w.north, w.limit_velocity);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Waypoint %zu (t_end=%li, d=%lf, E=%lf, N=%lf, vel=%f)", waypoints_.size(), (long int)w.time_end.seconds(), w.depth, w.east, w.north, w.limit_velocity);
     }
     else if(v.first == "loop"){
         const int nb_loop = v.second.get<int>("<xmlattr>.number", 1);
@@ -265,7 +260,7 @@ int Mission::decode_waypoint(pt::ptree::value_type &v, rclcpp::Time &last_time, 
 
         double depth_offset_tmp = depth_offset;
         for(int i=0; i<nb_loop; i++){
-            RCLCPP_INFO(n_->get_logger(),"[Seabot_Mission] Loop %i/%i", i+1, nb_loop);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Loop %i/%i", i+1, nb_loop);
             BOOST_FOREACH(pt::ptree::value_type &v_loop,v.second){
                             decode_waypoint(v_loop, last_time, depth_offset_tmp);
                         }

@@ -208,7 +208,7 @@ public:
 
     /**
      *
-     * @param pressure
+     * @param pressure [absolute, in bar]
      */
     void update_pressure(double pressure);
 

@@ -6,6 +6,11 @@
 #include <cmath>
 #include <iostream>
 #include <chrono>
+
+#include "seabot2_kalman/msg/kalman_state.hpp"
+#include "seabot2_piston_driver/msg/piston_state.hpp"
+#include "rosbag2_storage/storage_options.hpp"
+
 using namespace std::chrono;
 
 double Simulator::get_density_from_depth(double z, double sea_pressure) {
@@ -18,8 +23,31 @@ void Simulator::set_start_time(const rclcpp::Time &start_time){
     start_time_ = start_time;
 }
 
-Simulator::Simulator(const rclcpp::Time &start_time): ts(), k_(), dc_(start_time) {
+Simulator::Simulator(const rclcpp::Time &start_time):
+    ts(),
+    k_(),
+    dc_(start_time),
+    mission_(){
+
+    init_bag_writer();
     start_time_ = start_time;
+}
+
+void Simulator::init_bag_writer(){
+    bag_writer_ = std::make_unique<rosbag2_cpp::Writer>();
+    rosbag2_storage::StorageOptions storage_options({"my_bag", "mcap"});;
+
+    bag_writer_->open(storage_options);
+
+    bag_writer_->create_topic( {"/observer/kalman",
+                                 "seabot2_kalman/msg/KalmanState",
+                                 rmw_get_serialization_format(),
+                                 ""});
+
+    bag_writer_->create_topic( {"/driver/piston_position",
+                                 "seabot2_piston_driver/msg/PistonState",
+                                 rmw_get_serialization_format(),
+                                 ""});
 }
 
 double Simulator::temperature_from_depth(double z) {
@@ -66,7 +94,7 @@ int Simulator::control_pwm(int position_set_point){
 
     const double motor_regulation_K = 0.3;
     const int motor_regulation_dead_zone = 50;
-    int motor_set_point = MOTOR_STOP;
+    motor_set_point_ = MOTOR_STOP;
 
     int position_error = position_set_point-position;
     if(abs(position_error)>motor_regulation_dead_zone){
@@ -74,24 +102,24 @@ int Simulator::control_pwm(int position_set_point){
         int val = floor(((float)position_error)*motor_regulation_K);
 
         if(val>=0)
-            motor_set_point = min(max(val, MOTOR_DEAD_ZONE)+MOTOR_STOP, MOTOR_UP);
+            motor_set_point_ = min(max(val, MOTOR_DEAD_ZONE)+MOTOR_STOP, MOTOR_UP);
         else
-            motor_set_point = max(min(val, -MOTOR_DEAD_ZONE)+MOTOR_STOP, MOTOR_DOWN);
+            motor_set_point_ = max(min(val, -MOTOR_DEAD_ZONE)+MOTOR_STOP, MOTOR_DOWN);
     }
     else{
-        motor_set_point = MOTOR_STOP;
+        motor_set_point_ = MOTOR_STOP;
     }
 
-    if((motor_set_point<MOTOR_STOP && x_(4)<=0)
-       || (motor_set_point>MOTOR_STOP && x_(4) * rad_to_tick_ >= piston_max_tick_)){
+    if((motor_set_point_<MOTOR_STOP && x_(4)<=0)
+       || (motor_set_point_>MOTOR_STOP && x_(4) * rad_to_tick_ >= piston_max_tick_)){
         motor_cmd_ = MOTOR_STOP;
     }
     else{
-        if(abs(motor_set_point-motor_cmd_)>motor_delta_speed){
-            motor_cmd_ += (motor_cmd_<motor_set_point)?motor_delta_speed:-motor_delta_speed;
+        if(abs(motor_set_point_-motor_cmd_)>motor_delta_speed){
+            motor_cmd_ += (motor_cmd_<motor_set_point_)?motor_delta_speed:-motor_delta_speed;
         }
         else{
-            motor_cmd_ = motor_set_point;
+            motor_cmd_ = motor_set_point_;
         }
     }
 
@@ -109,14 +137,6 @@ int Simulator::control_pwm(int position_set_point){
     return motor_cmd_;
 }
 
-void Simulator::clear_memory(){
-    memory_time.clear();
-    memory_piston_position.clear();
-    memory_piston_velocity.clear();
-    memory_velocity.clear();
-    memory_depth.clear();
-}
-
 void Simulator::simulate_pressure(){
     /// ToDo : simulation of filter
     pressure_sensor_ = x_(4) + pressure_sensor_dist_(generator_);
@@ -132,39 +152,76 @@ void Simulator::simulate_piston_position() {
 }
 
 void Simulator::save_data(const rclcpp::Time &t){
-    memory_time.push_back(t);
-    memory_piston_position.push_back(piston_position_);
-    memory_piston_velocity.push_back(x_(1) * rad_to_tick_);
-    memory_velocity.push_back(x_(2));
-    memory_depth.push_back(x_(3));
+//    memory_time.push_back(t);
+//    memory_piston_position.push_back(piston_position_);
+//    memory_piston_velocity.push_back(x_(1) * rad_to_tick_);
+//    memory_velocity.push_back(x_(2));
+//    memory_depth.push_back(x_(3));
+//
+//    memory_temperature.push_back(temperature_);
+//    memory_salinity.push_back(salinity_);
+//    memory_sea_pressure.push_back(sea_pressure_);
+//    memory_density.push_back(rho_);
+//
+//    memory_kalman_velocity.push_back(k_.x_forcast_(0));
+//    memory_kalman_depth.push_back(k_.x_forcast_(1));
+//    memory_kalman_offset.push_back(k_.x_forcast_(2));
+//    memory_kalman_chi.push_back(k_.x_forcast_(3));
+//    memory_kalman_chi2.push_back(k_.x_forcast_(4));
+//    memory_kalman_cz.push_back(k_.x_forcast_(5));
+//    memory_kalman_air.push_back(k_.x_forcast_(6));
 
-    memory_temperature.push_back(temperature_);
-    memory_salinity.push_back(salinity_);
-    memory_sea_pressure.push_back(sea_pressure_);
-    memory_density.push_back(rho_);
+    seabot2_kalman::msg::KalmanState msg_kalman;
+    msg_kalman.velocity = k_.x_forcast_(0);
+    msg_kalman.depth = k_.x_forcast_(1);
+    msg_kalman.offset = k_.x_forcast_(2);
+    msg_kalman.chi = k_.x_forcast_(3);
+    msg_kalman.chi2 = k_.x_forcast_(4);
+    msg_kalman.cz = k_.x_forcast_(5);
+    msg_kalman.volume_air = k_.x_forcast_(6);
+    msg_kalman.offset_total = k_.offset_total_;
+    msg_kalman.header.stamp = k_.time_last_predict_;
+    msg_kalman.variance[0] = k_.gamma_forcast_(0,0);
+    msg_kalman.variance[1] = k_.gamma_forcast_(1,1);
+    msg_kalman.variance[2] = k_.gamma_forcast_(2,2);
+    msg_kalman.variance[3] = k_.gamma_forcast_(3,3);
+    msg_kalman.variance[4] = k_.gamma_forcast_(4,4);
+    msg_kalman.variance[5] = k_.gamma_forcast_(5,5);
+    msg_kalman.variance[6] = k_.gamma_forcast_(6,6);
+    msg_kalman.valid = k_.is_valid_;
+    bag_writer_->write(msg_kalman, "/observer/kalman", t);
 
-    memory_kalman_velocity.push_back(k_.x_forcast_(0));
-    memory_kalman_depth.push_back(k_.x_forcast_(1));
-    memory_kalman_offset.push_back(k_.x_forcast_(2));
-    memory_kalman_chi.push_back(k_.x_forcast_(3));
-    memory_kalman_chi2.push_back(k_.x_forcast_(4));
-    memory_kalman_cz.push_back(k_.x_forcast_(5));
-    memory_kalman_air.push_back(k_.x_forcast_(6));
+    seabot2_piston_driver::msg::PistonState msg_piston;
+    msg_piston.header.stamp = t_;
+    msg_piston.position = piston_position_;
+    msg_piston.position_set_point = dc_.piston_set_point_;
+    msg_piston.switch_top = switch_top_;
+    msg_piston.switch_bottom = switch_bottom_;
+    msg_piston.enable = true;
+    msg_piston.motor_sens = (x_(1)>0)?1:0;
+    msg_piston.state = (int)DepthControl::PISTON_STATE_OK;
+    msg_piston.motor_speed_set_point = motor_set_point_;
+    msg_piston.motor_speed = motor_cmd_;
+    msg_piston.battery_voltage = battery_tension_;
+    msg_piston.motor_current = x_(2);
 
 }
 
-void Simulator::run_simulation(const rclcpp::Duration &duration) {
-    clear_memory();
+void Simulator::run_simulation() {
     int pwm = MOTOR_STOP;
-    piston_set_point_ = 100000;
+    mission_.load_mission(mission_file_name_, mission_path_);
+    start_time_ = mission_.get_start_time() - mission_delay_before_start_;
+    end_time_ = mission_.get_end_time() + mission_delay_after_end_;
+
     k_.init_parameters(start_time_);
+    dc_.set_start_time(start_time_);
 
     auto start = high_resolution_clock::now();
-    for(t_=start_time_; t_<start_time_+duration; t_+=dt_) {
+    for(t_=start_time_; t_<=end_time_; t_+=dt_) {
         /// Physical simulation
         if((t_-control_pwm_last_time) >= control_pwm_dt) {
             control_pwm_last_time = t_;
-            pwm = control_pwm(piston_set_point_);
+            pwm = control_pwm(round(dc_.piston_set_point_));
         }
         x_ += dt_.seconds() * f(x_, pwm);
 
@@ -173,6 +230,10 @@ void Simulator::run_simulation(const rclcpp::Duration &duration) {
             pressure_sensor_last_time = t_;
             simulate_pressure();
             simulate_depth();
+
+            k_.update_density(rho_);
+            k_.update_temperature(temperature_);
+            k_.update_pressure(abs_pressure_/1e5);
 
             /// Compute Kalman
             k_.set_new_depth_data(fusion_depth_, fusion_velocity_, t_);
@@ -184,7 +245,13 @@ void Simulator::run_simulation(const rclcpp::Duration &duration) {
             simulate_piston_position();
 
             /// Compute Kalman
-            k_.set_new_piston_data(piston_position_, piston_set_point_, t);
+            k_.set_new_piston_data(piston_position_, dc_.piston_set_point_, t_);
+        }
+
+        /// Mission simulation
+        if(t_-mission_last_time_>= mission_dt_){
+            mission_last_time_ = t_;
+            mission_.compute_command(current_wp_, t_);
         }
 
         /// Depth control simulation
@@ -209,10 +276,10 @@ void Simulator::run_simulation(const rclcpp::Duration &duration) {
                              abs_pressure_/1e5);
             dc_.update_safety(false,
                                100.0);
-//            dc_.update_waypoint(const float &depth,
-//                                 const double &limit_velocity,
-//                                 const rclcpp::Time &time_update,
-//                                 const bool &mission_enable);
+            dc_.update_waypoint(current_wp_.depth,
+                                current_wp_.limit_velocity,
+                                t_,
+                                current_wp_.mission_enable);
             dc_.update_density(rho_);
             dc_.update_temperature(temperature_);
 
@@ -226,7 +293,7 @@ void Simulator::run_simulation(const rclcpp::Duration &duration) {
         nb_steps++;
     }
     auto end = high_resolution_clock::now();
-    cout << "Time exec = " << duration_cast<microseconds>((end-start)).count() << "µs" << endl;
+    cout << "Time exec = " << duration_cast<milliseconds>((end-start)).count() << "ms" << endl;
 }
 
 

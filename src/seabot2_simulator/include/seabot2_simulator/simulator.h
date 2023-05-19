@@ -9,7 +9,9 @@
 #include "seabot2_density/teos/TeosSea.h"
 #include "seabot2_kalman/kalman.h"
 #include "seabot2_depth_control/depth_control.h"
+#include "seabot2_mission/mission.hpp"
 #include <random>
+#include "rosbag2_cpp/writer.hpp"
 
 //using namespace std::chrono_literals;
 using namespace std;
@@ -29,7 +31,7 @@ public:
 
         Matrix<double, SIMU_NB_STATES, 1> f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm=MOTOR_STOP);
 
-        void run_simulation(const rclcpp::Duration &duration=100s);
+        void run_simulation();
 
         double salinity_from_depth(double z);
 
@@ -38,8 +40,6 @@ public:
         double get_density_from_depth(double z, double sea_pressure);
 
         int control_pwm(int position_set_point);
-
-        void clear_memory();
 
         void simulate_pressure();
 
@@ -50,6 +50,11 @@ public:
         void save_data(const rclcpp::Time &time);
 
         void set_start_time(const rclcpp::Time &start_time);
+
+        void init_bag_writer();
+
+private:
+    std::unique_ptr<rosbag2_cpp::Writer> bag_writer_;
 
 public:
 
@@ -69,9 +74,10 @@ public:
     unsigned long int nb_steps = 0;
 
     /// ************** ///
-    rclcpp::Time start_time_= rclcpp::Time(0., RCL_STEADY_TIME);
+    rclcpp::Time start_time_= rclcpp::Time(0., RCL_ROS_TIME);
+    rclcpp::Time end_time_= rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration dt_ = 100us;
-    rclcpp::Time t_ = rclcpp::Time(0., RCL_STEADY_TIME);
+    rclcpp::Time t_ = rclcpp::Time(0., RCL_ROS_TIME);
 
     double latitude_ = 48.368894;
     const double robot_mass_ =  12.0;
@@ -92,11 +98,11 @@ public:
     double volume_equilibrium_ = 100e-6; /// m3
     double chi_ = 0.0;
     double chi2_ = 0.0;
-    const double volume_air_init = 20e-6; /// m3
+    const double volume_air_init = 15e-6; /// m3
     const double volume_air_p0 = ts.gtc.gsw_p0; /// Pa
     const double volume_air_temp0 = ts.gtc.gsw_t0 + 15.0; /// 15°C in K
     double antenna_diam_ = 30e-3; /// m
-    double Cz_ = 1.0;
+    double Cz_ = 4.0;
 
     /// ************** MAXON MOTOR ************** ///
     double maxon_RotorInertia_ = 9.0; /// gcm2
@@ -105,14 +111,14 @@ public:
     double maxon_TerminalResistance_ = 1.84; /// Ohms
     double maxon_TerminalInductance_ = 0.198; /// mH
 
-    double maxon_NominalCurrent_ = 1.3; /// A
-    double maxon_NominalTorque_ = 29.5; /// mMm
-    double maxon_StallCurrent_ = 6.54; /// A
-
-    double maxon_MechanicalTimeConstant_ = 3.14e-3; /// s
-    /// No load speed = 4980 rpm (12V)
-    double maxon_NoLoadSpeed_ = 4080; /// rpm
-    double maxon_NoLoadCurrent_ = 20e-3; /// A
+//    double maxon_NominalCurrent_ = 1.3; /// A
+//    double maxon_NominalTorque_ = 29.5; /// mMm
+//    double maxon_StallCurrent_ = 6.54; /// A
+//
+//    double maxon_MechanicalTimeConstant_ = 3.14e-3; /// s
+//    /// No load speed = 4980 rpm (12V)
+//    double maxon_NoLoadSpeed_ = 4080; /// rpm
+//    double maxon_NoLoadCurrent_ = 20e-3; /// A
 
     double maxon_Reduction_ = 103; /// 103:1
 
@@ -138,27 +144,27 @@ public:
     #define MOTOR_PWM_MAX 4000
     #define MOTOR_V_TO_CMD MOTOR_PWM_MAX/(2*16)
     int motor_delta_speed = (100/REGULATION_LOOP_FREQ)*MOTOR_V_TO_CMD; // Limit to 100V/s, delta_speed in PWM quantum/0.02s = 250
-    rclcpp::Time control_pwm_last_time = rclcpp::Time(0., RCL_STEADY_TIME);;
+    rclcpp::Time control_pwm_last_time = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration control_pwm_dt = 20ms; /// 50Hz
     bool switch_top_ = false, switch_bottom_ = true;
+    int motor_set_point_ = 0;
 
     TeosSea ts;
 
     /// ******* Memory *******  ///
     rclcpp::Duration memory_dt = 20ms; /// 50Hz
-    rclcpp::Time memory_last_time = rclcpp::Time(0., RCL_STEADY_TIME);;
-    std::vector<double> memory_piston_position, memory_piston_velocity, memory_velocity, memory_depth;
-    std::vector<rclcpp::Time> memory_time;
-    std::vector<double> memory_temperature, memory_salinity, memory_sea_pressure, memory_density;
-    std::vector<double> memory_kalman_depth, memory_kalman_velocity, memory_kalman_offset, memory_kalman_chi,
-                        memory_kalman_chi2, memory_kalman_cz, memory_kalman_air;
+    rclcpp::Time memory_last_time = rclcpp::Time(0., RCL_ROS_TIME);
+//    std::vector<double> memory_piston_position, memory_piston_velocity, memory_velocity, memory_depth;
+//    std::vector<rclcpp::Time> memory_time;
+//    std::vector<double> memory_temperature, memory_salinity, memory_sea_pressure, memory_density;
+//    std::vector<double> memory_kalman_depth, memory_kalman_velocity, memory_kalman_offset, memory_kalman_chi,
+//                        memory_kalman_chi2, memory_kalman_cz, memory_kalman_air;
 
     /// Kalman ///
     Kalman k_;
-    DepthControl dc_;
 
     /// Sensors
-    rclcpp::Time pressure_sensor_last_time = rclcpp::Time(0., RCL_STEADY_TIME);;
+    rclcpp::Time pressure_sensor_last_time = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration pressure_sensor_dt = 200ms; /// 5Hz
     double pressure_sensor_ = 0.; /// Simulated (noisy) value of the pressure sensor
     const double pressure_sensor_mean_ = 0.0;
@@ -167,17 +173,27 @@ public:
     std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
 
     /// Piston
-    rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_STEADY_TIME);;
+    rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration piston_dt_ = 200ms; /// 5Hz
     double piston_position_ = 0.;
-    int piston_set_point_ = 0;
 
     /// Fusion
     double fusion_depth_{}, fusion_velocity_{};
 
     /// Depth Control
-    rclcpp::Time dc_last_time_ = rclcpp::Time(0., RCL_STEADY_TIME);;
+    DepthControl dc_;
+    rclcpp::Time dc_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration dc_dt_ = 200ms; /// 5Hz
+
+    /// Mission
+    Mission mission_;
+    rclcpp::Time mission_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
+    rclcpp::Duration mission_dt_ = 1s; /// 1Hz
+    seabot2_mission::msg::Waypoint current_wp_{};
+    string mission_file_name_ = "mission.xml";
+    string mission_path_ = "./";
+    rclcpp::Duration mission_delay_before_start_ = 10s;
+    rclcpp::Duration mission_delay_after_end_ = 30s;
 };
 
 

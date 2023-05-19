@@ -43,4 +43,40 @@ endif()
 install(TARGETS mission_node
         DESTINATION lib/${PROJECT_NAME})
 
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+
+  ### Export library
+  include_directories(include/seabot2_mission)
+  add_library(mission SHARED
+          src/mission.cpp
+          )
+
+  target_include_directories(mission PUBLIC
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+          $<INSTALL_INTERFACE:include>
+          include/seabot2_mission
+          )
+
+  set(MISSION_HEADERS
+          include/seabot2_mission/mission.hpp
+          )
+
+  set_target_properties(mission PROPERTIES
+          PUBLIC_HEADER "${MISSION_HEADERS}"
+          )
+
+  ament_target_dependencies(mission
+          rclcpp
+          )
+
+  target_link_libraries(mission
+          "${cpp_typesupport_target}"
+          )
+
+  install(TARGETS mission
+          LIBRARY DESTINATION lib
+          PUBLIC_HEADER DESTINATION include/seabot2_mission/seabot2_mission/
+          )
+endif()
+
 ament_package()

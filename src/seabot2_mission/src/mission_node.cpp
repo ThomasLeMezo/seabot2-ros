@@ -4,7 +4,7 @@
 using namespace placeholders;
 
 MissionNode::MissionNode()
-        : Node("mission_node"), mission_(this){
+        : Node("mission_node"), mission_(){
 
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
@@ -146,7 +146,7 @@ int MissionNode::load_mission(){
     rclcpp::sleep_for(1s); // Wait for the change of bag
 
     // Reload mission
-    int ret =  mission_.load_mission(mission_file_name_, mission_path_);
+    int ret =  mission_.load_mission(mission_file_name_, mission_path_, this->now());
 
     if(ret==EXIT_SUCCESS){
         vector<float> velocity_list = mission_.get_velocity_list();
@@ -167,7 +167,7 @@ void MissionNode::timer_callback() {
     }
 
     seabot2_mission::msg::Waypoint wp_msg;
-    bool is_new_waypoint = mission_.compute_command(wp_msg);
+    bool is_new_waypoint = mission_.compute_command(wp_msg, this->now());
 
     if(!mission_enable_) /// Check if mission was disabled by service
         wp_msg.mission_enable = false;

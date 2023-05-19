@@ -99,7 +99,7 @@ void KalmanNode::state_callback(const seabot2_piston_driver::msg::PistonState &m
 }
 
 void KalmanNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
-    k_.update_pressure(msg.pressure);
+    k_.update_pressure(msg.pressure + msg.zero_depth_pressure);
     k_.set_new_depth_data(msg.depth, msg.velocity, msg.header.stamp);
     publish_data();
 }

@@ -208,8 +208,11 @@ public:
      */
     void state_machine_step(const rclcpp::Duration &dt, const rclcpp::Time &current_time);
 
-private:
-
+    /**
+     * @brief Set the start time of the depth control
+     * @param start_time
+     */
+    void set_start_time(const rclcpp::Time &start_time);
 };
 
 
