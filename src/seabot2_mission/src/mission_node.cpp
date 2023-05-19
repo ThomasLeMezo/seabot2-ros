@@ -11,7 +11,6 @@ MissionNode::MissionNode()
     init_parameters();
     init_interfaces();
 
-    rclcpp::sleep_for(30s); // Wait to be sure to log mission data
     mission_.is_new_mission_file(mission_file_name_, mission_path_);
     load_mission();
 

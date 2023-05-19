@@ -48,11 +48,9 @@ private:
                                                        "WAIT_TO_SLEEP",
                                                        "SLEEP"};
 
-    const array<std::string, 8> depth_control_string_ = {"IDLE",
-                                                        "SURFACE",
+    const array<std::string, 8> depth_control_string_ = {"SURFACE",
                                                         "SINK",
                                                         "CONTROL",
-                                                        "STATIONARY",
                                                         "EMERGENCY",
                                                         "PISTON_ISSUE",
                                                         "HOLD_DEPTH"};
@@ -272,6 +270,11 @@ private:
      *  Create new sub window
      */
     WINDOW * create_new_sub_window(int height, int width, const string &name);
+
+    /**
+     * Create windows
+     */
+    void create_windows();
 
 };
 #endif //BUILD_WTF_NODE_HPP

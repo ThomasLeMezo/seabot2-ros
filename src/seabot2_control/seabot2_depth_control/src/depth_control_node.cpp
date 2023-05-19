@@ -185,8 +185,6 @@ void DepthControlNode::timer_callback() {
     publisher_debug_->publish(debug_msg_);
 }
 
-
-
 int main(int argc, char *argv[]) {
     rclcpp::init(argc, argv);
 

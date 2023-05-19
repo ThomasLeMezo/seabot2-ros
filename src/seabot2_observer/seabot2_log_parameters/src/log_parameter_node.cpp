@@ -104,6 +104,7 @@ void LogParameterNode::get_param_values(const std::string &node_name,
 }
 
 void LogParameterNode::record_parameters() {
+    rclcpp::sleep_for(30s); // Wait to be sure log is started & seabot2_depth_control has finished computing parameters
     RCLCPP_INFO(this->get_logger(), "[log_parameter_node] Start recording parameters");
 
     // Get hostname

@@ -23,17 +23,21 @@ WtfNode::WtfNode()
             loop_dt_, std::bind(&WtfNode::timer_callback, this));
 
     initscr();
-    getmaxyx(stdscr,windows_max_y_,windows_max_x_);
-    /// | - - - x
-    /// |
-    /// y
-    RCLCPP_INFO(this->get_logger(), "Windows size: %d, %d", windows_max_y_, windows_max_x_);
+
     use_default_colors();
     start_color();
     init_pair(COLOR_DEFAULT, -1, -1);
     init_pair(COLOR_VALID, -1, COLOR_GREEN);
     init_pair(COLOR_NOT_VALID, -1, COLOR_RED);
 
+    create_windows();
+}
+
+void WtfNode::create_windows(){
+    getmaxyx(stdscr,windows_max_y_,windows_max_x_);
+    /// | - - - x
+    /// |
+    /// y
     /// height, width, point_x, point_y
     windows_robot_              = subwin(stdscr, windows_default_y_, windows_max_x_, 0, 0);
     box(windows_robot_, ACS_VLINE, ACS_HLINE);
@@ -41,15 +45,15 @@ WtfNode::WtfNode()
 
     windows_safety_             = create_new_sub_window(15, 40, "SAFETY");
     windows_internal_pressure_  = create_new_sub_window(7, 40, "INTERNAL PRESSURE");
-    windows_power_              = create_new_sub_window(13, 40, "POWER");
-    windows_depth_control_      = create_new_sub_window(11, 40, "DEPTH CONTROL");
+    windows_power_              = create_new_sub_window(11, 40, "POWER");
+    windows_depth_control_      = create_new_sub_window(10, 40, "DEPTH CONTROL");
 
-    windows_mission_            = create_new_sub_window(15, 40, "DEPTH");
-    windows_depth_              = create_new_sub_window(8, 40, "PISTON");
-    windows_piston_             = create_new_sub_window(15, 40, "MISSION");
+    windows_mission_            = create_new_sub_window(14, 40, "MISSION");
+    windows_depth_              = create_new_sub_window(8, 40, "DEPTH");
+    windows_piston_             = create_new_sub_window(15, 40, "PISTON");
     windows_gnss_               = create_new_sub_window(8, 40, "GNSS");
 
-    windows_sensors_            = create_new_sub_window(5, 40, "SENSORS");
+    windows_sensors_            = create_new_sub_window(8, 40, "SENSORS");
 
     refresh();
 }
@@ -76,7 +80,7 @@ WINDOW *WtfNode::create_new_sub_window(int height, int width, const string &name
     windows_current_y_ += height;
 
     box(local_win, ACS_VLINE, ACS_HLINE);
-    mvwprintw(local_win, 1, 1, name.c_str());
+    mvwprintw(local_win, 1, 1, "%s", name.c_str());
 
     return local_win;
 }
@@ -199,7 +203,7 @@ void WtfNode::update_internal_pressure_windows(){
         mvwprintw(windows_internal_pressure_, 4, 25, "%2.2f", msg_internal_sensor_filter_.temperature);
 
         mvwprintw(windows_internal_pressure_, 5, 1, "humidity");
-        mvwprintw(windows_internal_pressure_, 5, 25, "%2.0f", msg_internal_sensor_filter_.humidity);
+        mvwprintw(windows_internal_pressure_, 5, 25, "%2.0f %%", msg_internal_sensor_filter_.humidity);
 
         wrefresh(windows_internal_pressure_);
     }
@@ -222,38 +226,38 @@ void WtfNode::update_mission_windows(){
         mvwprintw(windows_mission_, 6, 25, "%0.3f", msg_waypoint_.limit_velocity);
 
         mvwprintw(windows_mission_, 7, 1, "mission_enable");
-        mvwprintw(windows_mission_, 7, 25, "%s", get_bool_text(msg_waypoint_.mission_enable).c_str());
+        mvwprintw(windows_mission_, 7, 25, "%5s", get_bool_text(msg_waypoint_.mission_enable).c_str());
 
         mvwprintw(windows_mission_, 8, 1, "enable_thrusters");
-        mvwprintw(windows_mission_, 8, 25, "%s", get_bool_text(msg_waypoint_.enable_thrusters).c_str());
+        mvwprintw(windows_mission_, 8, 25, "%5s", get_bool_text(msg_waypoint_.enable_thrusters).c_str());
 
         mvwprintw(windows_mission_, 9, 1, "waypoint_id");
-        mvwprintw(windows_mission_, 9, 25, "%d", msg_waypoint_.waypoint_id);
+        mvwprintw(windows_mission_, 9, 25, "%4d", msg_waypoint_.waypoint_id);
 
         mvwprintw(windows_mission_, 10, 1, "waypoint_length");
-        mvwprintw(windows_mission_, 10, 25, "%d", msg_waypoint_.waypoint_length);
+        mvwprintw(windows_mission_, 10, 25, "%4d", msg_waypoint_.waypoint_length);
 
         mvwprintw(windows_mission_, 11, 1, "time_to_next_waypoint");
         mvwprintw(windows_mission_, 11, 25, "%6d", static_cast<int>(round(msg_waypoint_.time_to_next_waypoint)));
 
         mvwprintw(windows_mission_, 12, 1, "seafloor_landing");
-        mvwprintw(windows_mission_, 12, 25, "%s", get_bool_text(msg_waypoint_.seafloor_landing).c_str());
+        mvwprintw(windows_mission_, 12, 25, "%5s", get_bool_text(msg_waypoint_.seafloor_landing).c_str());
 
         wrefresh(windows_mission_);
     }
 }
 
 std::string WtfNode::get_bool_text(bool valid){
-    return (valid ? "True " : "False");
+    return (valid ? "True" : "False");
 }
 
 std::string WtfNode::set_color_valid(WINDOW *w, bool valid, const std::string& text){
     if(valid){
         wattron(w, COLOR_PAIR(COLOR_VALID));
-        return (text=="")?"True ":text;
+        return (text.empty())?"True":text;
     } else {
         wattron(w, COLOR_PAIR(COLOR_NOT_VALID));
-        return (text=="")?"False":text;
+        return (text.empty())?"False":text;
     }
 }
 
@@ -262,46 +266,46 @@ void WtfNode::update_safety_windows(){
         mvwprintw(windows_safety_, 1, 25, "%0.2f", (this->now() - time_last_safety_).seconds());
 
         mvwprintw(windows_safety_, 3, 1, "global_safety_valid");
-        mvwprintw(windows_safety_, 3, 25, "%s", set_color_valid(windows_safety_, msg_safety_.global_safety_valid).c_str());
+        mvwprintw(windows_safety_, 3, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.global_safety_valid).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 4, 1, "published_frequency");
-        mvwprintw(windows_safety_, 4, 25, "%s", set_color_valid(windows_safety_, msg_safety_.published_frequency).c_str());
+        mvwprintw(windows_safety_, 4, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.published_frequency).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 5, 1, "depth_limit");
-        mvwprintw(windows_safety_, 5, 25, "%s", set_color_valid(windows_safety_, msg_safety_.depth_limit).c_str());
+        mvwprintw(windows_safety_, 5, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.depth_limit).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 6, 1, "batteries_limit");
-        mvwprintw(windows_safety_, 6, 25, "%s", set_color_valid(windows_safety_, msg_safety_.batteries_limit).c_str());
+        mvwprintw(windows_safety_, 6, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.batteries_limit).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 7, 1, "depressurization");
-        mvwprintw(windows_safety_, 7, 25, "%s", set_color_valid(windows_safety_, msg_safety_.depressurization).c_str());
+        mvwprintw(windows_safety_, 7, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.depressurization).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 8, 1, "seafloor");
-        mvwprintw(windows_safety_, 8, 25, "%s", set_color_valid(windows_safety_, msg_safety_.seafloor).c_str());
+        mvwprintw(windows_safety_, 8, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.seafloor).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 9, 1, "piston");
-        mvwprintw(windows_safety_, 9, 25, "%s", set_color_valid(windows_safety_, msg_safety_.piston).c_str());
+        mvwprintw(windows_safety_, 9, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.piston).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 10, 1, "zero_depth");
-        mvwprintw(windows_safety_, 10, 25, "%s", set_color_valid(windows_safety_, msg_safety_.zero_depth).c_str());
+        mvwprintw(windows_safety_, 10, 25, "%5s", set_color_valid(windows_safety_, msg_safety_.zero_depth).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 11, 1, "gnss");
-        mvwprintw(windows_safety_, 11, 25, "%s", set_color_valid(windows_safety_, (msg_gnss_.mode > gpsd_client::msg::GpsFix::MODE_NO_FIX)).c_str());
+        mvwprintw(windows_safety_, 11, 25, "%5s", set_color_valid(windows_safety_, (msg_gnss_.mode > gpsd_client::msg::GpsFix::MODE_NO_FIX)).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 12, 1, "cpu");
         mvwprintw(windows_safety_, 12, 25, "%0.2f", msg_safety_.cpu);
 
         mvwprintw(windows_safety_, 13, 1, "ram");
-        mvwprintw(windows_safety_, 13, 25, "%d", static_cast<int>(msg_safety_.ram));
+        mvwprintw(windows_safety_, 13, 25, "%6d", static_cast<int>(msg_safety_.ram));
 
         wrefresh(windows_safety_);
     }
@@ -361,31 +365,31 @@ void WtfNode::update_piston(){
         mvwprintw(windows_piston_, 1, 25, "%0.2f", (this->now() - time_last_piston_data_).seconds());
 
         mvwprintw(windows_piston_, 3, 1, "position");
-        mvwprintw(windows_piston_, 3, 25, "%*d", 7, msg_piston_data_.position);
+        mvwprintw(windows_piston_, 3, 25, "%7d", msg_piston_data_.position);
 
         mvwprintw(windows_piston_, 4, 1, "position_set_point");
-        mvwprintw(windows_piston_, 4, 25, "%*d", 7, msg_piston_data_.position_set_point);
+        mvwprintw(windows_piston_, 4, 25, "%7d", msg_piston_data_.position_set_point);
 
         mvwprintw(windows_piston_, 5, 1, "switch_top");
-        mvwprintw(windows_piston_, 5, 25, msg_piston_data_.switch_top? "True " : "False");
+        mvwprintw(windows_piston_, 5, 25, "%5s", get_bool_text(msg_piston_data_.switch_top).c_str());
 
         mvwprintw(windows_piston_, 6, 1, "switch_bottom");
-        mvwprintw(windows_piston_, 6, 25, "%s", msg_piston_data_.switch_bottom? "True " : "False");
+        mvwprintw(windows_piston_, 6, 25, "%5s", get_bool_text(msg_piston_data_.switch_bottom).c_str());
 
         mvwprintw(windows_piston_, 7, 1, "enable");
-        mvwprintw(windows_piston_, 7, 25, "%s", msg_piston_data_.enable? "True " : "False");
+        mvwprintw(windows_piston_, 7, 25, "%5s", get_bool_text(msg_piston_data_.enable).c_str());
 
         mvwprintw(windows_piston_, 8, 1, "motor_sens");
-        mvwprintw(windows_piston_, 8, 25, "%s", msg_piston_data_.motor_sens? "True " : "False");
+        mvwprintw(windows_piston_, 8, 25, "%5s", get_bool_text(msg_piston_data_.motor_sens).c_str());
 
         mvwprintw(windows_piston_, 9, 1, "state");
-        mvwprintw(windows_piston_, 9, 20, "%s", piston_state_string_[msg_piston_data_.state].c_str());
+        mvwprintw(windows_piston_, 9, 18, "%21s", piston_state_string_[msg_piston_data_.state].c_str());
 
         mvwprintw(windows_piston_, 10, 1, "motor_speed_set_point");
-        mvwprintw(windows_piston_, 10, 25, "%hu", msg_piston_data_.motor_speed_set_point);
+        mvwprintw(windows_piston_, 10, 25, "%4hu", msg_piston_data_.motor_speed_set_point);
 
         mvwprintw(windows_piston_, 11, 1, "motor_speed");
-        mvwprintw(windows_piston_, 11, 25, "%hu", msg_piston_data_.motor_speed);
+        mvwprintw(windows_piston_, 11, 25, "%4hu", msg_piston_data_.motor_speed);
 
         mvwprintw(windows_piston_, 12, 1, "battery_voltage");
         mvwprintw(windows_piston_, 12, 25, "%0.2f", msg_piston_data_.battery_voltage);
@@ -402,7 +406,7 @@ void WtfNode::update_depth_control(){
         mvwprintw(windows_depth_control_, 1, 25, "%0.2f", (this->now() - time_last_depth_control_).seconds());
 
         mvwprintw(windows_depth_control_, 3, 1, "position");
-        mvwprintw(windows_depth_control_, 3, 25, "%*d", 7, msg_piston_data_.position);
+        mvwprintw(windows_depth_control_, 3, 25, "%7d", msg_piston_data_.position);
 
         mvwprintw(windows_depth_control_, 4, 1, "u");
         mvwprintw(windows_depth_control_, 4, 25, "%f", msg_depth_control_.u);
@@ -414,10 +418,10 @@ void WtfNode::update_depth_control(){
         mvwprintw(windows_depth_control_, 6, 25, "%f", msg_depth_control_.dy);
 
         mvwprintw(windows_depth_control_, 7, 1, "piston_set_point");
-        mvwprintw(windows_depth_control_, 7, 25, "%*.2f", 7, msg_depth_control_.piston_set_point);
+        mvwprintw(windows_depth_control_, 7, 25, "%7.2f", msg_depth_control_.piston_set_point);
 
         mvwprintw(windows_depth_control_, 8, 1, "mode");
-        mvwprintw(windows_depth_control_, 8, 25, "%s", depth_control_string_[msg_depth_control_.mode].c_str());
+        mvwprintw(windows_depth_control_, 8, 21, "%12s", depth_control_string_[msg_depth_control_.mode].c_str());
 
         wrefresh(windows_depth_control_);
     }
@@ -442,7 +446,7 @@ void WtfNode::update_gnss(){
         mvwprintw(windows_gnss_, 1, 25, "%0.2f", (this->now() - time_last_gnss_).seconds());
 
         mvwprintw(windows_gnss_, 3, 1, "mode");
-        mvwprintw(windows_gnss_, 3, 25, "%s", gpsd_mode_string_[msg_gnss_.mode].c_str());
+        mvwprintw(windows_gnss_, 3, 25, "%8s", gpsd_mode_string_[msg_gnss_.mode].c_str());
         wattron(windows_gnss_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_gnss_, 4, 1, "latitude");
@@ -456,7 +460,7 @@ void WtfNode::update_gnss(){
         auto tm = *std::gmtime(&t); // localtime
         stringstream ss;
         ss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
-        mvwprintw(windows_gnss_, 6, 23, "%s", ss.str().c_str());
+        mvwprintw(windows_gnss_, 6, 20, "%17s", ss.str().c_str());
 
         wrefresh(windows_gnss_);
     }

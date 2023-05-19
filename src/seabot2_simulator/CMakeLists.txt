@@ -14,9 +14,11 @@ find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(seabot2_density REQUIRED)
 find_package(seabot2_kalman REQUIRED)
+find_package(seabot2_depth_control REQUIRED)
 
 find_library(LIBTEOS teos REQUIRED)
 find_library(LIBKALMAN kalman REQUIRED)
+find_library(LIBDEPTHCONTROL depth_control REQUIRED)
 
 ### Executable
 add_executable(simulator_node src/simulator_node.cpp src/simulator.cpp)
@@ -25,11 +27,13 @@ ament_target_dependencies(simulator_node
         rosidl_default_generators
         seabot2_density
         seabot2_kalman
+        seabot2_depth_control
 )
 target_link_libraries(simulator_node
         "${cpp_typesupport_target}"
         ${LIBTEOS}
         ${LIBKALMAN}
+        ${LIBDEPTHCONTROL}
         )
 
 ### Includes
