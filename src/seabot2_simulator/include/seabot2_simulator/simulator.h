@@ -41,9 +41,7 @@ public:
 
         int control_pwm(int position_set_point);
 
-        void simulate_pressure();
-
-        void simulate_depth();
+        void simulate_sensors();
 
         void simulate_piston_position();
 
@@ -76,7 +74,7 @@ public:
     /// ************** ///
     rclcpp::Time start_time_= rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Time end_time_= rclcpp::Time(0., RCL_ROS_TIME);
-    rclcpp::Duration dt_ = 100us;
+    rclcpp::Duration dt_ = 1000us;
     rclcpp::Time t_ = rclcpp::Time(0., RCL_ROS_TIME);
 
     double latitude_ = 48.368894;
@@ -89,20 +87,26 @@ public:
     double screw_Radius_ = 6e-3; /// m
     double screw_FrictionCoefficient_ = 0.2; /// To be correctly evaluated ! Copper-Copper = 1.2
 
-    double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
+    double Cz_ = 3.0;
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
+    double S_ = M_PI*pow(robot_diameter_/2.0, 2);
 
     double piston_max_volume_ = piston_max_tick_ * tick_to_volume_;
 
     double battery_tension_ = 16.0; /// V
-    double volume_equilibrium_ = 100e-6; /// m3
+    double volume_equilibrium_ = 90e-6; /// m3
     double chi_ = 0.0;
     double chi2_ = 0.0;
-    const double volume_air_init = 15e-6; /// m3
-    const double volume_air_p0 = ts.gtc.gsw_p0; /// Pa
-    const double volume_air_temp0 = ts.gtc.gsw_t0 + 15.0; /// 15°C in K
+    const double volume_air_init_ = 15e-6; /// m3
+//    const double volume_air_p0_ = ts.gtc.gsw_p0; /// Pa
+//    const double volume_air_temp0_ = ts.gtc.gsw_t0 + 15.0; /// 15°C in K
+    const double volume_air_nR_ = 101325.0*volume_air_init_/(273.15+15.0); /// Pa*m3/K
     double antenna_diam_ = 30e-3; /// m
-    double Cz_ = 4.0;
+
+    double piston_volume_ = 0.0;
+    double volume_total_ = 0.0;
+    double volume_air_ = 0.0;
+    double volume_antenna_ = 0.0;
 
     /// ************** MAXON MOTOR ************** ///
     double maxon_RotorInertia_ = 9.0; /// gcm2
@@ -131,7 +135,7 @@ public:
     double Kt_ = maxon_TorqueConstant_*1e-3; /// Motor torque constant (N.m/Amp)
     double R_ = maxon_TerminalResistance_ + seabot_AddedInductanceResistance_; /// Electric resistance (Ohm)
     double L_ = maxon_TerminalInductance_*1e-3 + seabot_AddedInductance_; /// Electric inductance (H)
-    double rad_to_tick_ = tick_per_turn_ / maxon_Reduction_;
+    double rad_to_tick_ = tick_per_turn_/(2*M_PI*maxon_Reduction_);
 
     const double Tfstatic_ = Kt_*20e-3; /// 20mA
     const double pistonSurface_ = M_PI*pow(piston_diameter_/2.,2);
@@ -168,7 +172,7 @@ public:
     rclcpp::Duration pressure_sensor_dt = 200ms; /// 5Hz
     double pressure_sensor_ = 0.; /// Simulated (noisy) value of the pressure sensor
     const double pressure_sensor_mean_ = 0.0;
-    const double pressure_sensor_stddev_ = 0.01;
+    const double pressure_sensor_stddev_ = 0.005; // in bar
     std::default_random_engine generator_;
     std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
 
@@ -193,7 +197,7 @@ public:
     string mission_file_name_ = "mission.xml";
     string mission_path_ = "./";
     rclcpp::Duration mission_delay_before_start_ = 10s;
-    rclcpp::Duration mission_delay_after_end_ = 30s;
+    rclcpp::Duration mission_delay_after_end_ = 120s;
 };
 
 

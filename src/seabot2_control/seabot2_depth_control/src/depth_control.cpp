@@ -7,6 +7,7 @@
 DepthControl::DepthControl(const rclcpp::Time &start_time)
         : alpha_solver_(){
     set_start_time(start_time);
+    update_coeff();
 }
 
 void DepthControl::set_start_time(const rclcpp::Time &start_time){
@@ -82,17 +83,19 @@ void DepthControl::update_waypoint(const float &depth,
 
 void DepthControl::update_density(const float &density){
     physics_rho_ = density;
+    update_AB();
+}
+
+void DepthControl::update_AB(){
     coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
+    coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
 }
 
 void DepthControl::update_coeff(){
     /// Computed parameters
     S_ = M_PI*pow(robot_diameter_/2.0, 2);
-    tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
-    flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_;
+    update_AB();
+    flow_max_ = (motor_max_rpm_ / 60.) * screw_thread_ * pow(piston_diameter_/2.0, 2)*M_PI;
 
     /// Ensuring a safety margin on the piston flow of piston_flow_security_percentage
     alpha_solver_.update_coeff(Cf_, coeff_A_, coeff_B_, flow_max_*piston_flow_security_percentage_);

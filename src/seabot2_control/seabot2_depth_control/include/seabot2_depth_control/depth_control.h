@@ -27,7 +27,7 @@ public:
     float limit_depth_ = 100.0;
 
     /// Physical characteristics
-    double physics_rho_ =  1025.0;
+    double physics_rho_ =  1000.0;
     double physics_g_ =  9.81;
     double robot_mass_ =  12.0;
     double robot_diameter_ =  0.125;
@@ -37,22 +37,22 @@ public:
     double piston_max_tick_value_ =  1146880;
 
     double S_ = M_PI*pow(robot_diameter_/2.0, 2);
-    double Cf_ = 4.0;
+    double Cf_ = 3.0;
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    double coeff_A_ = physics_g_ * physics_rho_ / robot_mass_;
-    double coeff_B_ = 0.5 * physics_rho_ * S_ / robot_mass_;
+    double coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
+    double coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
 
     /// Compute regulation constant
-    double root_regulation_ = -1.0;
+    double root_regulation_ = -0.2;
     double limit_depth_control_ = 0.5; /// m
-    double flow_piston_sink_ = -0.5e-6; /// m3/s
+    double flow_piston_sink_ = -5e-7; /// m3/s
 
     double piston_reach_position_dead_zone_ = 50.;
     double piston_hysteresis_ = 0.6;
     double motor_max_rpm_ = 38.0;
     double flow_max_ = (motor_max_rpm_ / 60.) * tick_per_turn_ * tick_to_volume_; /// in m3/sec
 
-    double piston_flow_security_percentage_ = 0.25;
+    double piston_flow_security_percentage_ = 0.5;
 
     /// Hold depth parameters
     bool hold_depth_enable_ = false;
@@ -61,10 +61,11 @@ public:
     double hold_velocity_enter_ = 0.0; /// m/s
     double hold_velocity_exit_ = 0.0;
 
-    double delta_velocity_lb_ = 0.;
-    double delta_velocity_ub_ = 0.;
-    double delta_position_lb_ = 0.;
-    double delta_position_ub_ = 0.;
+    bool control_filter_ = false;
+    double delta_velocity_lb_ = -1e-3;
+    double delta_velocity_ub_ = 1e-3;
+    double delta_position_lb_ = -10e-3;
+    double delta_position_ub_ = 10e-3;
 
     rclcpp::Duration safety_time_no_data_ = 5s;
 
@@ -74,8 +75,6 @@ public:
     int piston_state_ = 0;
     double piston_set_point_ = 0.;
     bool is_exit_ = true;
-
-    bool enable_flow_max_ = true;
 
     /// Callback data
     rclcpp::Time time_last_kalman_callback_{};
@@ -87,7 +86,7 @@ public:
     double depth_set_point_ = 0.0;
     double limit_velocity_ = 0.0;
     double approach_velocity_ = 1.0;
-    bool control_filter_ = false;
+
     double temperature_ = 288.15;
     double pressure_ = 101325;
 
@@ -213,6 +212,11 @@ public:
      * @param start_time
      */
     void set_start_time(const rclcpp::Time &start_time);
+
+    /**
+     * Update coefficients A and B
+     */
+    void update_AB();
 };
 
 

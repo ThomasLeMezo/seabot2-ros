@@ -47,10 +47,12 @@ void Kalman::kalman_predict(Matrix<double,NB_STATES, 1> &x,
                                 const Matrix<double,NB_COMMAND, 1> &u,
                                 const Matrix<double,NB_STATES, NB_STATES> &gamma_alpha,
                                 const double &dt){
-    if(dt <= 0.0 || dt >= 1.0){
+    if(dt < 0.0 || dt >= 1.0){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"),  "[Kalman_node] dt issue %f (at time %f)", dt, time_last_predict_.seconds());
         return;
     }
+    if(dt==0.0)
+        return;
 
     Matrix<double, NB_STATES, NB_STATES> Ak_tmp = Matrix<double, NB_STATES, NB_STATES>::Identity();
     Matrix<double,NB_STATES, NB_STATES> Ak = Matrix<double, NB_STATES, NB_STATES>::Zero();
@@ -140,9 +142,7 @@ bool Kalman::is_out_of_range(const Matrix<double, NB_STATES, 1> &xhat) const{
 }
 
 void Kalman::set_new_piston_data(double position, double set_point, const rclcpp::Time &stamp){
-    piston_position_last_ = piston_position_;
     piston_position_ = position;
-    piston_set_point_ = set_point;
     piston_stamp_ = stamp;
     compute_kalman(false, true);
 }

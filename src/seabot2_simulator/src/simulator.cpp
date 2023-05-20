@@ -11,12 +11,34 @@
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "rosbag2_storage/storage_options.hpp"
 
+#include "seabot2_depth_control/msg/alpha_debug.hpp"
+#include "seabot2_depth_control/msg/depth_control_debug.hpp"
+#include "gpsd_client/msg/gps_fix.hpp"
+#include "seabot2_piston_driver/msg/piston_state.hpp"
+#include "seabot2_piston_driver/msg/piston_set_point.hpp"
+#include "seabot2_power_driver/msg/power_state.hpp"
+#include "seabot2_depth_filter/msg/pressure_sensor_data.hpp"
+#include "pressure_bme280_driver/msg/bme280_data.hpp"
+#include "bluerobotics_ping_driver/msg/profile.hpp"
+#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_density/msg/density.hpp"
+#include "seabot2_depth_filter/msg/depth_pose.hpp"
+#include "seabot2_kalman/msg/kalman_state.hpp"
+#include "seabot2_log_parameters/msg/log_parameter.hpp"
+#include "seabot2_power_driver/msg/power_state.hpp"
+#include "pressure_bme280_driver/msg/bme280_data.hpp"
+#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+#include "seabot2_safety/msg/safety_status.hpp"
+
+#include "seabot2_simulator/msg/simulation_debug.hpp"
+
 using namespace std::chrono;
 
 double Simulator::get_density_from_depth(double z, double sea_pressure) {
     return ts.gsw_rho_t_exact(this->salinity_from_depth(z),
                               this->temperature_from_depth(z),
-                              sea_pressure);
+                              sea_pressure*1e-4);
 }
 
 void Simulator::set_start_time(const rclcpp::Time &start_time){
@@ -39,15 +61,67 @@ void Simulator::init_bag_writer(){
 
     bag_writer_->open(storage_options);
 
+    bag_writer_->create_topic( {"/simulation/debug",
+                                "seabot2_simulator/msg/SimulationDebug",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/control/alpha_debug",
+                                "seabot2_depth_control/msg/AlphaDebug",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/control/depth_control_debug",
+                                "seabot2_depth_control/msg/DepthControlDebug",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/fix",
+                                "gpsd_client/msg/GpsFix",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/piston",
+                                "seabot2_piston_driver/msg/PistonState",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/piston_set_point",
+                                "seabot2_piston_driver/msg/PistonSetPoint",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/power",
+                                "seabot2_power_driver/msg/PowerState",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/pressure_external",
+                                "seabot2_depth_filter/msg/PressureSensorData",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/pressure_internal",
+                                "pressure_bme280_driver/msg/Bme280Data",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/profile",
+                                "bluerobotics_ping_driver/msg/Profile",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/driver/temperature",
+                                "temperature_tsys01_driver/msg/TemperatureSensorData",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/mission/waypoint",
+                                "seabot2_mission/msg/Waypoint",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/density",
+                                "seabot2_density/msg/Density",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/depth",
+                                "seabot2_depth_filter/msg/DepthPose",
+                                rmw_get_serialization_format(), ""});
     bag_writer_->create_topic( {"/observer/kalman",
-                                 "seabot2_kalman/msg/KalmanState",
-                                 rmw_get_serialization_format(),
-                                 ""});
+                                "seabot2_kalman/msg/KalmanState",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/parameters",
+                                "seabot2_log_parameters/msg/LogParameter",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/power",
+                                "seabot2_power_driver/msg/PowerState",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/pressure_internal",
+                                "pressure_bme280_driver/msg/Bme280Data",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/temperature",
+                                "temperature_tsys01_driver/msg/TemperatureSensorData",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/safety/safety",
+                                "seabot2_safety/msg/SafetyStatus",
+                                rmw_get_serialization_format(), ""});
 
-    bag_writer_->create_topic( {"/driver/piston_position",
-                                 "seabot2_piston_driver/msg/PistonState",
-                                 rmw_get_serialization_format(),
-                                 ""});
 }
 
 double Simulator::temperature_from_depth(double z) {
@@ -64,27 +138,33 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
     Matrix<double, SIMU_NB_STATES, 1> dx = Matrix<double, SIMU_NB_STATES, 1>::Zero();
 
     double temp_K = temperature_from_depth(x(4))+ts.gtc.gsw_t0; /// in K
-    sea_pressure_ = ts.gsw_p_from_z(x(4), latitude_); /// dbar
-    abs_pressure_ = sea_pressure_*1e5 + ts.gtc.gsw_p0; /// Pa
-    g_ = ts.gsw_grav(latitude_, sea_pressure_);
+    sea_pressure_ = ts.gsw_p_from_z(-x(4), latitude_)*1e4; /// in Pa (z is negative, output dbar)
+    abs_pressure_ = sea_pressure_ + ts.gtc.gsw_p0; /// Pa
+    g_ = ts.gsw_grav(latitude_, sea_pressure_*1e-4);
     rho_ = get_density_from_depth(x(4), sea_pressure_);
-    double coeff_A_ = g_ * rho_ / robot_mass_;
-    double coeff_B_ = 0.5 * rho_ * Cf_ / robot_mass_;
 
-    double V = battery_tension_*(static_cast<double>(pwm)-MOTOR_STOP)/(double)MOTOR_STOP;
+    double coeff_A_ = g_ * rho_ / (2.0 * robot_mass_);
+    double coeff_B_ = 0.5 * rho_ * S_ / (2.0 * robot_mass_);
 
-    double T = 0.;
+    double V = battery_tension_*(static_cast<double>(pwm-MOTOR_STOP))/(double)MOTOR_STOP;
 
     dx(0) = x(1);
-    dx(1) = Kt_/J_*x(2)-T/J_;
+    dx(1) = Kt_/J_*x(2);
     dx(2) = -Ke_/L_*x(1)-R_/L_*x(2)+V/L_;
 
-    double Vp = -(x(0)/M_PI)*screw_thread_*pow(piston_diameter_/2.0, 2);
-    double Vair = (volume_air_p0*volume_air_init/volume_air_temp0)*(temp_K/abs_pressure_);
-    double Vext = fmin(0, M_PI*pow(antenna_diam_/2, 2)*x(4)-volume_equilibrium_); /// Volume of antenna when emerged [neg]
+    piston_volume_ = (-(x(0)/(2*M_PI*maxon_Reduction_))*screw_thread_)*(M_PI*pow(piston_diameter_/2.0, 2));
+    volume_air_ = (volume_air_nR_)*(temp_K/abs_pressure_);
+    volume_antenna_ = min(0.0, M_PI*pow(robot_diameter_/2.0, 2)*x(4)-volume_equilibrium_); /// Volume of antenna when emerged [neg]
 
-    dx(3) = -coeff_A_*(Vext+volume_equilibrium_+Vp-(chi_*x(4)+chi2_*pow(x(4), 2))+Vair)-coeff_B_*Cz_*abs(x(3))*x(3);
+    volume_total_ = volume_antenna_+volume_equilibrium_+piston_volume_-(chi_*x(4)+chi2_*pow(x(4), 2))+volume_air_;
+    dx(3) = -coeff_A_*(volume_total_)-coeff_B_*Cz_*abs(x(3))*x(3);
     dx(4) = x(3);
+
+    if(isnan(volume_air_) || isnan(x(3) || isnan(piston_volume_) || isnan(abs_pressure_))){
+        cout << V << " " << x(0) << " " << x(1) << " " << x(2) << " " << x(3) << " " << x(4) << ' '
+        << sea_pressure_ << ' ' << piston_volume_ << ' ' << volume_air_ << ' '  << abs_pressure_ << endl;
+        exit(EXIT_FAILURE);
+    }
 
     return dx;
 }
@@ -111,7 +191,7 @@ int Simulator::control_pwm(int position_set_point){
     }
 
     if((motor_set_point_<MOTOR_STOP && x_(4)<=0)
-       || (motor_set_point_>MOTOR_STOP && x_(4) * rad_to_tick_ >= piston_max_tick_)){
+       || (motor_set_point_>MOTOR_STOP && ((x_(4) * rad_to_tick_) >= piston_max_tick_))){
         motor_cmd_ = MOTOR_STOP;
     }
     else{
@@ -137,14 +217,11 @@ int Simulator::control_pwm(int position_set_point){
     return motor_cmd_;
 }
 
-void Simulator::simulate_pressure(){
-    /// ToDo : simulation of filter
-    pressure_sensor_ = x_(4) + pressure_sensor_dist_(generator_);
-}
-
-void Simulator::simulate_depth(){
-    fusion_depth_ = pressure_sensor_ / (g_*rho_/1e5);
-    fusion_velocity_ = 0.;
+void Simulator::simulate_sensors(){
+    pressure_sensor_ = abs_pressure_/1e5 ; //+ pressure_sensor_dist_(generator_); // in Bar
+    //fusion_depth_ = (pressure_sensor_*1e5-sea_pressure_) / (g_*rho_*1e5); // To be corrected
+    fusion_depth_ = x_(4);
+    fusion_velocity_ = x_(3);
 }
 
 void Simulator::simulate_piston_position() {
@@ -152,24 +229,82 @@ void Simulator::simulate_piston_position() {
 }
 
 void Simulator::save_data(const rclcpp::Time &t){
-//    memory_time.push_back(t);
-//    memory_piston_position.push_back(piston_position_);
-//    memory_piston_velocity.push_back(x_(1) * rad_to_tick_);
-//    memory_velocity.push_back(x_(2));
-//    memory_depth.push_back(x_(3));
-//
-//    memory_temperature.push_back(temperature_);
-//    memory_salinity.push_back(salinity_);
-//    memory_sea_pressure.push_back(sea_pressure_);
-//    memory_density.push_back(rho_);
-//
-//    memory_kalman_velocity.push_back(k_.x_forcast_(0));
-//    memory_kalman_depth.push_back(k_.x_forcast_(1));
-//    memory_kalman_offset.push_back(k_.x_forcast_(2));
-//    memory_kalman_chi.push_back(k_.x_forcast_(3));
-//    memory_kalman_chi2.push_back(k_.x_forcast_(4));
-//    memory_kalman_cz.push_back(k_.x_forcast_(5));
-//    memory_kalman_air.push_back(k_.x_forcast_(6));
+
+//    "/driver/fix"
+//    "/driver/profile"
+//    "/observer/parameters"
+//    "/observer/power"
+//    "/observer/pressure_internal"
+//    "/observer/temperature"
+//    "/safety/safety"
+
+    seabot2_simulator::msg::SimulationDebug msg_simu_debug;
+    msg_simu_debug.theta = x_(0);
+    msg_simu_debug.dtheta = x_(1);
+    msg_simu_debug.i = x_(2);
+    msg_simu_debug.dz = x_(3);
+    msg_simu_debug.z = x_(4);
+    msg_simu_debug.piston_volume = piston_volume_;
+    msg_simu_debug.volume_total = volume_total_;
+    msg_simu_debug.volume_air = volume_air_;
+    msg_simu_debug.volume_antenna = volume_antenna_;
+    bag_writer_->write(msg_simu_debug, "/simulation/debug", t);
+
+    seabot2_depth_filter::msg::DepthPose msg_depth;
+    msg_depth.depth = fusion_depth_;    /// Todo verify
+    msg_depth.zero_depth_pressure = 0.0;
+    msg_depth.pressure = pressure_sensor_;
+    msg_depth.velocity = fusion_velocity_;
+    msg_depth.header.stamp = t_;
+    bag_writer_->write(msg_depth, "/observer/depth", t);
+
+    seabot2_density::msg::Density msg_density;
+    msg_density.density = rho_;
+    msg_density.header.stamp = t_;
+    bag_writer_->write(msg_density, "/observer/density", t);
+
+    bag_writer_->write(current_wp_, "/mission/waypoint", t);
+
+    temperature_tsys01_driver::msg::TemperatureSensorData msg_temperature;
+    msg_temperature.temperature = temperature_;
+    msg_temperature.header.stamp = t_;
+    bag_writer_->write(msg_temperature, "/driver/temperature", t);
+
+    pressure_bme280_driver::msg::Bme280Data msg_pressure_internal;
+    msg_pressure_internal.pressure = 0.7;
+    msg_pressure_internal.temperature = 20.0;
+    msg_pressure_internal.humidity = 0.4;
+    bag_writer_->write(msg_pressure_internal, "/driver/pressure_internal", t);
+
+    seabot2_depth_filter::msg::PressureSensorData msg_pressure_external;
+    msg_pressure_external.pressure = pressure_sensor_;
+    msg_pressure_external.temperature = temperature_;
+    msg_pressure_external.header.stamp = t_;
+    bag_writer_->write(msg_pressure_external, "/driver/pressure_external", t);
+
+    seabot2_power_driver::msg::PowerState msg_power;
+    msg_power.battery_volt = (float)battery_tension_;
+    msg_power.cell_volt = array<float, 2>{(float)battery_tension_, 0.0};
+    msg_power.esc_current = array<float, 2>{0, 0.};
+    msg_power.motor_current = (float)x_(2);
+    bag_writer_->write(msg_power, "/driver/power", t);
+
+    seabot2_depth_control::msg::AlphaDebug msg_alpha;
+    msg_alpha.approach_velocity = dc_.approach_velocity_;
+    bag_writer_->write(msg_alpha, "/control/alpha_debug", t);
+
+    seabot2_depth_control::msg::DepthControlDebug msg_control_debug;
+    msg_control_debug.mode = dc_.regulation_state_;
+    msg_control_debug.dy = dc_.dy_debug_;
+    msg_control_debug.y = dc_.y_debug_;
+    msg_control_debug.u = dc_.u_debug_;
+    msg_control_debug.piston_set_point = dc_.piston_set_point_;
+    bag_writer_->write(msg_control_debug, "/control/depth_control_debug", t);
+
+    seabot2_piston_driver::msg::PistonSetPoint  msg_piston_set_point;
+    msg_piston_set_point.position = dc_.piston_set_point_;
+    msg_piston_set_point.exit = dc_.is_exit_;
+    bag_writer_->write(msg_piston_set_point, "/driver/piston_set_point", t);
 
     seabot2_kalman::msg::KalmanState msg_kalman;
     msg_kalman.velocity = k_.x_forcast_(0);
@@ -204,6 +339,7 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_piston.motor_speed = motor_cmd_;
     msg_piston.battery_voltage = battery_tension_;
     msg_piston.motor_current = x_(2);
+    bag_writer_->write(msg_piston, "/driver/piston", t);
 
 }
 
@@ -218,18 +354,20 @@ void Simulator::run_simulation() {
 
     auto start = high_resolution_clock::now();
     for(t_=start_time_; t_<=end_time_; t_+=dt_) {
+
         /// Physical simulation
+        x_ += dt_.seconds() * f(x_, pwm);
+
+        /// PWM motor simuluation
         if((t_-control_pwm_last_time) >= control_pwm_dt) {
             control_pwm_last_time = t_;
             pwm = control_pwm(round(dc_.piston_set_point_));
         }
-        x_ += dt_.seconds() * f(x_, pwm);
 
         /// Pressure Simulation
         if((t_-pressure_sensor_last_time) >= pressure_sensor_dt) {
             pressure_sensor_last_time = t_;
-            simulate_pressure();
-            simulate_depth();
+            simulate_sensors();
 
             k_.update_density(rho_);
             k_.update_temperature(temperature_);
@@ -267,12 +405,16 @@ void Simulator::run_simulation() {
                              k_.x_forcast_(6),
                              k_.offset_total_,
                              k_.time_last_predict_);
+
+            /// if trhuth for dc
+            //dc_.update_state(fusion_velocity_,fusion_depth_, volume_equilibrium_, 0.0, 0.0, Cz_, 0.0, volume_equilibrium_, t_);
+
             dc_.update_piston(piston_position_,
                               switch_top_,
                               switch_bottom_,
                               (int)DepthControl::PISTON_STATE_OK,
                                 piston_last_time_);
-            dc_.update_depth(x_(4),
+            dc_.update_depth(fusion_depth_,
                              abs_pressure_/1e5);
             dc_.update_safety(false,
                                100.0);

@@ -38,7 +38,7 @@ public:
 public:
 
     /// Physical characteristics
-    double physics_rho_ =  1025.0;
+    double physics_rho_ =  1000.0;
     double physics_g_ =  9.81;
     double robot_mass_ =  12.0;
     double robot_diameter_ =  0.125;
@@ -46,7 +46,6 @@ public:
     double tick_per_turn_ =  2048*4;
     double piston_diameter_ =  0.045;
     double piston_max_tick_ =  1146880;
-    double pressure_at_surface_ = 1.01325e5;
     const double degree_to_kelvin_ = 273.15;
 
     double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
@@ -58,30 +57,30 @@ public:
 
     /// Initialization variables
     double enable_kalman_depth_ = 0.5; /// m
-    double piston_volume_eq_init_ =  80e-6; /// m3
+    double piston_volume_eq_init_ =  90e-6; /// m3
     double init_chi_ = 0.0; /// m3/m
     double init_chi2_ = 0.0; /// m3/m2
-    double init_cz_ = 1.0;
+    double init_cz_ = 2.0;
     double init_volume_air_ = 3.5e-3; /// (V*P/T)
     bool enable_volume_air_ = true;
 
-    double gamma_alpha_velocity_ =  1e-3; // 1e-5
-    double gamma_alpha_depth_ =  1e-5; // 1e-5
-    double gamma_alpha_offset_ =  5e-2*tick_to_volume_; // 2e-5
-    double gamma_alpha_chi_ =  1e-3*tick_to_volume_; // 2e-8
-    double gamma_alpha_chi2_ =  1e-3*tick_to_volume_; // 2e-8
+    double gamma_alpha_velocity_ =  1e-4;
+    double gamma_alpha_depth_ =  1e-5;
+    double gamma_alpha_offset_ =  1e-9;
+    double gamma_alpha_chi_ =  1e-15; // 2e-8
+    double gamma_alpha_chi2_ =  1e-15; // 2e-8
     double gamma_alpha_cz_ =  1e-3;
-    double gamma_alpha_volume_air_ =  1e-2;
+    double gamma_alpha_volume_air_ =  1e-6;
 
-    double gamma_init_velocity_ =  1e-1;
-    double gamma_init_depth_ =  1.0e-2;
-    double gamma_init_offset_ = piston_max_tick_ * tick_to_volume_; // 1e-2
-    double gamma_init_chi_ =  30.0*tick_to_volume_; // 20
-    double gamma_init_chi2_ =  30.0*tick_to_volume_; // 1e-1
+    double gamma_init_velocity_ =  1e-3;
+    double gamma_init_depth_ =  1.0e-3;
+    double gamma_init_offset_ = 1e-6;
+    double gamma_init_chi_ = 1e-10 ; // 20e-
+    double gamma_init_chi2_ =  1e-10; // 1e-1
     double gamma_init_cz_ =  0.1;
-    double gamma_init_volume_air_ =  30e-6;
+    double gamma_init_volume_air_ =  1e-6;
 
-    double gamma_beta_depth_ =  1.0e-3; // 5e-4 (m)
+    double gamma_beta_depth_ =  1.0e-2; // 5e-4 (m)
 
 public:
     /// Callback data
@@ -90,9 +89,7 @@ public:
     rclcpp::Time fusion_stamp_;
 
     double piston_position_ = 0.;
-    double piston_position_last_ = 0.;
     rclcpp::Time piston_stamp_;
-    double piston_set_point_ = 0.;
 
     double temperature_=288.15; /// in K (15°C)
     double pressure_ = 101325.0 ; /// in Pa (1013.23 hPa)

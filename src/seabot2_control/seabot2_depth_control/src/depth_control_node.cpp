@@ -47,7 +47,6 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("delta_position_ub", dc_.delta_position_ub_);
     this->declare_parameter<bool>("control_filter", dc_.control_filter_);
     this->declare_parameter<double>("piston_flow_security_percentage", dc_.piston_flow_security_percentage_);
-    this->declare_parameter<bool>("enable_flow_max", dc_.enable_flow_max_);
     this->declare_parameter<double>("cf_estimation", dc_.Cf_);
     this->declare_parameter<bool>("debug", dc_.debug_);
 
@@ -76,7 +75,6 @@ void DepthControlNode::init_parameters() {
     dc_.delta_position_ub_ = this->get_parameter_or("delta_position_ub", dc_.delta_position_ub_);
     dc_.control_filter_ = this->get_parameter_or("control_filter", dc_.control_filter_);
     dc_.piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage", dc_.piston_flow_security_percentage_);
-    dc_.enable_flow_max_ = this->get_parameter_or("enable_flow_max", dc_.enable_flow_max_);
     dc_.Cf_ = this->get_parameter_or("cf_estimation", dc_.Cf_);
     dc_.debug_ = this->get_parameter_or("debug", dc_.debug_);
 
