@@ -11,28 +11,28 @@ void Kalman::init_parameters(const rclcpp::Time &init_time){
 
     gamma_init_offset_ = piston_max_tick_ * tick_to_volume_;
 
-    Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
+    S_ = M_PI*pow(robot_diameter_/2.0, 2);
     tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
+    update_coeffAB();
 
     time_last_predict_ = init_time;
     init_kalman();
 }
 
+void Kalman::update_coeffAB(){
+    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
+    coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+}
+
 void Kalman::update_density(double physics_rho){
     physics_rho_ = physics_rho;
-    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * Cf_ / (2.0 * robot_mass_);
+    update_coeffAB();
 }
 
 Matrix<double,Kalman::NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u) const{
     Matrix<double,NB_STATES, 1> dx = Matrix<double,NB_STATES, 1>::Zero();
 
-    if(enable_volume_air_ && pressure_>0.)
-        dx(0) = -coeff_A_*(u(0)+x(2)+x(6)*temperature_/pressure_-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
-    else
-        dx(0) = -coeff_A_*(u(0)+x(2)-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
+    dx(0) = -coeff_A_*(u(0)+x(2)+x(6)*temperature_/pressure_-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     dx(1) = x(0);
     dx(2) = 0.0;
     dx(3) = 0.0;
@@ -62,10 +62,7 @@ void Kalman::kalman_predict(Matrix<double,NB_STATES, 1> &x,
     Ak(0,3) = x(1)*coeff_A_;
     Ak(0,4) = pow(x(1),2)*coeff_A_;
     Ak(0,5) = -coeff_B_*abs(x(0))*x(0);
-    if(enable_volume_air_ && pressure_>0.)
-        Ak(0,6) = -coeff_A_*temperature_/pressure_;
-    else
-        Ak(0,6) = 0.;
+    Ak(0,6) = -coeff_A_*temperature_/pressure_;
     Ak(1, 0) = 1.;
     Ak_tmp += Ak*dt;
 
@@ -98,10 +95,7 @@ void Kalman::init_kalman(){
     xhat_(3) = init_chi_; // chi
     xhat_(4) = init_chi2_; // chi2
     xhat_(5) = init_cz_; // Cz
-    if(enable_volume_air_)
-        xhat_(6) = init_volume_air_;
-    else
-        xhat_(6) = 0.;
+    xhat_(6) = init_volume_air_;
     x_forcast_ = xhat_;
 
     gamma_ = Matrix<double,NB_STATES,NB_STATES>::Zero();
@@ -111,10 +105,7 @@ void Kalman::init_kalman(){
     gamma_(3,3) = pow(gamma_init_chi_,2); // Compressibility
     gamma_(4,4) = pow(gamma_init_chi2_,2); // Compressibility 2
     gamma_(5,5) = pow(gamma_init_cz_,2); // Cz
-    if(enable_volume_air_)
-        gamma_(6,6) = pow(gamma_init_volume_air_,2); // Cz
-    else
-        gamma_(6,6) = 0.;
+    gamma_(6,6) = pow(gamma_init_volume_air_,2); // Cz
 
     gamma_alpha_(0,0) = pow(gamma_alpha_velocity_, 2); // Velocity
     gamma_alpha_(1,1) = pow(gamma_alpha_depth_, 2); // Depth
@@ -122,10 +113,7 @@ void Kalman::init_kalman(){
     gamma_alpha_(3,3) = pow(gamma_alpha_chi_, 2); // Compressibility
     gamma_alpha_(4,4) = pow(gamma_alpha_chi2_, 2); // Compressibility 2
     gamma_alpha_(5,5) = pow(gamma_alpha_cz_, 2); // cz
-    if(enable_volume_air_)
-        gamma_alpha_(6,6) = pow(gamma_alpha_volume_air_, 2); // cz
-    else
-        gamma_alpha_(6,6) = 0;
+    gamma_alpha_(6,6) = pow(gamma_alpha_volume_air_, 2); // cz
 
     gamma_beta_(0, 0) = pow(gamma_beta_depth_, 2); // Depth
 
@@ -159,11 +147,13 @@ void Kalman::update_temperature(double temperature){
 }
 
 void Kalman::update_pressure(double pressure){
-    pressure_ = pressure*1e5;
+    if(pressure>0.)
+        pressure_ = pressure*1e5;
 }
 
 void Kalman::compute_kalman(bool new_depth_data, bool new_piston_data) {
 
+    /// Case kalman enable
     if(fusion_depth_>enable_kalman_depth_ && enable_kalman_) {
         Matrix<double,NB_COMMAND, 1> u = Matrix<double,NB_COMMAND, 1>::Zero();
         u(0) = -piston_position_ * tick_to_volume_; // u
@@ -212,16 +202,16 @@ void Kalman::compute_kalman(bool new_depth_data, bool new_piston_data) {
         else
             is_valid_ = true;
     }
-        /// Case where kalman is not enable, then follow fusion data
+    /// Case where kalman is not enable, then follow fusion data
     else if(new_depth_data){
         time_last_predict_ = fusion_stamp_;
         xhat_(0) = fusion_velocity_;
         xhat_(1) = fusion_depth_;
         x_forcast_ = xhat_;
-        if(pressure_>0.)
-            offset_total_ = x_forcast_(2)+x_forcast_(6)*temperature_/pressure_+x_forcast_(3)*x_forcast_(1) + x_forcast_(4)*pow(x_forcast_(1),2);
         gamma_forcast_ = gamma_;
         is_valid_ = false;
     }
 
+    /// Compute offset total in both cases
+    offset_total_ = x_forcast_(2)+ (x_forcast_(6)*temperature_/pressure_) -(x_forcast_(3)*x_forcast_(1) + x_forcast_(4)*pow(x_forcast_(1),2));
 }

@@ -16,7 +16,7 @@ public:
     DepthControl(const rclcpp::Time &start_time);
 
     static const int PISTON_STATE_OK = 2;
-    static const int NB_STATES = 8;
+    static const int NB_STATES = 7;
 
     bool debug_ = false;
 
@@ -35,6 +35,7 @@ public:
     double tick_per_turn_ =  2048*4;
     double piston_diameter_ =  0.045;
     double piston_max_tick_value_ =  1146880;
+    const double degree_to_kelvin_ = 273.15;
 
     double S_ = M_PI*pow(robot_diameter_/2.0, 2);
     double Cf_ = 3.0;
@@ -79,8 +80,16 @@ public:
     /// Callback data
     rclcpp::Time time_last_kalman_callback_{};
     rclcpp::Time time_last_piston_callback_{};
+
     // [Velocity; Depth; Volume; Offset, chi, chi2, Cz]
-    Eigen::Matrix<double, NB_STATES, 1> x = Eigen::Matrix<double, NB_STATES, 1>::Zero();
+    double kalman_velocity_ = 0.;
+    double kalman_depth_ = 0.;
+    double kalman_total_offset_ = 100.e-6;
+    double kalman_chi_ = 0.;
+    double kalman_chi2_ = 0.;
+    double kalman_cz_ = 3.;
+    double piston_volume_ = 0.;
+
     double offset_total_ = 100.0e-6;
     double depth_fusion_ = 0.0;
     double depth_set_point_ = 0.0;
@@ -118,11 +127,9 @@ public:
      */
     void update_state(const double &velocity,
                         const double &depth,
-                        const double &offset,
                         const double &chi,
                         const double &chi2,
                         const double &cz,
-                        const double &volume_air,
                         const double &offset_total,
                         const rclcpp::Time &time_update);
 

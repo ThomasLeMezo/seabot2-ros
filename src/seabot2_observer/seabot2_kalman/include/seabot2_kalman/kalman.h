@@ -48,10 +48,10 @@ public:
     double piston_max_tick_ =  1146880;
     const double degree_to_kelvin_ = 273.15;
 
-    double Cf_ = M_PI*pow(robot_diameter_/2.0, 2);
+    double S_ = M_PI*pow(robot_diameter_/2.0, 2);
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    double coeff_A_ = physics_g_ * physics_rho_ / robot_mass_;
-    double coeff_B_ = 0.5 * physics_rho_ * Cf_ / robot_mass_;
+    double coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
+    double coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
 
     double piston_max_volume_ = piston_max_tick_ * tick_to_volume_;
 
@@ -61,8 +61,7 @@ public:
     double init_chi_ = 0.0; /// m3/m
     double init_chi2_ = 0.0; /// m3/m2
     double init_cz_ = 2.0;
-    double init_volume_air_ = 3.5e-3; /// (V*P/T)
-    bool enable_volume_air_ = true;
+    double init_volume_air_ = 5e-3; /// (V*P/T)
 
     double gamma_alpha_velocity_ =  1e-4;
     double gamma_alpha_depth_ =  1e-5;
@@ -80,7 +79,7 @@ public:
     double gamma_init_cz_ =  0.1;
     double gamma_init_volume_air_ =  1e-6;
 
-    double gamma_beta_depth_ =  1.0e-2; // 5e-4 (m)
+    double gamma_beta_depth_ =  1e-2; // 5e-4 (m)
 
 public:
     /// Callback data
@@ -91,7 +90,7 @@ public:
     double piston_position_ = 0.;
     rclcpp::Time piston_stamp_;
 
-    double temperature_=288.15; /// in K (15°C)
+    double temperature_ = 288.15; /// in K (15°C)
     double pressure_ = 101325.0 ; /// in Pa (1013.23 hPa)
 
 public:
@@ -208,6 +207,11 @@ public:
      * @param pressure [absolute, in bar]
      */
     void update_pressure(double pressure);
+
+    /**
+     * Update the coefficients of the equation of state
+     */
+    void update_coeffAB();
 
 };
 

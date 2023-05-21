@@ -18,22 +18,17 @@ void DepthControl::set_start_time(const rclcpp::Time &start_time){
 
 void DepthControl::update_state(const double &velocity,
                                 const double &depth,
-                                const double &offset,
                                 const double &chi,
                                 const double &chi2,
                                 const double &cz,
-                                const double &volume_air,
                                 const double &offset_total,
                                 const rclcpp::Time &time_update) {
-    x(0) = velocity;
-    x(1) = depth;
-//    x(2) -> piston volume given by piston callback
-    x(3) = offset;
-    x(4) = chi;
-    x(5) = chi2;
-    x(6) = cz;
-    x(7) = volume_air;
-    offset_total_ = offset_total;
+    kalman_velocity_ = velocity;
+    kalman_depth_ = depth;
+    kalman_chi_ = chi;
+    kalman_chi2_= chi2;
+    kalman_cz_= cz;
+    kalman_total_offset_ = offset_total;
     time_last_kalman_callback_ = time_update;
 }
 
@@ -46,7 +41,7 @@ void DepthControl::update_piston(const int &position,
     piston_switch_top_ = switch_top;
     piston_switch_bottom_ = switch_bottom;
     piston_state_ = state;
-    x(2) = -piston_position_*tick_to_volume_;
+    piston_volume_ = -piston_position_*tick_to_volume_;
     time_last_piston_callback_ = time_update;
 }
 
@@ -102,18 +97,17 @@ void DepthControl::update_coeff(){
 }
 
 void DepthControl::update_temperature(const float &temperature){
-    temperature_ = temperature + 273.15;
+    temperature_ = temperature + degree_to_kelvin_;
 }
 
 double DepthControl::compute_u(double set_point, double limit_velocity){
-    const double x1 = x(0); /// dz
-    const double x2 = x(1); /// z
-    const double x3 = x(2); /// piston volume
-//    const double x4 = x(3); /// offset
-    const double x5 = x(4); /// chi1
-    const double x6 = x(5); /// chi2
-    const double x7 = x(6); /// Cf
-//    const double x8 = x(7); /// V_air
+    const double x1 = kalman_velocity_;
+    const double x2 = kalman_depth_;
+    const double x3 = piston_volume_;
+    const double x5 = kalman_chi_;
+    const double x6 = kalman_chi2_;
+    const double x7 = kalman_cz_;
+
     const double A = coeff_A_;
     const double B = coeff_B_;
     const double beta = limit_velocity;
@@ -124,7 +118,7 @@ double DepthControl::compute_u(double set_point, double limit_velocity){
     double T = 1.0 - pow(tanh(e), 2);
     double dde = -alpha*beta*de*T;
     double dT = -2.*de*tanh(e)*T;
-    double dx1 = -A*(x3+offset_total_)-B*x7*abs(x1)*x1;
+    double dx1 = -A*(x3+kalman_total_offset_)-B*x7*abs(x1)*x1;
 
     double y = x1-beta*tanh(e);
     double dy = dx1 - beta*de*T;
@@ -175,7 +169,7 @@ void DepthControl::state_machine_step(const rclcpp::Duration &dt, const rclcpp::
                 u = flow_piston_sink_;
 
                 /// Compute the position of the piston to be at equilibrium
-                double position_eq = offset_total_ / tick_to_volume_; /// Assuming no compressibility effect
+                double position_eq = kalman_total_offset_ / tick_to_volume_; /// Assuming no compressibility effect
 
                 /// First move to position_eq and the slowly decrease piston volume by flow_piston_sink_
                 if(position_eq - piston_position_ > 2.*piston_reach_position_dead_zone_) { /// position reached
@@ -228,7 +222,7 @@ void DepthControl::state_machine_step(const rclcpp::Duration &dt, const rclcpp::
                     /// piston_set_point = piston_position - u/(tick_to_volume*control_loop_frequency);
                     piston_set_point_ -= u*dt.seconds()/tick_to_volume_;
 
-                    if(hold_depth_enable_ && abs(depth_set_point_-x(1))<hold_depth_value_enter_ && abs(x(0))<hold_velocity_enter_)
+                    if(hold_depth_enable_ && abs(depth_set_point_-kalman_depth_)<hold_depth_value_enter_ && abs(kalman_velocity_)<hold_velocity_enter_)
                         regulation_state_ = STATE_HOLD_DEPTH;
                 }
                 else{
@@ -245,7 +239,7 @@ void DepthControl::state_machine_step(const rclcpp::Duration &dt, const rclcpp::
         case STATE_HOLD_DEPTH:
             is_exit_ = false;
             u=0.0;
-            if(abs(depth_set_point_-x(1))>=hold_depth_value_exit_)
+            if(abs(depth_set_point_-kalman_depth_)>=hold_depth_value_exit_)
                 regulation_state_ = STATE_CONTROL;
             break;
 

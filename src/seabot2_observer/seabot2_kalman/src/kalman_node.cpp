@@ -50,8 +50,6 @@ void KalmanNode::init_parameters() {
 
     this->declare_parameter<double>("gamma_beta_depth", k_.gamma_beta_depth_);
 
-    this->declare_parameter<bool>("enable_volume_air", k_.enable_volume_air_);
-
     k_.physics_rho_ = this->get_parameter_or("physics_rho", k_.physics_rho_);
     k_.physics_g_ = this->get_parameter_or("physics_g", k_.physics_g_);
     k_.robot_mass_ = this->get_parameter_or("physics_mass", k_.robot_mass_);
@@ -88,8 +86,6 @@ void KalmanNode::init_parameters() {
     k_.gamma_init_volume_air_ = gamma_init_volume_air*k_.pressure_/k_.temperature_;
 
     k_.gamma_beta_depth_ = this->get_parameter_or("gamma_beta_depth", k_.gamma_beta_depth_);
-
-    k_.enable_volume_air_ = this->get_parameter_or("enable_volume_air", k_.enable_volume_air_);
 
     k_.init_parameters(this->now());
 }

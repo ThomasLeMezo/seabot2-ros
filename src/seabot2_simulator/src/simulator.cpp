@@ -218,10 +218,9 @@ int Simulator::control_pwm(int position_set_point){
 }
 
 void Simulator::simulate_sensors(){
-    pressure_sensor_ = abs_pressure_/1e5 ; //+ pressure_sensor_dist_(generator_); // in Bar
-    //fusion_depth_ = (pressure_sensor_*1e5-sea_pressure_) / (g_*rho_*1e5); // To be corrected
-    fusion_depth_ = x_(4);
-    fusion_velocity_ = x_(3);
+    pressure_sensor_ = abs_pressure_/1e5 + pressure_sensor_dist_(generator_); // in Bar
+    fusion_depth_ = (pressure_sensor_*1e5 - ts.gtc.gsw_p0) / (g_*rho_);
+    fusion_velocity_ = x_(3); /// ToDo add diff
 }
 
 void Simulator::simulate_piston_position() {
@@ -382,6 +381,10 @@ void Simulator::run_simulation() {
             piston_last_time_ = t_;
             simulate_piston_position();
 
+            k_.update_density(rho_);
+            k_.update_temperature(temperature_);
+            k_.update_pressure(abs_pressure_/1e5);
+
             /// Compute Kalman
             k_.set_new_piston_data(piston_position_, dc_.piston_set_point_, t_);
         }
@@ -398,16 +401,14 @@ void Simulator::run_simulation() {
 
             dc_.update_state(k_.x_forcast_(0),
                              k_.x_forcast_(1),
-                             k_.x_forcast_(2),
                              k_.x_forcast_(3),
                              k_.x_forcast_(4),
                              k_.x_forcast_(5),
-                             k_.x_forcast_(6),
                              k_.offset_total_,
                              k_.time_last_predict_);
 
             /// if trhuth for dc
-            //dc_.update_state(fusion_velocity_,fusion_depth_, volume_equilibrium_, 0.0, 0.0, Cz_, 0.0, volume_equilibrium_, t_);
+//            dc_.update_state(fusion_velocity_,fusion_depth_, 0.0, 0.0, Cz_, volume_total_-piston_volume_, t_);
 
             dc_.update_piston(piston_position_,
                               switch_top_,

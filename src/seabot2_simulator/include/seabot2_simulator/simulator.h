@@ -97,7 +97,7 @@ public:
     double volume_equilibrium_ = 90e-6; /// m3
     double chi_ = 0.0;
     double chi2_ = 0.0;
-    const double volume_air_init_ = 15e-6; /// m3
+    const double volume_air_init_ = 15e-6; //15e-6; /// m3
 //    const double volume_air_p0_ = ts.gtc.gsw_p0; /// Pa
 //    const double volume_air_temp0_ = ts.gtc.gsw_t0 + 15.0; /// 15°C in K
     const double volume_air_nR_ = 101325.0*volume_air_init_/(273.15+15.0); /// Pa*m3/K
@@ -158,11 +158,6 @@ public:
     /// ******* Memory *******  ///
     rclcpp::Duration memory_dt = 20ms; /// 50Hz
     rclcpp::Time memory_last_time = rclcpp::Time(0., RCL_ROS_TIME);
-//    std::vector<double> memory_piston_position, memory_piston_velocity, memory_velocity, memory_depth;
-//    std::vector<rclcpp::Time> memory_time;
-//    std::vector<double> memory_temperature, memory_salinity, memory_sea_pressure, memory_density;
-//    std::vector<double> memory_kalman_depth, memory_kalman_velocity, memory_kalman_offset, memory_kalman_chi,
-//                        memory_kalman_chi2, memory_kalman_cz, memory_kalman_air;
 
     /// Kalman ///
     Kalman k_;
@@ -172,7 +167,7 @@ public:
     rclcpp::Duration pressure_sensor_dt = 200ms; /// 5Hz
     double pressure_sensor_ = 0.; /// Simulated (noisy) value of the pressure sensor
     const double pressure_sensor_mean_ = 0.0;
-    const double pressure_sensor_stddev_ = 0.005; // in bar
+    const double pressure_sensor_stddev_ = 0.001; // in bar (1cm)
     std::default_random_engine generator_;
     std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
 

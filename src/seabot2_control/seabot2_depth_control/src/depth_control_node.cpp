@@ -84,11 +84,9 @@ void DepthControlNode::init_parameters() {
 void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &msg) {
     dc_.update_state(msg.velocity,
                      msg.depth,
-                     msg.offset,
                      msg.chi,
                      msg.chi2,
                      msg.cz,
-                     msg.volume_air,
                      msg.offset_total,
                      msg.header.stamp);
 }
