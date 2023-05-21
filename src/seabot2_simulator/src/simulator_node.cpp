@@ -7,7 +7,6 @@ SimulatorNode::SimulatorNode()
 
     RCLCPP_INFO(this->get_logger(), "[Simulator_node] Init node simulation");
     init_parameters();
-    s_.init_bag_writer();
     s_.run_simulation();
 
     RCLCPP_INFO(this->get_logger(), "[Simulator_node] Simulation ended");

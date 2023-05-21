@@ -101,6 +101,8 @@ double AlphaSolver::compute_alpha(const double velocity_limit) {
             return v_out[1].lb();
         }
         else{
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Set alpha search max (%f)", alpha_search_max_);
+            add_to_memory(velocity_limit, alpha_search_max_);
             return alpha_search_max_;
         }
     }

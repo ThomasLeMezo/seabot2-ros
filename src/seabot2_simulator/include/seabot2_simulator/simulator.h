@@ -136,7 +136,7 @@ public:
     TeosSea ts;
 
     /// ******* Memory *******  ///
-    rclcpp::Duration memory_dt = 20ms; /// 50Hz
+    rclcpp::Duration memory_dt = 100ms; /// 10Hz
     rclcpp::Time memory_last_time = rclcpp::Time(0., RCL_ROS_TIME);
 
     /// ******* Kalman *******  ///

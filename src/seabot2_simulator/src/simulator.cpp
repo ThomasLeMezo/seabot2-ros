@@ -338,8 +338,25 @@ void Simulator::save_data(const rclcpp::Time &t){
 
 }
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 void Simulator::run_simulation() {
     int pwm = MOTOR_STOP;
+
+    for (const auto & entry : fs::directory_iterator(mission_path_)) {
+        if (!entry.is_directory()) {
+            std::cout << entry.path() << std::endl;
+            if (entry.path().extension() == ".xml") {
+                mission_file_name_ = entry.path().filename();
+                bag_path_ = entry.path().stem();
+
+                break;
+            }
+        }
+    }
+
+    init_bag_writer();
     mission_.load_mission(mission_file_name_, mission_path_);
     start_time_ = mission_.get_start_time() - mission_delay_before_start_;
     end_time_ = mission_.get_end_time() + mission_delay_after_end_;
