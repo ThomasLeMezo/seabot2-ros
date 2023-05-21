@@ -138,7 +138,7 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
     Matrix<double, SIMU_NB_STATES, 1> dx = Matrix<double, SIMU_NB_STATES, 1>::Zero();
 
     double temp_K = temperature_from_depth(x(4))+ts.gtc.gsw_t0; /// in K
-    sea_pressure_ = ts.gsw_p_from_z(-x(4), latitude_)*1e4; /// in Pa (z is negative, output dbar)
+    sea_pressure_ = rho_*g_*x(4); /// ts.gsw_p_from_z(-x(4), latitude_)*1e4; /// in Pa (z is negative, output dbar)
     abs_pressure_ = sea_pressure_ + ts.gtc.gsw_p0; /// Pa
     g_ = ts.gsw_grav(latitude_, sea_pressure_*1e-4);
     rho_ = get_density_from_depth(x(4), sea_pressure_);
@@ -220,7 +220,8 @@ int Simulator::control_pwm(int position_set_point){
 void Simulator::simulate_sensors(){
     pressure_sensor_ = abs_pressure_/1e5 + pressure_sensor_dist_(generator_); // in Bar
     fusion_depth_ = (pressure_sensor_*1e5 - ts.gtc.gsw_p0) / (g_*rho_);
-    fusion_velocity_ = x_(3); /// ToDo add diff
+//    fusion_depth_ = x_(4) + pressure_sensor_dist_(generator_);
+    fusion_velocity_ = x_(3);
 }
 
 void Simulator::simulate_piston_position() {

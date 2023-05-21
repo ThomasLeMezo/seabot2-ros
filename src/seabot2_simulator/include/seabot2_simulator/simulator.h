@@ -167,7 +167,7 @@ public:
     rclcpp::Duration pressure_sensor_dt = 200ms; /// 5Hz
     double pressure_sensor_ = 0.; /// Simulated (noisy) value of the pressure sensor
     const double pressure_sensor_mean_ = 0.0;
-    const double pressure_sensor_stddev_ = 0.001; // in bar (1cm)
+    const double pressure_sensor_stddev_ = 0.002; // in bar (2mm)
     std::default_random_engine generator_;
     std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
 

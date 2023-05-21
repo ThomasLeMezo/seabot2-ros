@@ -13,7 +13,7 @@ control:
       hold_velocity_enter: 0.001 # m/s
       hold_velocity_exit: 0.005 # m/s
 
-      control_filter: false
+      control_filter: true
       delta_velocity_lb: -1e-3 # m/s
       delta_velocity_ub: 1e-3 # m/s
       delta_position_lb: -10e-3 # m

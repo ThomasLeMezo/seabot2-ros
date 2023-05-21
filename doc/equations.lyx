@@ -341,5 +341,16 @@ Suprisingly, if
 
 \end_layout
 
+\begin_layout Section
+Time
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $z\left(t\right)=\frac{\alpha\bar{z}-\sinh^{-1}\left(\exp\left(\alpha c_{1}-\alpha\beta t\right)\right)}{\alpha}$
+\end_inset
+
+(wolfram alpha)
+\end_layout
+
 \end_body
 \end_document

@@ -62,7 +62,7 @@ public:
     double hold_velocity_enter_ = 0.0; /// m/s
     double hold_velocity_exit_ = 0.0;
 
-    bool control_filter_ = false;
+    bool control_filter_ = true;
     double delta_velocity_lb_ = -1e-3;
     double delta_velocity_ub_ = 1e-3;
     double delta_position_lb_ = -10e-3;
