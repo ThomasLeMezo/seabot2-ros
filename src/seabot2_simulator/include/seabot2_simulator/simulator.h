@@ -27,7 +27,7 @@ using namespace Eigen;
 class Simulator{
 
 public:
-        Simulator(const rclcpp::Time &start_time);
+        Simulator();
 
         Matrix<double, SIMU_NB_STATES, 1> f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm=MOTOR_STOP);
 
@@ -47,8 +47,6 @@ public:
 
         void save_data(const rclcpp::Time &time);
 
-        void set_start_time(const rclcpp::Time &start_time);
-
         void init_bag_writer();
 
 private:
@@ -56,6 +54,12 @@ private:
 
 public:
 
+    /// ******* Simulation *******  ///
+    rclcpp::Time start_time_= rclcpp::Time(0., RCL_ROS_TIME);
+    rclcpp::Time end_time_= rclcpp::Time(0., RCL_ROS_TIME);
+    rclcpp::Duration dt_ = 1000us;
+    rclcpp::Time t_ = rclcpp::Time(0., RCL_ROS_TIME);
+    unsigned long int nb_steps = 0;
     /* state variable x_
      * x[0] : theta (motor)
      * x[1] : dtheta (motor)
@@ -68,17 +72,15 @@ public:
     double temperature_{}, salinity_{}, rho_{}, g_{};
     double sea_pressure_{}; // Sea pressure at depth z in dbar (0 dbar at depth 0.0m)
     double abs_pressure_{}; // Absolute pressure at depth z in Pa (101325 Pa at depth 0.0m)
+    double piston_volume_ = 0.0;
+    double volume_total_ = 0.0;
+    double volume_air_ = 0.0;
+    double volume_antenna_ = 0.0;
 
-    unsigned long int nb_steps = 0;
-
-    /// ************** ///
-    rclcpp::Time start_time_= rclcpp::Time(0., RCL_ROS_TIME);
-    rclcpp::Time end_time_= rclcpp::Time(0., RCL_ROS_TIME);
-    rclcpp::Duration dt_ = 1000us;
-    rclcpp::Time t_ = rclcpp::Time(0., RCL_ROS_TIME);
-
+    /// Parameters
     double latitude_ = 48.368894;
-    const double robot_mass_ =  12.0;
+    double salinity_cst_ = 0.0;
+    double robot_mass_ =  12.0;
     const double robot_diameter_ =  0.125;
     const double screw_thread_ =  1.e-3;
     double tick_per_turn_ =  2048*4;
@@ -86,49 +88,27 @@ public:
     double piston_max_tick_ =  1146880;
     double screw_Radius_ = 6e-3; /// m
     double screw_FrictionCoefficient_ = 0.2; /// To be correctly evaluated ! Copper-Copper = 1.2
-
-    double Cz_ = 3.0;
-    double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
     double S_ = M_PI*pow(robot_diameter_/2.0, 2);
 
-    double piston_max_volume_ = piston_max_tick_ * tick_to_volume_;
-
+    double Cz_ = 3.0;
     double battery_tension_ = 16.0; /// V
     double volume_equilibrium_ = 90e-6; /// m3
     double chi_ = 0.0;
     double chi2_ = 0.0;
-    const double volume_air_init_ = 15e-6; //15e-6; /// m3
+    double volume_air_init_ = 15e-6; //15e-6; /// m3
 //    const double volume_air_p0_ = ts.gtc.gsw_p0; /// Pa
 //    const double volume_air_temp0_ = ts.gtc.gsw_t0 + 15.0; /// 15°C in K
-    const double volume_air_nR_ = 101325.0*volume_air_init_/(273.15+15.0); /// Pa*m3/K
-    double antenna_diam_ = 30e-3; /// m
+    double volume_air_nR_ = 101325.0*volume_air_init_/(273.15+15.0); /// Pa*m3/K
 
-    double piston_volume_ = 0.0;
-    double volume_total_ = 0.0;
-    double volume_air_ = 0.0;
-    double volume_antenna_ = 0.0;
-
-    /// ************** MAXON MOTOR ************** ///
+    /// ************** Maxon motor ************** ///
     double maxon_RotorInertia_ = 9.0; /// gcm2
     double maxon_SpeedConstant_ = 416; /// rpm/V
     double maxon_TorqueConstant_ = 22.9; /// mNm/A
     double maxon_TerminalResistance_ = 1.84; /// Ohms
     double maxon_TerminalInductance_ = 0.198; /// mH
-
-//    double maxon_NominalCurrent_ = 1.3; /// A
-//    double maxon_NominalTorque_ = 29.5; /// mMm
-//    double maxon_StallCurrent_ = 6.54; /// A
-//
-//    double maxon_MechanicalTimeConstant_ = 3.14e-3; /// s
-//    /// No load speed = 4980 rpm (12V)
-//    double maxon_NoLoadSpeed_ = 4080; /// rpm
-//    double maxon_NoLoadCurrent_ = 20e-3; /// A
-
     double maxon_Reduction_ = 103; /// 103:1
-
     double seabot_AddedInductance_ = 1.619e-3; /// H
     double seabot_AddedInductanceResistance_ = 480e-3; /// Ohms
-
     double rpm_to_rad_s_ = M_PI/30.;
     double J_ = maxon_RotorInertia_ * 1e-7; /// Moment of inertia (kg.m^2)
     double Ke_ = 1./(maxon_SpeedConstant_*rpm_to_rad_s_); /// Electromotive force constant  (V/rad/sec)
@@ -136,12 +116,11 @@ public:
     double R_ = maxon_TerminalResistance_ + seabot_AddedInductanceResistance_; /// Electric resistance (Ohm)
     double L_ = maxon_TerminalInductance_*1e-3 + seabot_AddedInductance_; /// Electric inductance (H)
     double rad_to_tick_ = tick_per_turn_/(2*M_PI*maxon_Reduction_);
-
-    const double Tfstatic_ = Kt_*20e-3; /// 20mA
+    // const double Tfstatic_ = Kt_*20e-3; /// 20mA
     const double pistonSurface_ = M_PI*pow(piston_diameter_/2.,2);
     const double i_screw_=screw_thread_/(2*screw_Radius_); /// # Note : error in the thesis formula : diam and not radius
     const double force_to_torque_coeff_ = screw_Radius_*tan(screw_FrictionCoefficient_+i_screw_);
-    const double Tz_coeff = pistonSurface_ * force_to_torque_coeff_ / maxon_Reduction_;
+    //const double Tz_coeff = pistonSurface_ * force_to_torque_coeff_ / maxon_Reduction_;
 
     /// ******* dsPic control loop *******  ///
     #define REGULATION_LOOP_FREQ 50
@@ -153,38 +132,39 @@ public:
     bool switch_top_ = false, switch_bottom_ = true;
     int motor_set_point_ = 0;
 
+    /// ******* Teos *******  ///
     TeosSea ts;
 
     /// ******* Memory *******  ///
     rclcpp::Duration memory_dt = 20ms; /// 50Hz
     rclcpp::Time memory_last_time = rclcpp::Time(0., RCL_ROS_TIME);
 
-    /// Kalman ///
+    /// ******* Kalman *******  ///
     Kalman k_;
 
-    /// Sensors
+    /// ******* Sensors *******  ///
     rclcpp::Time pressure_sensor_last_time = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration pressure_sensor_dt = 200ms; /// 5Hz
     double pressure_sensor_ = 0.; /// Simulated (noisy) value of the pressure sensor
     const double pressure_sensor_mean_ = 0.0;
-    const double pressure_sensor_stddev_ = 0.002; // in bar (2mm)
+    double pressure_sensor_stddev_ = 0.002; // in bar (2mm)
     std::default_random_engine generator_;
     std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
 
-    /// Piston
+    /// ******* Piston *******  ///
     rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration piston_dt_ = 200ms; /// 5Hz
     double piston_position_ = 0.;
 
-    /// Fusion
+    /// ******* Fusion *******  ///
     double fusion_depth_{}, fusion_velocity_{};
 
-    /// Depth Control
+    /// ******* Depth Control *******  ///
     DepthControl dc_;
     rclcpp::Time dc_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration dc_dt_ = 200ms; /// 5Hz
 
-    /// Mission
+    /// ******* Mission *******  ///
     Mission mission_;
     rclcpp::Time mission_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration mission_dt_ = 1s; /// 1Hz
@@ -193,6 +173,9 @@ public:
     string mission_path_ = "./";
     rclcpp::Duration mission_delay_before_start_ = 10s;
     rclcpp::Duration mission_delay_after_end_ = 120s;
+
+    /// ******* Log *******  ///
+    std::string bag_path_ = "./mission";
 };
 
 

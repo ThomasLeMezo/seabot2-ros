@@ -16,7 +16,6 @@ public:
     DepthControl(const rclcpp::Time &start_time);
 
     static const int PISTON_STATE_OK = 2;
-    static const int NB_STATES = 7;
 
     bool debug_ = false;
 
@@ -90,7 +89,6 @@ public:
     double kalman_cz_ = 3.;
     double piston_volume_ = 0.;
 
-    double offset_total_ = 100.0e-6;
     double depth_fusion_ = 0.0;
     double depth_set_point_ = 0.0;
     double limit_velocity_ = 0.0;

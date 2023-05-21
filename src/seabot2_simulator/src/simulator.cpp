@@ -41,23 +41,18 @@ double Simulator::get_density_from_depth(double z, double sea_pressure) {
                               sea_pressure*1e-4);
 }
 
-void Simulator::set_start_time(const rclcpp::Time &start_time){
-    start_time_ = start_time;
-}
-
-Simulator::Simulator(const rclcpp::Time &start_time):
+Simulator::Simulator():
     ts(),
     k_(),
-    dc_(start_time),
-    mission_(){
+    dc_(rclcpp::Time(0., RCL_ROS_TIME)),
+    mission_()
+{
 
-    init_bag_writer();
-    start_time_ = start_time;
 }
 
 void Simulator::init_bag_writer(){
     bag_writer_ = std::make_unique<rosbag2_cpp::Writer>();
-    rosbag2_storage::StorageOptions storage_options({"my_bag", "mcap"});;
+    rosbag2_storage::StorageOptions storage_options({bag_path_, "mcap"});;
 
     bag_writer_->open(storage_options);
 
@@ -130,7 +125,7 @@ double Simulator::temperature_from_depth(double z) {
 }
 
 double Simulator::salinity_from_depth(double z) {
-    salinity_ = 0.0;
+    salinity_ = salinity_cst_;
     return salinity_;
 }
 

@@ -1,0 +1,53 @@
+simulation_node:
+  ros__parameters:
+    bag_path: "./simulation"
+    simu_mission_file_name: "mission.xml"
+    simu_mission_path: "./"
+
+    simu_robot_mass: 12.0
+    simu_salinity: 0.0
+    simu_cz: 3.0
+    simu_chi: 0.0
+    simu_chi2: 0.0
+    simu_volume_air_init: 15e-6 #m3
+    simu_pressure_sensor_stddev: 2e-3 # bar
+
+    kalman_robot_mass: 12.0
+    kalman_enable_kalman_depth: 0.5
+    kalman_piston_volume_eq_init: 90.0e-6 #m3
+    kalman_init_chi: 0.0
+    kalman_init_chi2: 0.0
+    kalman_init_cz: 3.0
+    kalman_init_volume_air: 5e-3
+    kalman_gamma_alpha_velocity: 1e-4
+    kalman_gamma_alpha_depth: 1e-5
+    kalman_gamma_alpha_offset: 1e-9
+    kalman_gamma_alpha_chi: 1e-15
+    kalman_gamma_alpha_chi2: 1e-15
+    kalman_gamma_alpha_cz: 1e-3
+    kalman_gamma_alpha_volume_air: 1e-6
+    kalman_gamma_init_velocity: 1e-3
+    kalman_gamma_init_depth: 1e-3
+    kalman_gamma_init_offset: 1e-6
+    kalman_gamma_init_chi: 1e-10
+    kalman_gamma_init_chi2: 1e-10
+    kalman_gamma_init_cz: 0.1
+    kalman_gamma_init_volume_air: 1e-6
+    kalman_gamma_beta_depth: 1e-2
+
+    dc_robot_mass: 12.0
+    dc_root_regulation: -0.2
+    dc_limit_depth_control: 0.5
+    dc_flow_piston_sink: -5e-7
+    dc_piston_flow_security_percentage: 0.5
+    dc_hold_depth_enable: false
+    dc_hold_depth_value_enter: 0.0
+    dc_hold_depth_value_exit: 0.0
+    dc_hold_velocity_enter: 0.0
+    dc_hold_velocity_exit: 0.0
+    dc_control_filter: true
+    dc_delta_velocity_lb: -1e-3
+    dc_delta_velocity_ub: 1e-3
+    dc_delta_position_lb: -10e-3
+    dc_delta_position_ub: 10e-3
+
