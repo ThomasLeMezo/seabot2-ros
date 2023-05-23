@@ -147,10 +147,10 @@ void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_r
                                       const std::shared_ptr<seabot2_mission::srv::AlphaMission::Request> request,
                                       std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response){
     RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Received velocity computation request");
-    for(auto velocity : request->velocity_limits){
-        auto result = dc_.alpha_solver_.compute_alpha(velocity);
-        RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Compute velocity for beta = %f, alpha = %f", velocity, result);
-    }
+
+    velocity_limits_requests_.clear();
+    velocity_limits_requests_ = request->velocity_limits;
+    velocity_limits_computations_ = true;
 }
 
 void DepthControlNode::density_callback(const seabot2_density::msg::Density &msg){
@@ -162,8 +162,24 @@ void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg
 }
 
 void DepthControlNode::timer_callback() {
-    dc_.state_machine_step(loop_dt_, this->now());
+    if(velocity_limits_computations_){
+        dc_.regulation_state_ = DepthControl::STATE_COMPUTE_ALPHA;
+        for(auto velocity: velocity_limits_requests_) {
+            publish_message();
+            auto result = dc_.alpha_solver_.compute_alpha(velocity);
+            RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Compute velocity for beta = %f, alpha = %f", velocity,
+                        result);
+        }
+        velocity_limits_computations_ = false;
+        dc_.regulation_state_ = DepthControl::STATE_SURFACE;
+    }
 
+    dc_.state_machine_step(loop_dt_, this->now());
+    publish_message();
+
+}
+
+void DepthControlNode::publish_message(){
     /// Piston message
     seabot2_piston_driver::msg::PistonSetPoint msg_piston;
     msg_piston.position = round(dc_.piston_set_point_);
@@ -174,6 +190,8 @@ void DepthControlNode::timer_callback() {
     seabot2_depth_control::msg::DepthControlDebug debug_msg_;
     debug_msg_.mode = dc_.regulation_state_;
     debug_msg_.u = dc_.u_debug_;
+    debug_msg_.dy = dc_.dy_debug_;
+    debug_msg_.y = dc_.y_debug_;
     debug_msg_.piston_set_point = static_cast<float>(dc_.piston_set_point_);
     publisher_debug_->publish(debug_msg_);
 }

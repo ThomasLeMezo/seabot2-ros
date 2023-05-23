@@ -31,7 +31,6 @@ private:
     std::chrono::seconds delay_no_data_ = 30s;
     rclcpp::Time time_last_cmd_received_ = this->now();
     int last_cmd_ = -1;
-    bool is_exit_ = true;
 
     /// Topics
     rclcpp::Publisher<seabot2_piston_driver::msg::PistonState>::SharedPtr publisher_piston_state_;

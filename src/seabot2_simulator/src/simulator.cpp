@@ -449,7 +449,7 @@ void Simulator::run_simulation() {
         nb_steps++;
     }
     auto end = high_resolution_clock::now();
-    cout << "Time exec = " << duration_cast<milliseconds>((end-start)).count() << "ms" << endl;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time exec = %ld ms", duration_cast<milliseconds>((end-start)).count());
 }
 
 

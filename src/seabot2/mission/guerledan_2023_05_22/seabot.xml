@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+
+<mission>
+    <offset>
+            <start_time_utc>
+            <year>2023</year>
+            <month>05</month>
+            <day>22</day>
+            <hour>20</hour>
+            <min>00</min>
+        </start_time_utc>
+    </offset>
+
+    <description>Seabot 3</description>
+
+    <paths>
+        <loop number="6" depth_increment="0.0">
+            <waypoint>
+                <duration>500</duration>
+                <depth>4.0</depth>
+                <limit_velocity>0.1</limit_velocity>
+            </waypoint>
+
+            <waypoint>
+                <duration>500</duration>
+                <depth>30.0</depth>
+                <limit_velocity>0.1</limit_velocity>
+            </waypoint>
+        </loop>
+
+        <loop number="4" depth_increment="0.0">
+            <waypoint>
+                <duration>3000</duration>
+                <depth>4.0</depth>
+                <limit_velocity>0.01</limit_velocity>
+            </waypoint>
+
+            <waypoint>
+                <duration>3000</duration>
+                <depth>30.0</depth>
+                <limit_velocity>0.01</limit_velocity>
+            </waypoint>
+        </loop>
+
+        <waypoint>
+            <duration>1500</duration>
+            <depth>4.0</depth>
+            <limit_velocity>0.02</limit_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>1500</duration>
+            <depth>30.0</depth>
+            <limit_velocity>0.02</limit_velocity>
+        </waypoint>
+
+
+        <waypoint>
+            <duration>800</duration>
+            <depth>4.0</depth>
+            <limit_velocity>0.04</limit_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>800</duration>
+            <depth>30.0</depth>
+            <limit_velocity>0.04</limit_velocity>
+        </waypoint>
+
+
+
+        <waypoint>
+            <duration>550</duration>
+            <depth>4.0</depth>
+            <limit_velocity>0.06</limit_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>550</duration>
+            <depth>30.0</depth>
+            <limit_velocity>0.06</limit_velocity>
+        </waypoint>
+
+
+        <waypoint>
+            <duration>400</duration>
+            <depth>4.0</depth>
+            <limit_velocity>0.2</limit_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>400</duration>
+            <depth>30.0</depth>
+            <limit_velocity>0.15</limit_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>400</duration>
+            <depth>4.0</depth>
+            <limit_velocity>0.15</limit_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>450</duration>
+            <depth>30.0</depth>
+            <limit_velocity>0.2</limit_velocity>
+        </waypoint>
+
+        <waypoint>
+            <duration>450</duration>
+            <depth>4.0</depth>
+            <limit_velocity>0.2</limit_velocity>
+        </waypoint>
+
+    </paths>
+
+</mission>

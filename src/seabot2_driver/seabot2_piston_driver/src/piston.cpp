@@ -40,8 +40,7 @@ int Piston::set_piston_exit() const {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston exit");
         return EXIT_FAILURE;
     } else {
-        set_position(0);
-        return EXIT_SUCCESS;
+        return set_position(0);
     }
 
 }
@@ -92,10 +91,10 @@ int Piston::get_all_data(){
         position_last_ = position_;
         position_ = static_cast<int32_t>(u_position);
 
-        switch_top_ = buff[4] & (0b1<<0);
-        switch_bottom_ = buff[4] & (0b1 << 1);
-        enable_ = buff[4] & (0b1<<2);
-        motor_sens_ = buff[4] & (0b1<<3);
+        switch_top_ = buff[4] & 0b1;
+        switch_bottom_ = (buff[4]>>1) & 0b1;
+        enable_ = (buff[4]>>2) & 0b1;
+        motor_sens_ = (buff[4]>>3) & 0b1;
         state_ = buff[5];
 
         for(int i=6; i<=9; i++)

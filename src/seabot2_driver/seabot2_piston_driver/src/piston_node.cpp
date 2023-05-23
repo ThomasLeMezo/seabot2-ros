@@ -35,9 +35,8 @@ void PistonNode::timer_callback() {
 
         publisher_piston_state_->publish(state_msg);
     }
-    if((this->now()-time_last_cmd_received_)>delay_no_data_ && !is_exit_){
-        if(piston_.set_piston_exit() == EXIT_SUCCESS)
-            is_exit_ = true;
+    if((this->now()-time_last_cmd_received_)>delay_no_data_ && piston_.state_ != Piston::PISTON_EXIT){
+        piston_.set_piston_exit();
     }
 }
 
@@ -65,9 +64,8 @@ void PistonNode::init_parameters() {
 
 void PistonNode::topic_position_set_point_callback(const seabot2_piston_driver::msg::PistonSetPoint &msg){
     time_last_cmd_received_ = this->now();
-    is_exit_ = msg.exit;
 
-    if(is_exit_){
+    if(msg.exit){
         if(piston_.state_ != piston_.PISTON_EXIT) {
             piston_.set_piston_exit();
         }

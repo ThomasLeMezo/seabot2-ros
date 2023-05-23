@@ -251,6 +251,12 @@ void DepthControl::state_machine_step(const rclcpp::Duration &dt, const rclcpp::
             if(!emergency_ && piston_state_ == (int)PISTON_STATE_OK)
                 regulation_state_ = STATE_SURFACE;
             break;
+
+        case STATE_COMPUTE_ALPHA:
+            u = 0.;
+            piston_set_point_ = 0;
+            is_exit_ = true;
+            break;
         default:
             break;
     }

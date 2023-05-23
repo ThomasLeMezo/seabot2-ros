@@ -143,7 +143,7 @@ void MissionNode::call_velocity_computation(std::vector<float> &velocity_list){
 int MissionNode::load_mission(){
     // Call for a new ros2 bag
     call_restart_bag();
-    rclcpp::sleep_for(1s); // Wait for the change of bag
+    rclcpp::sleep_for(3s); // Wait for the change of bag
 
     // Reload mission
     int ret =  mission_.load_mission(mission_file_name_, mission_path_, this->now());

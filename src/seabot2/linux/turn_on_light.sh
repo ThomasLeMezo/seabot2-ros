@@ -1,0 +1,2 @@
+#!/usr/bin/zsh
+i2cset -y 0 0x28 0x00 0x01

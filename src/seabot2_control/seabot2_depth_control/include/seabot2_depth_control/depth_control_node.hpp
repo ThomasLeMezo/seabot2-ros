@@ -43,6 +43,9 @@ private:
 
     DepthControl dc_;
 
+    std::vector<float> velocity_limits_requests_;
+    bool velocity_limits_computations_ = false;
+
 
     /// Interfaces
     rclcpp::Subscription<seabot2_kalman::msg::KalmanState>::SharedPtr subscriber_kalman_data_;
@@ -125,5 +128,10 @@ private:
     void alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
                                                          const std::shared_ptr<seabot2_mission::srv::AlphaMission::Request> request,
                                                          std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response);
+
+    /**
+     * Publish messages
+     */
+    void publish_message();
 };
 #endif //BUILD_DEPTH_CONTROL_NODE_HPP

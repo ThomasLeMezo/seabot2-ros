@@ -15,7 +15,7 @@ using namespace ibex;
 
 pair<bool, double> AlphaSolver::exist_in_memory(const double beta) {
     for (auto &i : computed_memory_) {
-        if (i[0] == beta)
+        if (abs(i[0]-beta)<0.001)
             return {true, i[1]};
     }
     return {false, 1.0};
