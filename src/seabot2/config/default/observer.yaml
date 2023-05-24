@@ -28,8 +28,8 @@ observer:
       init_chi2: 0.0 # m3/m2
       init_volume_air: 15e-6 # m3
       init_cz: 2.0
-      gamma_alpha_velocity: 1e-04
-      gamma_alpha_depth: 1e-05
+      gamma_alpha_velocity: 1e-05
+      gamma_alpha_depth: 1e-06
       gamma_alpha_offset: 1e-09
       gamma_alpha_chi: 1e-15
       gamma_alpha_chi2: 1e-15
@@ -42,7 +42,7 @@ observer:
       gamma_init_chi2: 1e-10
       gamma_init_cz: 0.1
       gamma_init_volume_air: 1e-6
-      gamma_beta_depth: 1e-2 # 5.0e-3 nominal (to be tuned)
+      gamma_beta_depth: 2e-3 # 5.0e-3 nominal (to be tuned)
 
   lambert_node:
     ros__parameters:

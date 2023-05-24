@@ -13,7 +13,7 @@ DepthControlNode::DepthControlNode()
     init_interfaces();
 
     timer_ = this->create_wall_timer(
-            loop_dt_, std::bind(&DepthControlNode::timer_callback, this));
+            loop_dt_, std::bind(&DepthControlNode::timer_callback, this), callback_group_);
 
     RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Start Ok");
 }

@@ -41,6 +41,8 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<double>("piston_error_threshold_position", piston_error_threshold_position_);
     this->declare_parameter<int>("piston_error_velocity_delay", piston_error_velocity_delay_.count());
     this->declare_parameter<int>("seabed_delay_detection", seabed_delay_detection_.count());
+    this->declare_parameter<bool>("gnss_fix_once_enable", gnss_fix_once_enable_);
+    this->declare_parameter<bool>("enable_limit_depth", enable_limit_depth_);
 
     internal_humidity_limit_ = this->get_parameter_or("internal_humidity_limit", internal_humidity_limit_);
     internal_pressure_limit_ = this->get_parameter_or("internal_pressure_limit", internal_pressure_limit_);
@@ -58,6 +60,8 @@ void SafetyNode::init_parameters() {
     limit_depth_default_ = this->get_parameter_or("limit_depth_default", limit_depth_default_);
     max_velocity_reset_zero_ = this->get_parameter_or("max_velocity_reset_zero", max_velocity_reset_zero_);
     seabed_delay_detection_ = std::chrono::milliseconds(this->get_parameter_or("seabed_delay_detection", seabed_delay_detection_.count()));
+    gnss_fix_once_enable_ = this->get_parameter_or("gnss_fix_once_enable", gnss_fix_once_enable_);
+    enable_limit_depth_ = this->get_parameter_or("enable_limit_depth", enable_limit_depth_);
 
     piston_error_threshold_set_point_ = this->get_parameter_or("piston_error_threshold_set_point", piston_error_threshold_set_point_);
     piston_error_threshold_position_ = this->get_parameter_or("piston_error_threshold_position", piston_error_threshold_position_);
@@ -253,7 +257,7 @@ bool SafetyNode::test_piston(){
 }
 
 bool SafetyNode::test_gnss_fix(){
-    gnss_fix_once_ |= (gnss_mode_ > gpsd_client::msg::GpsFix::MODE_NO_FIX);
+    gnss_fix_once_ |= (gnss_mode_ > gpsd_client::msg::GpsFix::MODE_NO_FIX) || !gnss_fix_once_enable_;
     return gnss_fix_once_;
 }
 
@@ -351,9 +355,10 @@ void SafetyNode::test_depth_max(){
     bathy_ = depth_ + ping_altitude_ + robot_height_ping_;
 
     if(this->now()-ping_last_time_received_ < ping_no_data_warning_ &&
-        this->now()-depth_last_received_ < depth_no_data_warning_){
+        this->now()-depth_last_received_ < depth_no_data_warning_ &&
+        enable_limit_depth_){
         if (ping_confidence_ > 0.9) {
-            limit_depth_ = std::min(0.0, (bathy_ - offset_max_depth_));
+            limit_depth_ = min(limit_depth_default_, (bathy_ - offset_max_depth_));
         }
         else{
             limit_depth_ = limit_depth_default_;

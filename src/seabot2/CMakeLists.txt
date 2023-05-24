@@ -32,7 +32,7 @@ install(DIRECTORY config
         DESTINATION $ENV{HOME})
 
 if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64")
-install(PROGRAMS linux/restart_alim.sh linux/turn_off_light.sh linux/turn_on_light.sh
+install(PROGRAMS linux/restart_alim.sh linux/turn_off_light.sh linux/turn_on_light.sh linux/journal.sh
         DESTINATION $ENV{HOME})
 endif()
 

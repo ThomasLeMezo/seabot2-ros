@@ -105,6 +105,10 @@ private:
     bool gnss_fix_once_ = false;
     int gnss_mode_ = gpsd_client::msg::GpsFix::MODE_NOT_SEEN;
 
+    bool gnss_fix_once_enable_ = true;
+
+    bool enable_limit_depth_ = true;
+
     /// Interfaces
     rclcpp::Publisher<seabot2_safety::msg::SafetyStatus>::SharedPtr publisher_safety_;
 
