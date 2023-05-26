@@ -15,8 +15,10 @@ using namespace ibex;
 
 pair<bool, double> AlphaSolver::exist_in_memory(const double beta) {
     for (auto &i : computed_memory_) {
-        if (abs(i[0]-beta)<0.001)
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Test beta = %f match beta_memory = %f", beta, i[0]);
+        if (abs(i[0]-beta)<0.001) {
             return {true, i[1]};
+        }
     }
     return {false, 1.0};
 }
@@ -24,6 +26,7 @@ pair<bool, double> AlphaSolver::exist_in_memory(const double beta) {
 void AlphaSolver::add_to_memory(const double beta, const double alpha) {
     array<double, 2> a = {beta, alpha};
     computed_memory_.push_back(a);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Add beta = %f, alpha = %f", beta, alpha);
 }
 
 double AlphaSolver::compute_alpha(const double velocity_limit) {
@@ -33,7 +36,7 @@ double AlphaSolver::compute_alpha(const double velocity_limit) {
     else if(exist.first)
         return exist.second;
     else {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Start compute new alpha (velocity_limit = %f)", velocity_limit);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Not found, compute new alpha (velocity_limit = %f)", velocity_limit);
         auto beta = Interval(velocity_limit);
         IntervalVector x_init(2);
         x_init[0] = Interval(0., z_search_max_); // z
@@ -96,8 +99,9 @@ double AlphaSolver::compute_alpha(const double velocity_limit) {
             }
         }
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Compute alpha = %f for velocity_limit = %f", v_out[1].lb(), velocity_limit);
-        if(!::isnan(v_out[1].lb())) {
+        if(!isnan(v_out[1].lb())) {
             add_to_memory(velocity_limit, v_out[1].lb());
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[alpha_solver] Add memory");
             return v_out[1].lb();
         }
         else{

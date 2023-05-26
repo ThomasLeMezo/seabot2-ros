@@ -149,7 +149,7 @@ void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_r
     RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Received velocity computation request");
 
     velocity_limits_requests_.clear();
-    velocity_limits_requests_ = request->velocity_limits;
+    velocity_limits_requests_ = std::vector<float>(request->velocity_limits);
     velocity_limits_computations_ = true;
 }
 
@@ -161,17 +161,20 @@ void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg
     dc_.update_temperature(msg.temperature);
 }
 
-void DepthControlNode::timer_callback() {
+void DepthControlNode::timer_callback() { /// ToDo bug to be check
     if(velocity_limits_computations_){
+        velocity_limits_computations_ = false;
+        timer_->cancel();
         dc_.regulation_state_ = DepthControl::STATE_COMPUTE_ALPHA;
+        publish_message();
         for(auto velocity: velocity_limits_requests_) {
-            publish_message();
+            //publish_message();
             auto result = dc_.alpha_solver_.compute_alpha(velocity);
-            RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Compute velocity for beta = %f, alpha = %f", velocity,
+            RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Velocity was computed for beta = %f, alpha = %f", velocity,
                         result);
         }
-        velocity_limits_computations_ = false;
         dc_.regulation_state_ = DepthControl::STATE_SURFACE;
+        timer_->reset();
     }
 
     dc_.state_machine_step(loop_dt_, this->now());

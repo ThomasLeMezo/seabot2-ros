@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<mission>
+    <offset>
+            <start_time_utc>
+            <year>2023</year>
+            <month>05</month>
+            <day>24</day>
+            <hour>19</hour>
+            <min>00</min>
+        </start_time_utc>
+    </offset>
+
+    <description>Seabot 1</description>
+
+    <paths>
+        <waypoint>
+            <duration>43200</duration>
+            <depth>25.0</depth>
+            <limit_velocity>0.1</limit_velocity>
+        </waypoint>
+    </paths>
+
+</mission>

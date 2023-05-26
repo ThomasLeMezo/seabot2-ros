@@ -89,13 +89,14 @@ private:
     bool is_zero_depth_once_ = false;
 
     double ping_altitude_ = 0.0;
-    double ping_confidence_ = 0.0;
+    uint16_t ping_confidence_ = 0;
     rclcpp::Time ping_last_time_received_ = this->now();
     double robot_height_ping_ = 1.1;
     double offset_max_depth_ = 2.0;
     double bathy_ = 0.0;
     double limit_depth_default_ = 100.0;
     double limit_depth_ = 100.0;
+    double limit_depth_filter_coeff = 0.9;
     std::chrono::milliseconds ping_no_data_warning_ = 4s;
 
     bool seabed_test_detected_ = false;

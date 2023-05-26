@@ -43,7 +43,7 @@ void WtfNode::create_windows(){
     box(windows_robot_, ACS_VLINE, ACS_HLINE);
     mvwprintw(windows_robot_, 1, 1, "SEABOT");
 
-    windows_safety_             = create_new_sub_window(15, 40, "SAFETY");
+    windows_safety_             = create_new_sub_window(16, 40, "SAFETY");
     windows_internal_pressure_  = create_new_sub_window(7, 40, "INTERNAL PRESSURE");
     windows_power_              = create_new_sub_window(11, 40, "POWER");
     windows_depth_control_      = create_new_sub_window(10, 40, "DEPTH CONTROL");
@@ -306,6 +306,9 @@ void WtfNode::update_safety_windows(){
 
         mvwprintw(windows_safety_, 13, 1, "ram");
         mvwprintw(windows_safety_, 13, 25, "%6d", static_cast<int>(msg_safety_.ram));
+
+        mvwprintw(windows_safety_, 14, 1, "limit_depth");
+        mvwprintw(windows_safety_, 14, 25, "%3.2f", msg_safety_.limit_depth);
 
         wrefresh(windows_safety_);
     }

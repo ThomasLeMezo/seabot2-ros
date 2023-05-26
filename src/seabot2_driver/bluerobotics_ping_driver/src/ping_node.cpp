@@ -69,6 +69,7 @@ void PingNode::wait_message() {
             ping1d_profile profile_msg(*ping_msg);
 
             bluerobotics_ping_driver::msg::Profile msg;
+            msg.header.stamp = this->now();
             msg.confidence = profile_msg.confidence();
 
             msg.distance = profile_msg.distance();

@@ -354,14 +354,16 @@ void SafetyNode::test_depth_max(){
     /// Todo : add a filter and ping_confidence condition !
     bathy_ = depth_ + ping_altitude_ + robot_height_ping_;
 
-    if(this->now()-ping_last_time_received_ < ping_no_data_warning_ &&
-        this->now()-depth_last_received_ < depth_no_data_warning_ &&
+    if((this->now()-ping_last_time_received_) < ping_no_data_warning_ &&
+            (this->now()-depth_last_received_) < depth_no_data_warning_ &&
         enable_limit_depth_){
-        if (ping_confidence_ > 0.9) {
-            limit_depth_ = min(limit_depth_default_, (bathy_ - offset_max_depth_));
+        if (ping_confidence_ > 90) {
+            limit_depth_ = limit_depth_*limit_depth_filter_coeff +
+                    (1.0-limit_depth_filter_coeff)*min(limit_depth_default_, (bathy_ - offset_max_depth_));
         }
         else{
-            limit_depth_ = limit_depth_default_;
+            limit_depth_ = limit_depth_*limit_depth_filter_coeff +
+                           (1.0-limit_depth_filter_coeff)*(max(0.0,limit_depth_-1.0)); // Go back to surface
         }
     }
     else{

@@ -92,6 +92,7 @@ public:
     double depth_fusion_ = 0.0;
     double depth_set_point_ = 0.0;
     double limit_velocity_ = 0.0;
+    double limit_velocity_last_ = 0.0;
     double approach_velocity_ = 1.0;
 
     double temperature_ = 288.15;

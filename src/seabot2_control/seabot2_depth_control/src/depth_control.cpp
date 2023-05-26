@@ -70,8 +70,12 @@ void DepthControl::update_waypoint(const float &depth,
     last_waypoint_time_ = time_update;
 
     // Update approach velocity
-    if(mission_enable)
-        approach_velocity_ = alpha_solver_.compute_alpha(limit_velocity_);
+    if(mission_enable) {
+        if(limit_velocity_last_ != limit_velocity_) {
+            approach_velocity_ = alpha_solver_.compute_alpha(limit_velocity_);
+            limit_velocity_last_ = limit_velocity_;
+        }
+    }
     else
         approach_velocity_ = 1.0;
 }
