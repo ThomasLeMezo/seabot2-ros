@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>seabot2_iridium_driver</name>
+  <version>1.0.0</version>
+  <description>Driver for the iridium 9602</description>
+  <maintainer email="thomas.le_mezo@ensta-bretagne.org">Thomas Le Mézo</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rclcpp</build_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+
+  <build_depend>seabot2_depth_filter</build_depend>
+  <build_depend>pressure_bme280_driver</build_depend>
+  <build_depend>seabot2_power_driver</build_depend>
+  <build_depend>seabot2_piston_driver</build_depend>
+  <build_depend>seabot2_mission</build_depend>
+  <build_depend>gpsd_client</build_depend>
+  <build_depend>seabot2_safety</build_depend>
+  <build_depend>seabot2_lambert</build_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <exec_depend>seabot2_depth_filter</exec_depend>
+  <exec_depend>pressure_bme280_driver</exec_depend>
+  <exec_depend>seabot2_power_driver</exec_depend>
+  <exec_depend>seabot2_piston_driver</exec_depend>
+  <exec_depend>seabot2_mission</exec_depend>
+  <exec_depend>gpsd_client</exec_depend>
+  <exec_depend>seabot2_safety</exec_depend>
+  <exec_depend>seabot2_lambert</exec_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

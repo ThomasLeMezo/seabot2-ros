@@ -19,7 +19,7 @@ find_package(seabot2_mission REQUIRED)
 find_package(bluerobotics_ping_driver REQUIRED)
 find_package(gpsd_client REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(Curses REQUIRED)
+#find_package(Curses REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}

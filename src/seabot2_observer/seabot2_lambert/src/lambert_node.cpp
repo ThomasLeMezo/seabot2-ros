@@ -80,7 +80,7 @@ void LambertNode::compute_mean(){
 }
 
 void LambertNode::gnss_callback(const gpsd_client::msg::GpsFix &msg) {
-    if(msg.longitude != 0. && msg.latitude != 0. && msg.status>=msg.MODE_2D){
+    if(msg.longitude != 0. && msg.latitude != 0. && msg.mode>gpsd_client::msg::GpsFix::MODE_NO_FIX){
 
         PJ_COORD coord_source, coord_target;
         coord_source.lpzt.z = 0.0;
