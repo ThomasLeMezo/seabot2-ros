@@ -14,7 +14,11 @@ IridiumNode::IridiumNode()
     init_parameters();
     init_interfaces();
 
-    sbd_.init(serial_port_name_, serial_baud_rate_);
+    int success = sbd_.init(serial_port_name_, serial_baud_rate_);
+    if(success==EXIT_FAILURE) {
+        RCLCPP_WARN(this->get_logger(), "[Irdium_node] Init communication with SBD failed");
+        exit(EXIT_FAILURE);
+    }
     sbd_.set_debug(sbd_debug_);
     sbd_.cmd_enable_indicator_reporting(true);
     sbd_.cmd_enable_alert(true);

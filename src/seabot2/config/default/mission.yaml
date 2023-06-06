@@ -6,3 +6,16 @@ mission:
       flash_next_waypoint_time: 15.0 # s
       flash_number: 2
       limit_velocity_default: 0.1 # m/s
+
+iridium:
+  irdium_node:
+    ros__parameters:
+      mission_file_name: "mission.xml"
+      time_between_communication: 180
+      surface_wait_time: 5
+      surface_depth_limit: 0.5
+      delay_last_log_version: 30
+      delay_last_gnss: 10
+      enable_iridium_gnss: false
+      sbd_debug: false
+      enable_iridium_sending: true

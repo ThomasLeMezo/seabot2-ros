@@ -47,8 +47,17 @@ def generate_launch_description():
         name='log_parameter_node'
     )
 
+    seabot2_iridium = Node(
+        package='seabot2_iridium_driver',
+        executable='iridium_node',
+        namespace='iridium',
+        name='iridium_node',
+        parameters=parameters_file_list
+    )
+
     return LaunchDescription([
         seabot2_mission,
         seabot2_safety,
-        seabot2_record_parameters
+        seabot2_record_parameters,
+        seabot2_iridium
     ])

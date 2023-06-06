@@ -26,15 +26,17 @@ SBD::SBD(){
   omp_init_lock(&lock_data);
 }
 
-void SBD::init(const string &serial_port_name, const unsigned int &baud_rate){
+int SBD::init(const string &serial_port_name, const unsigned int &baud_rate){
   try{
     serial_.open(serial_port_name, baud_rate);
   }
   catch(boost::system::system_error& e){
     cout<<"Error: "<<e.what()<<endl;
+    return EXIT_FAILURE;
   }
 
   disable_echo(); // Disable echo from SBD
+  return EXIT_SUCCESS;
 }
 
 SBD::~SBD(){

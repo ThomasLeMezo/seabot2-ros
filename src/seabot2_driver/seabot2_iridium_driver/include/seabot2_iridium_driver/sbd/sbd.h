@@ -30,7 +30,7 @@ public:
   /**
    * @brief init
    */
-  void init(const std::string &serial_port_name="/dev/ttyAMA0", const unsigned int &baud_rate=19200);
+  int init(const std::string &serial_port_name="/dev/ttyAMA0", const unsigned int &baud_rate=19200);
 
   /**
    * @brief disable_echo

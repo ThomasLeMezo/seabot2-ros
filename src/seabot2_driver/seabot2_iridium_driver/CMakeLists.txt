@@ -33,7 +33,7 @@ rosidl_get_typesupport_target(cpp_typesupport_target
         )
 
 ### Executable
-add_executable(seabot2_iridium_node
+add_executable(iridium_node
         src/iridium_node.cpp
         src/sbd/log_data.cpp
         src/sbd/sbd.cpp
@@ -42,7 +42,7 @@ add_executable(seabot2_iridium_node
         src/sbd/mission_xml.cpp
         )
 
-ament_target_dependencies(seabot2_iridium_node
+ament_target_dependencies(iridium_node
         rclcpp
         rosidl_default_generators
         seabot2_depth_filter
@@ -56,13 +56,13 @@ ament_target_dependencies(seabot2_iridium_node
         std_msgs
         )
 
-target_link_libraries(seabot2_iridium_node
+target_link_libraries(iridium_node
         "${cpp_typesupport_target}"
         OpenMP::OpenMP_CXX
         )
 
 ### Includes
-target_include_directories(seabot2_iridium_node PUBLIC
+target_include_directories(iridium_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/serial>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/sbd>
@@ -70,7 +70,7 @@ target_include_directories(seabot2_iridium_node PUBLIC
         )
 
 ### Install
-install(TARGETS seabot2_iridium_node
+install(TARGETS iridium_node
         DESTINATION lib/${PROJECT_NAME}
         )
 
