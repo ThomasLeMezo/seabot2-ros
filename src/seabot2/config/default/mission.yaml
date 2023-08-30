@@ -11,7 +11,7 @@ iridium:
   irdium_node:
     ros__parameters:
       mission_file_name: "mission.xml"
-      time_between_communication: 180
+      time_between_communication: 300
       surface_wait_time: 5
       surface_depth_limit: 0.5
       delay_last_log_version: 30

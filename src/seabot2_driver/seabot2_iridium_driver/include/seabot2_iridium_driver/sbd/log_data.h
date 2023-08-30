@@ -12,11 +12,14 @@ using boost::multiprecision::cpp_int;
 #define L93_NORTH_MIN 6000000.0
 #define L93_NORTH_MAX 7200000.0
 #define REF_POSIX_TIME 1604874973 //To be update every 5 years !
+#define BATT_MIN 12.0
+#define BATT_MAX 16.8
 
 //enum MSG_TYPE:unsigned int {LOG_STATE=0, CMD_SLEEP=1, CMD_PARAMETERS=2, CMD_MISSION_NEW=3, CMD_MISSION_KEEP=4};
 // First octet (4 bits) : message_id
 
-#define NB_BITS_LOG1 136
+#define NB_BITS_LOG1 120
+// 15 bytes
 typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<NB_BITS_LOG1, NB_BITS_LOG1, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void> > uint_log1_t;
 
 #define NB_BITS_CMD_SLEEP 16
@@ -183,14 +186,14 @@ public:
      * @param data
      * @return
      */
-    bool write_file(const std::string &file_name, const std::string &data, const unsigned int nb_bits = NB_BITS_LOG1);
+    static bool write_file(const std::string &file_name, const std::string &data, const unsigned int nb_bits = NB_BITS_LOG1);
 
     /**
      * @brief read_file
      * @param file_name
      * @return
      */
-    std::string read_file(const std::string &file_name);
+    static std::string read_file(const std::string &file_name);
 
 private:
 

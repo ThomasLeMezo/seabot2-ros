@@ -88,6 +88,9 @@ void IridiumNode::init_interfaces() {
     subscriber_depth_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&IridiumNode::depth_callback, this, _1));
 
+    subscriber_mission = this->create_subscription<seabot2_mission::msg::Waypoint>(
+            "/mission/waypoint", 10, std::bind(&IridiumNode::mission_callback, this, _1));
+
     publisher_iridium_session_ = this->create_publisher<seabot2_iridium_driver::msg::IridiumSession>(
             "/iridium/iridium_session", 10);
 

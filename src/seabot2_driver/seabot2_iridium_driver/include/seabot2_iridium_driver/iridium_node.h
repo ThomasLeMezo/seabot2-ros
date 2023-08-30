@@ -34,8 +34,8 @@ private:
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_read_, timer_write_;
-    std::chrono::milliseconds loop_serial_read_ = 100ms; /// loop dt
-    std::chrono::milliseconds loop_serial_write_ = 10ms; /// loop dt
+    std::chrono::milliseconds loop_serial_read_ = 10ms; /// loop dt
+    std::chrono::milliseconds loop_serial_write_ = 1000ms; /// loop dt
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
 
@@ -75,6 +75,7 @@ private:
     rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
     rclcpp::Subscription<seabot2_lambert::msg::GnssPose>::SharedPtr subscriber_gnss_pose_;
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_;
+    rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission;
 
     rclcpp::Publisher<seabot2_iridium_driver::msg::IridiumSession>::SharedPtr publisher_iridium_session_;
     rclcpp::Publisher<seabot2_iridium_driver::msg::IridiumStatus>::SharedPtr publisher_iridium_status_;

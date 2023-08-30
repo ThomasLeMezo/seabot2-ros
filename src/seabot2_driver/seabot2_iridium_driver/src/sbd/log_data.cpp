@@ -3,19 +3,11 @@
 #include "boost/filesystem.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 #include <iostream>
-#include <iomanip>
-#include <vector>
 #include <iterator>
 
 #include <fstream>
 #include <string>
-#include <iostream>
-#include <sstream>
-
-#include <unistd.h>
-#include <sys/types.h>
-
-#include <time.h>
+#include <chrono>
 
 using namespace std;
 using boost::multiprecision::cpp_int;
@@ -57,9 +49,9 @@ unsigned int LogData::deserialize_log_CMD_waypoint(const std::string &message, c
    unsigned int duration;
 
   if((data_type & 0x1) == 1){
-      string message_wp_type = message.substr(static_cast<size_t>(bit_position/8), static_cast<size_t>(NB_BITS_CMD_WAYPOINT_TRAJ/8));
+      string message_wp_data = message.substr(static_cast<size_t>(bit_position/8), static_cast<size_t>(NB_BITS_CMD_WAYPOINT_TRAJ/8));
       uint_cmd_waypoint_traj_t data_traj = (uint_cmd_waypoint_traj_t(1)<<NB_BITS_CMD_WAYPOINT_TRAJ) -1;
-      memcpy(data_traj.backend().limbs(), message_wp_type.c_str(), message_wp_type.size());
+      memcpy(data_traj.backend().limbs(), message_wp_data.c_str(), message_wp_data.size());
 
       int east, north;
       bit_position_local += deserialize_data<uint_cmd_waypoint_traj_t>(data_traj, 9, bit_position_local, duration);
@@ -70,9 +62,9 @@ unsigned int LogData::deserialize_log_CMD_waypoint(const std::string &message, c
       waypoint_list_.push_back(w);
   }
   else{
-      string message_wp_type = message.substr(static_cast<size_t>(bit_position/8), static_cast<size_t>(NB_BITS_CMD_WAYPOINT_DEPTH/8));
+      string message_wp_data = message.substr(static_cast<size_t>(bit_position/8), static_cast<size_t>(NB_BITS_CMD_WAYPOINT_DEPTH/8));
       uint_cmd_waypoint_depth_t data_depth = (uint_cmd_waypoint_depth_t(1)<<NB_BITS_CMD_WAYPOINT_DEPTH) -1;
-      memcpy(data_depth.backend().limbs(), message_wp_type.c_str(), message_wp_type.size());
+      memcpy(data_depth.backend().limbs(), message_wp_data.c_str(), message_wp_data.size());
 
       unsigned int depth;
       bool seafloor_landing=false;
@@ -127,15 +119,18 @@ std::string LogData::serialize_log_state(const long long &time){
 
   // Get timestamped of the day
   struct tm * timeinfo;
-  time_t t1 = time;
+  time_t t1 = time; // current timestamp
   timeinfo = gmtime(&t1);
   timeinfo->tm_hour = 0;
   timeinfo->tm_min = 0;
   timeinfo->tm_sec = 0;
-  time_t t2 = mktime(timeinfo);
+  time_t t2 = mktime(timeinfo); // timestamp at 00:00:00 of the day
 
-  int time_sec_day = t1-t2;
+  long time_sec_day = t1-t2; // number of seconds since 00:00:00 of the day
   int time_LQ = static_cast<int>(round(time_sec_day/3.0));
+  /// Todo : change to serailize lat/long positioning instead of L93
+  /// message size in SBD0 = 30 bytes = 240 bits => message can be x2 in size
+  /// 24bit for lat and long (about 1m positioning) => +6 bit
   bit_position += serialize_data<uint_log1_t>(data, 14, bit_position, time_LQ, 0, ((1<<14) -1));
   bit_position += serialize_data<uint_log1_t>(data, 21, bit_position, gnss_mean_east_, L93_EAST_MIN, L93_EAST_MAX);
   bit_position += serialize_data<uint_log1_t>(data, 21, bit_position, gnss_mean_north_, L93_NORTH_MIN, L93_NORTH_MAX);
@@ -143,28 +138,26 @@ std::string LogData::serialize_log_state(const long long &time){
   bit_position += serialize_data<uint_log1_t>(data, 8, bit_position, gnss_mean_heading_, 0, 359.0);
 
   unsigned char state = 0;
-  state |= (safety_published_frequency_ & 0x1) << 0;
-  state |= (safety_depth_limit_ & 0x1) << 1;
-  state |= (safety_batteries_limit_ & 0x1) << 2;
-  state |= (safety_depressurization_ & 0x1) << 3;
-  state |= (enable_mission_ & 0x1) << 4;
-  state |= (enable_depth_ & 0x1) << 5;
-  state |= (enable_engine_ & 0x1) << 6;
-  state |= (enable_flash_ & 0x1) << 7;
+  state |= (safety_global_safety_valid_ & 0x1) << 0;
+  state |= (safety_published_frequency_ & 0x1) << 1;
+  state |= (safety_depth_limit_ & 0x1) << 2;
+  state |= (safety_batteries_limit_ & 0x1) << 3;
+  state |= (safety_depressurization_ & 0x1) << 4;
+  state |= (safety_seafloor_ & 0x1) << 5;
+  state |= (safety_piston_ & 0x1) << 6;
+  state |= (safety_zero_depth_ & 0x1) << 7;
+
   bit_position += serialize_data<uint_log1_t>(data, 8, bit_position, state);
 
-  bit_position += serialize_data<uint_log1_t>(data, 5, bit_position, battery_, 9, 12.4);
-//  bit_position += serialize_data<uint_log1_t>(data, 5, bit_position, batteries_[1], 9, 12.4);
-//  bit_position += serialize_data<uint_log1_t>(data, 5, bit_position, batteries_[2], 9, 12.4);
-//  bit_position += serialize_data<uint_log1_t>(data, 5, bit_position, batteries_[3], 9, 12.4);
+  bit_position += serialize_data<uint_log1_t>(data, 6, bit_position, battery_, BATT_MIN, BATT_MAX);
 
   bit_position += serialize_data<uint_log1_t>(data, 6, bit_position, internal_pressure_, 680.0, 800.0);
   bit_position += serialize_data<uint_log1_t>(data, 6, bit_position, internal_temperature_, 8.0, 50.0);
   bit_position += serialize_data<uint_log1_t>(data, 6, bit_position, internal_humidity_, 50.0, 100.0);
 
   bit_position += serialize_data<uint_log1_t>(data, 8, bit_position, current_waypoint_);
-  bit_position += serialize_data<uint_log1_t>(data, 6, bit_position, last_cmd_received_);
-  return string((char*)data.backend().limbs(), NB_BITS_LOG1/8);
+  bit_position += serialize_data<uint_log1_t>(data, 4, bit_position, last_cmd_received_);
+  return {(char*)data.backend().limbs(), NB_BITS_LOG1/8};
 }
 
 bool LogData::write_file(const string &file_name, const string &data, const unsigned int nb_bits){
