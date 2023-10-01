@@ -1,9 +1,5 @@
 simulation_node:
   ros__parameters:
-    bag_path: "./simulation"
-    simu_mission_file_name: "mission.xml"
-    simu_mission_path: "./"
-
     simu_robot_mass: 12.0
     simu_salinity: 0.0
     simu_cz: 3.0

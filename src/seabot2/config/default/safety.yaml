@@ -14,7 +14,7 @@ safety:
       ping_no_data_warning: 4000 # ms
       limit_depth_default: 100.0 # m
       robot_height_ping: 1.1
-      offset_max_depth: 0.5 # m
+      offset_max_depth: 0.1 # m (0.5 default)
       seabed_delay_detection: 30000 # ms
       max_depth_reset_zero: 2.0 #m
       gnss_fix_once: true

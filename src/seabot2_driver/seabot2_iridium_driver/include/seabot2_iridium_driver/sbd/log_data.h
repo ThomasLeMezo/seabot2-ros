@@ -7,19 +7,20 @@
 
 using boost::multiprecision::cpp_int;
 
-#define L93_EAST_MIN 0.0
-#define L93_EAST_MAX 1300000.0
-#define L93_NORTH_MIN 6000000.0
-#define L93_NORTH_MAX 7200000.0
-#define REF_POSIX_TIME 1604874973 //To be update every 5 years !
+#define WGS84_LAT_MIN (-90.0)
+#define WGS84_LAT_MAX 90.0
+#define WGS84_LON_MIN (-180.0)
+#define WGS84_LON_MAX 180.0
+
+//#define REF_POSIX_TIME 1604874973 //To be update every 5 years !
 #define BATT_MIN 12.0
 #define BATT_MAX 16.8
 
 //enum MSG_TYPE:unsigned int {LOG_STATE=0, CMD_SLEEP=1, CMD_PARAMETERS=2, CMD_MISSION_NEW=3, CMD_MISSION_KEEP=4};
 // First octet (4 bits) : message_id
 
-#define NB_BITS_LOG1 120
-// 15 bytes
+#define NB_BITS_LOG1 128
+// 16 bytes
 typedef boost::multiprecision::number<boost::multiprecision::cpp_int_backend<NB_BITS_LOG1, NB_BITS_LOG1, boost::multiprecision::unsigned_magnitude, boost::multiprecision::unchecked, void> > uint_log1_t;
 
 #define NB_BITS_CMD_SLEEP 16
@@ -215,16 +216,16 @@ private:
 public:
     double time_now_ = 0.0;
 
-    double gnss_east_ = 42.0; // 2^21-1
-    double gnss_north_ = 6000042.0; // 2^21-1 + 6e6
     double gnss_speed_ = 4.2;
     double gnss_heading_ = 242.0;
     double battery_ = 10.0;
+    double gnss_lat_ = 0.0;
+    double gnss_long_ = 0.0;
 
     double gnss_mean_east_ = 42.0;
     double gnss_mean_north_ = 6000042.0;
     double gnss_mean_heading_ = 242.0;
-    unsigned long start_time_ = REF_POSIX_TIME;
+//    unsigned long start_time_ = REF_POSIX_TIME;
 
     double internal_pressure_ = 742.0;
     double internal_temperature_ = 42.0;

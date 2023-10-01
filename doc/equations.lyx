@@ -352,5 +352,21 @@ Time
 (wolfram alpha)
 \end_layout
 
+\begin_layout Section
+Other model
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\dot{z}=\beta\tanh\left(\alpha\left(\bar{z}-z\right)\right)-\left(\beta-\dot{z}_{init}\right)\tanh\left(\alpha\left(z-z_{init}\right)\right)+\text{sign}\left(\bar{z}-z_{init}\right)\left(\beta-\dot{z}_{init}\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+beta*(np.tanh(alpha*e))-(dz_init+beta)*np.tanh(alpha*(z-z_init))+np.sign(zbar-z_ini
+t)*(dz_init+beta)
+\end_layout
+
 \end_body
 \end_document

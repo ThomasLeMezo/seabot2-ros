@@ -8,6 +8,8 @@ def generate_launch_description():
     home_path = os.path.expanduser('~')
     parameters_file_list = []
 
+    print(sys.argv)
+
     config_simulation = os.path.join(
         home_path,
         'config/',  # Directory where yaml are

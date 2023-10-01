@@ -21,18 +21,18 @@ void MissionXML::write(const std::string &filename) const{
 
   // TODO !!! WRONG
   if(m_log.msg_type_ == LogData::CMD_MISSION_NEW){
-      time_t gtime = static_cast<time_t>(m_log.start_time_);
-      struct tm *timeinfo = gmtime(&gtime);
-
-      pt::ptree tree_offset;
-      tree_offset.put("year", timeinfo->tm_year+1900);
-      tree_offset.put("month", timeinfo->tm_mon+1);
-      tree_offset.put("day", timeinfo->tm_mday);
-      tree_offset.put("hour", timeinfo->tm_hour);
-      tree_offset.put("min", timeinfo->tm_min);
-
-      m_tree.add_child("mission.offset.start_time_utc", tree_offset);
-      m_tree.put("mission.paths.<xmlattr>.type", "0");
+//      time_t gtime = static_cast<time_t>(m_log.start_time_);
+//      struct tm *timeinfo = gmtime(&gtime);
+//
+//      pt::ptree tree_offset;
+//      tree_offset.put("year", timeinfo->tm_year+1900);
+//      tree_offset.put("month", timeinfo->tm_mon+1);
+//      tree_offset.put("day", timeinfo->tm_mday);
+//      tree_offset.put("hour", timeinfo->tm_hour);
+//      tree_offset.put("min", timeinfo->tm_min);
+//
+//      m_tree.add_child("mission.offset.start_time_utc", tree_offset);
+//      m_tree.put("mission.paths.<xmlattr>.type", "0");
   }
   else{
       // Load xml

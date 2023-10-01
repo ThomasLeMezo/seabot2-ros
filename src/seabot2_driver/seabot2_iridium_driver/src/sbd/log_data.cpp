@@ -84,30 +84,31 @@ bool LogData::deserialize_log_CMD_mission(const string &message){
   cout << "Deserialize log mission" << endl;
   waypoint_list_.clear();
 
-  uint_cmd_mission_header_t data = (uint_cmd_mission_header_t(1) << NB_BITS_CMD_MISSION_HEADER) - 1;
-  memcpy(data.backend().limbs(), message.c_str(), NB_BITS_CMD_MISSION_HEADER/8);
+//  uint_cmd_mission_header_t data = (uint_cmd_mission_header_t(1) << NB_BITS_CMD_MISSION_HEADER) - 1;
+//  memcpy(data.backend().limbs(), message.c_str(), NB_BITS_CMD_MISSION_HEADER/8);
+//
+//  unsigned int bit_position = 4;
+//  unsigned int nb_waypoints, start_time;
+//
+//  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 8, bit_position, nb_waypoints);
+//  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 22, bit_position, start_time);
+//  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 15, bit_position, gnss_mean_east_, L93_EAST_MIN, L93_EAST_MAX);
+//  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 15, bit_position, gnss_mean_north_, L93_NORTH_MIN, L93_NORTH_MAX);
+//
+//  start_time_ = REF_POSIX_TIME + start_time * 60;
+//
+//  cout << "nb_waypoints = " << nb_waypoints << endl;
+//  cout << "m_start_time time = " << start_time_ << endl;
+//  cout << "start_time = " << start_time << endl;
+//  cout << "m_mean_north = " << gnss_mean_north_ << endl;
+//  cout << "m_mean_east = " << gnss_mean_east_ << endl;
+//
+//  // Deserialize waypoint list and add to list
+//  for(size_t i=0; i<nb_waypoints; i++)
+//      bit_position += deserialize_log_CMD_waypoint(message, bit_position);
+    return false;
 
-  unsigned int bit_position = 4;
-  unsigned int nb_waypoints, start_time;
-
-  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 8, bit_position, nb_waypoints);
-  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 22, bit_position, start_time);
-  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 15, bit_position, gnss_mean_east_, L93_EAST_MIN, L93_EAST_MAX);
-  bit_position += deserialize_data<uint_cmd_mission_header_t>(data, 15, bit_position, gnss_mean_north_, L93_NORTH_MIN, L93_NORTH_MAX);
-
-    start_time_ = REF_POSIX_TIME + start_time * 60;
-
-  cout << "nb_waypoints = " << nb_waypoints << endl;
-  cout << "m_start_time time = " << start_time_ << endl;
-  cout << "start_time = " << start_time << endl;
-  cout << "m_mean_north = " << gnss_mean_north_ << endl;
-  cout << "m_mean_east = " << gnss_mean_east_ << endl;
-
-  // Deserialize waypoint list and add to list
-  for(size_t i=0; i<nb_waypoints; i++)
-      bit_position += deserialize_log_CMD_waypoint(message, bit_position);
-
-  return true;
+//  return true;
 }
 
 std::string LogData::serialize_log_state(const long long &time){
@@ -132,8 +133,8 @@ std::string LogData::serialize_log_state(const long long &time){
   /// message size in SBD0 = 30 bytes = 240 bits => message can be x2 in size
   /// 24bit for lat and long (about 1m positioning) => +6 bit
   bit_position += serialize_data<uint_log1_t>(data, 14, bit_position, time_LQ, 0, ((1<<14) -1));
-  bit_position += serialize_data<uint_log1_t>(data, 21, bit_position, gnss_mean_east_, L93_EAST_MIN, L93_EAST_MAX);
-  bit_position += serialize_data<uint_log1_t>(data, 21, bit_position, gnss_mean_north_, L93_NORTH_MIN, L93_NORTH_MAX);
+  bit_position += serialize_data<uint_log1_t>(data, 25, bit_position, gnss_lat_, WGS84_LAT_MIN, WGS84_LAT_MAX);
+  bit_position += serialize_data<uint_log1_t>(data, 25, bit_position, gnss_long_, WGS84_LON_MIN, WGS84_LON_MAX);
   bit_position += serialize_data<uint_log1_t>(data, 8, bit_position, gnss_speed_, 0, 5.0);
   bit_position += serialize_data<uint_log1_t>(data, 8, bit_position, gnss_mean_heading_, 0, 359.0);
 
