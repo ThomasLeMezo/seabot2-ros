@@ -9,7 +9,10 @@
 #include "std_srvs/srv/set_bool.hpp"
 #include "seabot2_safety/msg/safety_status.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
-#include "seabot2_mission/msg/waypoint.hpp"
+
+#include "seabot2_mission/msg/mission_state.hpp"
+#include "seabot2_mission/msg/depth_control_set_point.hpp"
+
 #include "seabot2_depth_control/msg/depth_control_debug.hpp"
 #include "gpsd_client/msg/gps_fix.hpp"
 #include <ncurses.h>
@@ -55,6 +58,12 @@ private:
                                                         "PISTON_ISSUE",
                                                         "HOLD_DEPTH"};
 
+    const array<std::string, 8> mission_mode_string_ = {"DEPTH_CONTROL",
+                                                         "SEAFLOOR_LANDING",
+                                                         "TEMPERATURE_KEEPING",
+                                                         "TEMPERATURE_PROFILE",
+                                                         "GNSS_PROFILE"};
+
     /// Variable
     WINDOW *windows_robot_;
     WINDOW *windows_safety_;
@@ -79,7 +88,8 @@ private:
     pressure_bme280_driver::msg::Bme280Data msg_internal_sensor_filter_;
     seabot2_power_driver::msg::PowerState msg_power_data_;
     seabot2_piston_driver::msg::PistonState msg_piston_data_;
-    seabot2_mission::msg::Waypoint msg_waypoint_;
+    seabot2_mission::msg::DepthControlSetPoint msg_depth_control_set_point_;
+    seabot2_mission::msg::MissionState msg_mission_state_;
     seabot2_depth_control::msg::DepthControlDebug msg_depth_control_;
     gpsd_client::msg::GpsFix msg_gnss_;
     bluerobotics_ping_driver::msg::Profile msg_profile_;
@@ -91,7 +101,8 @@ private:
     rclcpp::Time time_last_internal_sensor_filter_ = this->now();
     rclcpp::Time time_last_power_data_ = this->now();
     rclcpp::Time time_last_piston_data_ = this->now();
-    rclcpp::Time time_last_waypoint_ = this->now();
+    rclcpp::Time time_last_mission_state_ = this->now();
+    rclcpp::Time time_last_depth_control_set_point_ = this->now();
     rclcpp::Time time_last_depth_control_ = this->now();
     rclcpp::Time time_last_gnss_ = this->now();
     rclcpp::Time time_last_profile_ = this->now();
@@ -103,7 +114,8 @@ private:
     bool msg_first_received_internal_sensor_filter_ = false;
     bool msg_first_received_power_data_ = false;
     bool msg_first_received_piston_data_ = false;
-    bool msg_first_received_waypoint_ = false;
+    bool msg_first_received_mission_state_ = false;
+    bool msg_first_received_depth_control_set_point = false;
     bool msg_first_received_depth_control_ = false;
     bool msg_first_received_gnss_ = false;
     bool msg_first_received_profile_ = false;
@@ -116,7 +128,8 @@ private:
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_piston_data_;
-    rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_;
+    rclcpp::Subscription<seabot2_mission::msg::MissionState >::SharedPtr subscriber_mission_state_;
+    rclcpp::Subscription<seabot2_mission::msg::DepthControlSetPoint>::SharedPtr subscriber_depth_control_set_point_;
     rclcpp::Subscription<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr subscriber_control_debug_;
     rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_;
     rclcpp::Subscription<bluerobotics_ping_driver::msg::Profile>::SharedPtr subscriber_profile_;
@@ -169,10 +182,16 @@ private:
     void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
 
     /**
-     *  Waypoint callback
+     *  Mission state callback
      * @param msg
      */
-    void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
+    void mission_state_callback(const seabot2_mission::msg::MissionState &msg);
+
+    /**
+     * Depth control set point callback
+     * @param msg
+     */
+    void depth_control_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg);
 
     /**
      *  Control debug callback

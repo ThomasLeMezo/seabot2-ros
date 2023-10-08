@@ -60,17 +60,14 @@ void DepthControl::update_safety(const bool &emergency,
 void DepthControl::update_waypoint(const float &depth,
                                    const double &limit_velocity,
                                    const rclcpp::Time &time_update,
-                                   const bool &mission_enable){
-    if(mission_enable)
-        depth_set_point_ = std::min(depth, limit_depth_);
-    else
-        depth_set_point_ = 0.0;
+                                   const bool &enable_control){
+    depth_set_point_ = std::min(depth, limit_depth_);
 
     limit_velocity_ = limit_velocity;
     last_waypoint_time_ = time_update;
 
     // Update approach velocity
-    if(mission_enable) {
+    if(enable_control) {
         if(limit_velocity_last_ != limit_velocity_) {
             approach_velocity_ = alpha_solver_.compute_alpha(limit_velocity_);
             limit_velocity_last_ = limit_velocity_;

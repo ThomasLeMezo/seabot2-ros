@@ -48,7 +48,15 @@ void MissionNode::init_interfaces() {
                                                                            std::bind(&MissionNode::service_mission_enable_callback, this, _1, _2, _3),
                                                                            rmw_qos_profile_services_default,callback_group_);
 
-    publisher_waypoint_ = this->create_publisher<seabot2_mission::msg::Waypoint>("waypoint", 10);
+    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+            "/observer/depth", 10, std::bind(&MissionNode::depth_callback, this, _1));
+
+    subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+            "/observer/temperature", 10, std::bind(&MissionNode::temperature_callback, this, _1));
+
+    publisher_mission_state_ = this->create_publisher<seabot2_mission::msg::MissionState>("mission_state", 10);
+
+    publisher_depth_control_set_point_ = this->create_publisher<seabot2_mission::msg::DepthControlSetPoint>("depth_control_set_point", 10);
 
     client_light_ = this->create_client<seabot2_light_driver::srv::Light>("/driver/light", rmw_qos_profile_services_default,callback_group_);
 
@@ -57,6 +65,14 @@ void MissionNode::init_interfaces() {
     client_alpha_mission_ =  this->create_client<seabot2_mission::srv::AlphaMission>("/control/alpha_mission", rmw_qos_profile_services_default,callback_group_);
 
     client_bag_recorder_ = this->create_client<std_srvs::srv::Trigger>("/observer/restart_bag", rmw_qos_profile_services_default,callback_group_);
+}
+
+void MissionNode::depth_callback(const seabot2_depth_filter::msg::DepthPose::SharedPtr msg) {
+    mission_.update_depth(msg->depth);
+}
+
+void MissionNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData::SharedPtr msg) {
+    mission_.update_temperature(msg->temperature);
 }
 
 void MissionNode::call_light(){
@@ -166,14 +182,23 @@ void MissionNode::timer_callback() {
         load_mission();
     }
 
-    seabot2_mission::msg::Waypoint wp_msg;
-    bool is_new_waypoint = mission_.compute_command(wp_msg, this->now());
+    // Update the state of the mission
+    bool is_new_waypoint = mission_.update_state(this->now());
 
-    if(!mission_enable_) /// Check if mission was disabled by service
-        wp_msg.mission_enable = false;
+    // Publish depth control set point
+    publisher_depth_control_set_point_->publish(mission_.get_depth_control_set_point());
 
-    wp_msg.header.stamp = this->now();
-    publisher_waypoint_->publish(wp_msg);
+    // Publish other control set point
+    // Todo
+
+    // Publish mission state
+    seabot2_mission::msg::MissionState state_msg;
+    state_msg.mode = mission_.get_mission_mode();
+    state_msg.waypoint_id = mission_.get_current_waypoint_id();
+    state_msg.waypoint_length = mission_.get_number_waypoints();
+    state_msg.time_to_next_waypoint = mission_.get_time_to_next_waypoint();
+    state_msg.header.stamp = this->now();
+    publisher_mission_state_->publish(state_msg);
 
     if(is_new_waypoint)
         call_light();
@@ -206,17 +231,3 @@ int main(int argc, char *argv[]) {
     rclcpp::shutdown();
     return 0;
 }
-
-// FILE *proc_bag_ = nullptr;
-// #include <stdio.h>
-
-//if(proc_bag_ != nullptr){
-//int ret = pclose(proc_bag_);
-//if(ret != EXIT_SUCCESS) {
-//response->success = false;
-//return;
-//}
-//}
-//
-//proc_bag_ = popen("ros2 bag record -a", "r");
-//response->success = true;

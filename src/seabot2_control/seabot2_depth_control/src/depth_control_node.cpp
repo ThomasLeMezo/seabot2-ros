@@ -107,11 +107,12 @@ void DepthControlNode::safety_callback(const seabot2_safety::msg::SafetyStatus &
     dc_.update_safety(!msg.global_safety_valid, msg.limit_depth);
 }
 
-void DepthControlNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
+void DepthControlNode::depth_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg){
     dc_.update_waypoint(msg.depth,
                         msg.limit_velocity,
                         msg.header.stamp,
-                        msg.mission_enable);
+                        msg.enable_control);
+    enable_control_ = msg.enable_control;
 
     // Debug
     seabot2_depth_control::msg::AlphaDebug msg_alpha_debug;
@@ -128,8 +129,8 @@ void DepthControlNode::init_interfaces() {
             "/observer/depth", 10, std::bind(&DepthControlNode::depth_callback, this, _1));
     subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&DepthControlNode::temperature_callback, this, _1));
-    subscriber_mission_data_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
-            "/mission/waypoint", 10, std::bind(&DepthControlNode::waypoint_callback, this, _1));
+    subscriber_mission_data_ = this->create_subscription<seabot2_mission::msg::DepthControlSetPoint>(
+            "/mission/waypoint", 10, std::bind(&DepthControlNode::depth_set_point_callback, this, _1));
     subscriber_safety_data_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
             "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
     subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
@@ -187,7 +188,8 @@ void DepthControlNode::publish_message(){
     seabot2_piston_driver::msg::PistonSetPoint msg_piston;
     msg_piston.position = round(dc_.piston_set_point_);
     msg_piston.exit = dc_.is_exit_;
-    publisher_piston_->publish(msg_piston);
+    if(enable_control_)
+        publisher_piston_->publish(msg_piston);
 
     /// Debug message
     seabot2_depth_control::msg::DepthControlDebug debug_msg_;

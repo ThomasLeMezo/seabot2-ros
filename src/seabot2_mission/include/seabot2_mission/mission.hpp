@@ -9,34 +9,21 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_mission/msg/depth_control_set_point.hpp"
+#include "seabot2_mission/msg/mission_state.hpp"
+
+#include "seabot2_mission/waypoint.hpp"
 
 #include <filesystem>
 namespace fs = std::filesystem;
 
-class Waypoint{
+class Waypoint;
+class WaypointDepth;
+class WaypointSeafloorLanding;
+class WaypointTemperatureKeeping;
+class WaypointTemperatureProfile;
+class WaypointGnssProfile;
 
-public:
-    Waypoint()= default;
-
-    Waypoint(const rclcpp::Time &time_end_param, const double &depth_param, const double &north_param, const double &east_param, const double&limit_velocity_param, const bool &enable_thrusters_param=true, const bool &seafloor_landing_param=false){
-        time_end = time_end_param;
-        depth = depth_param;
-        east = east_param;
-        north = north_param;
-        limit_velocity = limit_velocity_param;
-        enable_thrusters = enable_thrusters_param;
-        seafloor_landing = seafloor_landing_param;
-    }
-public:
-    double north = 0.0;
-    double east = 0.0;
-    double depth = 0.0;
-    double limit_velocity = 0.0;
-    bool  enable_thrusters = true;
-    bool seafloor_landing = false;
-    rclcpp::Time time_end;
-};
 
 class Mission
 {
@@ -47,12 +34,9 @@ public:
     Mission()= default;
 
     /**
-       * @brief compute_command
-       * @param north
-       * @param east
-       * @param depth
+       * @brief
        */
-    bool compute_command(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
+    bool update_state(const rclcpp::Time &t_now);
 
     /**
      * Test if mission file was updated
@@ -75,25 +59,7 @@ public:
      * @brief is_mission_enable
      * @return
      */
-    bool is_mission_enable() const;
-
-    /**
-     * @brief get_current_waypoint
-     * @return
-     */
-    size_t get_current_waypoint() const;
-
-    /**
-     * @brief get_time_to_next_waypoint
-     * @return
-     */
-    double get_time_to_next_waypoint() const;
-
-    /**
-     * @brief set_limit_velocity_default
-     * @param vel
-     */
-    void set_limit_velocity_default(const double &vel);
+    [[nodiscard]] bool is_mission_enable() const;
 
     /**
      * @brief get_velocity_list
@@ -117,23 +83,115 @@ public:
         return time_end_;
     }
 
+    /**
+     * @brief get_number_waypoints
+     */
+    [[nodiscard]] size_t get_number_waypoints() const{
+        return waypoints_.size();
+    }
+
+    /**
+     * @brief get_current_waypoint_id
+     * @return
+     */
+    [[nodiscard]]  size_t get_current_waypoint_id() const{
+        return current_waypoint_id_;
+    }
+
+    /**
+     * @brief get_time_to_next_waypoint
+     * @return
+     */
+    [[nodiscard]] double get_time_to_next_waypoint() const{
+        return duration_next_waypoint_.seconds();
+    }
+
+    /**
+     * @brief get_time_to_next_waypoint
+     * @param vel
+     */
+    void set_limit_velocity_default(const double &vel){
+        limit_velocity_default_ = vel;
+    }
+
+    /**
+     * @brief get_mission_mode
+     * @return
+     */
+    [[nodiscard]] unsigned int get_mission_mode() const{
+        return mission_mode_;
+    }
+
+    /**
+     * @brief update depth
+     * @param depth in meter
+     */
+    void update_depth(const double &depth){
+        depth_ = depth;
+    }
+
+    /**
+     * @brief update_temperature
+     * @param temperature in degree
+     */
+    void update_temperature(const double &temperature){
+        temeprature_ = temperature;
+    }
+
+    /**
+     * @brief get_depth_control_set_point
+     * @return
+     */
+    seabot2_mission::msg::DepthControlSetPoint& get_depth_control_set_point(){
+        return dc_msg_;
+    }
+
+    /**
+     * Set set point parameters to idle state
+     */
+    void idle_state_configuration(const rclcpp::Time &t_now);
+
 private:
     /**
-     * Decode a waypoint
+     *
+     * @param w
+     * @param v
+     * @param last_time
+     * @return
+     */
+    void decode_waypoint(std::shared_ptr<Waypoint> w, boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time);
+
+    /**
+     * Decode a depth waypoint
      * @param v
      * @param last_time
      * @param depth_offset
-     * @return error code
+     * @return
      */
-    int decode_waypoint(boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset);
+    void decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, boost::property_tree::ptree::value_type &v, const double &depth_offset);
+
+    /**
+     *
+     * @param v
+     * @param last_time
+     * @param depth_offset
+     * @return
+     */
+    int decode_paths(boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset);
 
 private:
     std::string file_name_ = "mission_empty.xml";
-    std::vector<Waypoint> waypoints_;
-    size_t current_waypoint_ = 0;
+
+    enum WAYPOINT_TYPE:unsigned int {WP_DEPTH=0,
+        WP_SEAFLOOR_LANDING=1,
+        WP_TEMPERATURE_KEEPING=2,
+        WP_TEMPERATURE_PROFILE=3,
+        WP_GNSS_PROFILE=4};
+    std::vector<std::pair<std::shared_ptr<Waypoint>, WAYPOINT_TYPE>> waypoints_;
+
+    size_t current_waypoint_id_ = 0;
     bool is_first_waypoint_ = true;
     bool mission_enable_ = false;
-    bool update_mission_ = true;
     rclcpp::Duration duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.);
 
     std::filesystem::file_time_type file_time_;
@@ -146,28 +204,35 @@ private:
 
     double default_time_to_start_ = 60.0;
 
-    void waypoint_end(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
+    // Mission mode
+    unsigned int mission_mode_ = seabot2_mission::msg::MissionState::MODE_IDLE;
 
-    void waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
+    // Mission state
+    enum MISSION_STATE:unsigned int {NOT_STARTED=0, RUNNING=1, ENDING=2};
+    MISSION_STATE mission_state_ = NOT_STARTED;
 
-    void waypoint_current(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now);
+    // Control messages
+    seabot2_mission::msg::DepthControlSetPoint dc_msg_;
+
+    // Waypoint type
+    const std::string XML_DEPTH = "waypoint_depth";
+    const std::string XML_DEPTH_LEGACY = "waypoint";
+    const std::string XML_SEAFLOOR_LANDING =   "seafloor_landing";
+    const std::string XML_TEMPERATURE_KEEPING = "temperature_keeping";
+    const std::string XML_TEMPERATURE_PROFILE = "temperature_profile";
+    const std::string XML_GNSS_PROFILE =   "gnss_profile";
+    const std::vector<std::string> XML_TYPE = {XML_DEPTH,
+                                              XML_DEPTH_LEGACY,
+                                              XML_SEAFLOOR_LANDING,
+                                              XML_TEMPERATURE_KEEPING,
+                                              XML_TEMPERATURE_PROFILE,
+                                              XML_GNSS_PROFILE};
+
+    // State
+    double depth_ = 0.0;
+    double temeprature_ = 15.0; // in degree
+
 };
-
-inline bool Mission::is_mission_enable() const{
-    return mission_enable_;
-}
-
-inline size_t Mission::get_current_waypoint() const{
-    return current_waypoint_;
-}
-
-inline double Mission::get_time_to_next_waypoint() const{
-    return duration_next_waypoint_.seconds();
-}
-
-inline void Mission::set_limit_velocity_default(const double &vel){
-    limit_velocity_default_ = vel;
-}
 
 
 #endif // MISSION_H

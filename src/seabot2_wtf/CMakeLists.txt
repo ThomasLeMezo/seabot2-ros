@@ -31,7 +31,6 @@ add_executable(wtf_node src/wtf_node.cpp)
 include_directories(${CURSES_INCLUDE_DIR})
 ament_target_dependencies(wtf_node
         rclcpp
-        rosidl_default_generators
         seabot2_depth_filter
         pressure_bme280_driver
         seabot2_power_driver

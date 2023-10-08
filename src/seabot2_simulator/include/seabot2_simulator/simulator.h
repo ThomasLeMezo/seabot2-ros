@@ -168,7 +168,6 @@ public:
     Mission mission_;
     rclcpp::Time mission_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration mission_dt_ = 1s; /// 1Hz
-    seabot2_mission::msg::Waypoint current_wp_{};
     string mission_file_name_ = "";
     string mission_path_ = "./";
     rclcpp::Duration mission_delay_before_start_ = 10s;

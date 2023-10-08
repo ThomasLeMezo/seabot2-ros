@@ -167,12 +167,12 @@ public:
      * @param depth
      * @param limit_velocity
      * @param time_update
-     * @param mission_enable
+     * @param enable_control
      */
     void update_waypoint(const float &depth,
                     const double &limit_velocity,
                     const rclcpp::Time &time_update,
-                    const bool &mission_enable);
+                    const bool &enable_control);
 
     /**
      * @brief Update the data from density

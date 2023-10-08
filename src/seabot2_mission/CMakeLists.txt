@@ -11,21 +11,26 @@ find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(seabot2_light_driver REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(seabot2_depth_filter REQUIRED)
+find_package(temperature_tsys01_driver REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/Waypoint.msg"
+        "msg/MissionState.msg"
         "srv/AlphaMission.srv"
+        "msg/DepthControlSetPoint.msg"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
-add_executable(mission_node src/mission_node.cpp src/mission.cpp)
+add_executable(mission_node src/mission_node.cpp src/mission.cpp src/waypoint.cpp)
 ament_target_dependencies(mission_node
         rclcpp
         rosidl_default_generators
         std_srvs
         seabot2_light_driver
+        seabot2_depth_filter
+        temperature_tsys01_driver
 )
 target_link_libraries(mission_node "${cpp_typesupport_target}")
 target_include_directories(mission_node PUBLIC
@@ -49,6 +54,7 @@ if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
   include_directories(include/seabot2_mission)
   add_library(mission SHARED
           src/mission.cpp
+          src/waypoint.cpp
           )
 
   target_include_directories(mission PUBLIC
@@ -59,6 +65,7 @@ if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
 
   set(MISSION_HEADERS
           include/seabot2_mission/mission.hpp
+          include/seabot2_mission/waypoint.hpp
           )
 
   set_target_properties(mission PROPERTIES

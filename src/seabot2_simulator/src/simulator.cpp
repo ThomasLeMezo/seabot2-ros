@@ -21,7 +21,8 @@
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
 #include "bluerobotics_ping_driver/msg/profile.hpp"
 #include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
-#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_mission/msg/depth_control_set_point.hpp"
+#include "seabot2_mission/msg/mission_state.hpp"
 #include "seabot2_density/msg/density.hpp"
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
 #include "seabot2_kalman/msg/kalman_state.hpp"
@@ -89,8 +90,11 @@ void Simulator::init_bag_writer(){
     bag_writer_->create_topic( {"/driver/temperature",
                                 "temperature_tsys01_driver/msg/TemperatureSensorData",
                                 rmw_get_serialization_format(), ""});
-    bag_writer_->create_topic( {"/mission/waypoint",
-                                "seabot2_mission/msg/Waypoint",
+    bag_writer_->create_topic( {"/mission/depth_control_set_point",
+                                "seabot2_mission/msg/DepthControlSetPoint",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/mission/mission_state",
+                                "seabot2_mission/msg/MissionState",
                                 rmw_get_serialization_format(), ""});
     bag_writer_->create_topic( {"/observer/density",
                                 "seabot2_density/msg/Density",
@@ -120,7 +124,7 @@ void Simulator::init_bag_writer(){
 }
 
 double Simulator::temperature_from_depth(double z) {
-    temperature_ = 15.0;
+    temperature_ = max(min(18.0-0.25*z, 18.0), 8.0);
     return temperature_;
 }
 
@@ -155,7 +159,7 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
     dx(3) = -coeff_A_*(volume_total_)-coeff_B_*Cz_*abs(x(3))*x(3);
     dx(4) = x(3);
 
-    if(isnan(volume_air_) || isnan(x(3) || isnan(piston_volume_) || isnan(abs_pressure_))){
+    if(isnan(volume_air_) || isnan(x(3)) || isnan(piston_volume_) || isnan(abs_pressure_)){
         cout << V << " " << x(0) << " " << x(1) << " " << x(2) << " " << x(3) << " " << x(4) << ' '
         << sea_pressure_ << ' ' << piston_volume_ << ' ' << volume_air_ << ' '  << abs_pressure_ << endl;
         exit(EXIT_FAILURE);
@@ -171,7 +175,7 @@ int Simulator::control_pwm(int position_set_point){
     const int motor_regulation_dead_zone = 50;
     motor_set_point_ = MOTOR_STOP;
 
-    int position_error = position_set_point-position;
+    int position_error = static_cast<int>(round(position_set_point-position));
     if(abs(position_error)>motor_regulation_dead_zone){
 
         int val = floor(((float)position_error)*motor_regulation_K);
@@ -258,7 +262,20 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_density.header.stamp = t_;
     bag_writer_->write(msg_density, "/observer/density", t);
 
-    bag_writer_->write(current_wp_, "/mission/waypoint", t);
+    seabot2_mission::msg::MissionState msg_mission_state;
+    msg_mission_state.mode = mission_.get_mission_mode();
+    msg_mission_state.waypoint_id = mission_.get_current_waypoint_id();
+    msg_mission_state.waypoint_length = mission_.get_number_waypoints();
+    msg_mission_state.time_to_next_waypoint = mission_.get_time_to_next_waypoint(),
+    msg_mission_state.header.stamp = t_;
+    bag_writer_->write(msg_mission_state, "/mission/state", t);
+
+    seabot2_mission::msg::DepthControlSetPoint msg_depth_control_set_point;
+    msg_depth_control_set_point.depth = mission_.get_depth_control_set_point().depth;
+    msg_depth_control_set_point.header.stamp = t_;
+    msg_depth_control_set_point.limit_velocity = mission_.get_depth_control_set_point().limit_velocity;
+    msg_depth_control_set_point.enable_control = mission_.get_depth_control_set_point().enable_control;
+    bag_writer_->write(msg_depth_control_set_point, "/mission/depth_control_set_point", t);
 
     temperature_tsys01_driver::msg::TemperatureSensorData msg_temperature;
     msg_temperature.temperature = temperature_;
@@ -405,7 +422,7 @@ void Simulator::run_simulation() {
         /// Mission simulation
         if(t_-mission_last_time_>= mission_dt_){
             mission_last_time_ = t_;
-            mission_.compute_command(current_wp_, t_);
+            mission_.update_state(t_);
         }
 
         /// Depth control simulation
@@ -432,10 +449,10 @@ void Simulator::run_simulation() {
                              abs_pressure_/1e5);
             dc_.update_safety(false,
                                100.0);
-            dc_.update_waypoint(current_wp_.depth,
-                                current_wp_.limit_velocity,
+            dc_.update_waypoint(mission_.get_depth_control_set_point().depth,
+                                mission_.get_depth_control_set_point().limit_velocity,
                                 t_,
-                                current_wp_.mission_enable);
+                                mission_.get_depth_control_set_point().enable_control);
             dc_.update_density(rho_);
             dc_.update_temperature(temperature_);
 

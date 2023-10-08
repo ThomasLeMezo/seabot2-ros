@@ -7,11 +7,14 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "seabot2_mission/mission.hpp"
-#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_mission/msg/mission_state.hpp"
+#include "seabot2_mission/msg/depth_control_set_point.hpp"
 #include "seabot2_light_driver/srv/light.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "seabot2_mission/srv/alpha_mission.hpp"
+#include "seabot2_depth_filter/msg/depth_pose.hpp"
+#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -40,7 +43,12 @@ private:
     double limit_velocity_default_ = 0.02;
 
     /// Interfaces
-    rclcpp::Publisher<seabot2_mission::msg::Waypoint>::SharedPtr publisher_waypoint_;
+    rclcpp::Publisher<seabot2_mission::msg::MissionState>::SharedPtr publisher_mission_state_;
+    rclcpp::Publisher<seabot2_mission::msg::DepthControlSetPoint>::SharedPtr publisher_depth_control_set_point_;
+
+    rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
+    rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
+
     rclcpp::Client<seabot2_light_driver::srv::Light>::SharedPtr client_light_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_log_parameters_;
     rclcpp::Client<seabot2_mission::srv::AlphaMission>::SharedPtr client_alpha_mission_;
@@ -109,6 +117,18 @@ private:
      * Call restart bag
      */
     void call_restart_bag();
+
+    /**
+     * Kalman callback
+     * @param msg
+     */
+    void depth_callback(const seabot2_depth_filter::msg::DepthPose::SharedPtr msg);
+
+    /**
+     * Kalman callback
+     * @param msg
+     */
+    void temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData::SharedPtr msg);
 
 };
 #endif //BUILD_MISSION_NODE_HPP

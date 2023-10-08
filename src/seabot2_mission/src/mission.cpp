@@ -1,5 +1,4 @@
 #include "seabot2_mission/mission.hpp"
-#include <fstream>
 #include <iostream>
 
 #include <boost/property_tree/ptree.hpp>
@@ -9,20 +8,24 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/date_time/gregorian/gregorian.hpp"
 
-#include <ctime>
 #include <utility>
+
+#include <algorithm>
+
+#include "seabot2_mission/waypoint.hpp"
 
 using namespace std;
 namespace pt = boost::property_tree;
 namespace bt = boost::posix_time;
 namespace gt = boost::gregorian;
 
-bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
+bool Mission::update_state(const rclcpp::Time &t_now){
 
     bool is_new_waypoint = false;
-    if(current_waypoint_ < waypoints_.size()){
+    if(current_waypoint_id_ < waypoints_.size()){
         if(t_now < time_start_){ /// Wait before mission start
-            waypoint_wait_start(wp, t_now);
+            duration_next_waypoint_ = time_start_ - t_now;
+            mission_state_ = NOT_STARTED;
         }
         else{ /// Mission started
             mission_enable_ = true;
@@ -30,89 +33,58 @@ bool Mission::compute_command(seabot2_mission::msg::Waypoint &wp, const rclcpp::
                 is_new_waypoint = true;
                 is_first_waypoint_ = false;
             }
-            while(current_waypoint_ < waypoints_.size() &&
-                  t_now >= waypoints_[current_waypoint_].time_end){ /// Test if next waypoint is reached
+            while(current_waypoint_id_ < waypoints_.size() &&
+                  t_now >= waypoints_[current_waypoint_id_].first->time_end){ /// Test if next waypoint is reached
                 is_new_waypoint = true;
-                current_waypoint_++;
+                current_waypoint_id_++;
             }
 
-            if(current_waypoint_ < waypoints_.size()) { /// Verify end of waypoint list
-                waypoint_current(wp, t_now);
+            if(current_waypoint_id_ < waypoints_.size()) { /// Verify end of waypoint list
+                duration_next_waypoint_ = waypoints_[current_waypoint_id_].first->time_end - t_now;
                 if(is_new_waypoint)
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[Mission] Start following waypoint %lu (ending at %f)",
-                                current_waypoint_, round(waypoints_[current_waypoint_].time_end.seconds()));
+                                current_waypoint_id_, round(waypoints_[current_waypoint_id_].first->time_end.seconds()));
+
+                // Process the current wp
+                switch (waypoints_[current_waypoint_id_].second) {
+                    case WP_DEPTH:
+                        std::dynamic_pointer_cast<WaypointDepth>(waypoints_[current_waypoint_id_].first)->process(t_now);
+                        break;
+                    case WP_SEAFLOOR_LANDING:
+                        break;
+                    case WP_TEMPERATURE_KEEPING:
+                        break;
+                    case WP_TEMPERATURE_PROFILE:
+                        break;
+                    case WP_GNSS_PROFILE:
+                        break;
+                }
+
+                mission_state_ = RUNNING;
             }
-            else
-                waypoint_end(wp, t_now);
+            else{
+                mission_state_ = ENDING;
+            }
         }
     }
     else{ /// Last waypoint was reached
-        waypoint_end(wp, t_now);
+        mission_state_ = ENDING;
+        duration_next_waypoint_ = waypoints_[waypoints_.size() - 1].first->time_end - t_now;
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Mission] End of waypoints");
     }
 
-    wp.mission_enable = mission_enable_;
-    wp.waypoint_id = current_waypoint_;
-    wp.waypoint_length = waypoints_.size();
-    wp.time_to_next_waypoint = duration_next_waypoint_.seconds();
+    if(mission_state_==ENDING || mission_state_==NOT_STARTED){
+        idle_state_configuration(t_now);
+    }
 
     return is_new_waypoint;
 }
 
-void Mission::waypoint_current(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
-    wp.depth = waypoints_[current_waypoint_].depth;
-
-    wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
-    wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
-    wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
-
-    /// Compute the desired (north, east) set point
-    rclcpp::Time t1;
-    if(current_waypoint_ == 0) /// Case first waypoint
-        t1 = time_start_;
-    else /// After the first waypoint
-        t1 = waypoints_[current_waypoint_ - 1].time_end;
-    rclcpp::Time t2 = waypoints_[current_waypoint_].time_end;
-    double ratio = (t_now-t1).seconds()/(t2-t1).seconds(); // Should be between [0, 1]
-
-    if(current_waypoint_ >= 1){
-        double d_north = waypoints_[current_waypoint_].north - waypoints_[current_waypoint_ - 1].north;
-        double d_east = waypoints_[current_waypoint_].east - waypoints_[current_waypoint_ - 1].east;
-
-        wp.north = waypoints_[current_waypoint_ - 1].north + d_north * ratio + offset_north_;;
-        wp.east = waypoints_[current_waypoint_ - 1].east + d_east * ratio + offset_east_;
-    }
-    else{ /// Case first waypoint
-        wp.north = waypoints_[current_waypoint_].north + offset_north_;;
-        wp.east = waypoints_[current_waypoint_].east + offset_east_;
-    }
-    duration_next_waypoint_ = waypoints_[current_waypoint_].time_end - t_now;
-}
-
-void Mission::waypoint_end(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
-    if(mission_enable_)
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Mission] End of waypoints");
-    mission_enable_ = false;
-
-    wp.depth = 0.0;
-    wp.limit_velocity = waypoints_[waypoints_.size() - 1].limit_velocity;
-    wp.north = waypoints_[waypoints_.size() - 1].north + offset_north_;
-    wp.east = waypoints_[waypoints_.size() - 1].east + offset_east_;
-    wp.enable_thrusters = false;
-    wp.seafloor_landing = false;
-
-    duration_next_waypoint_ = waypoints_[waypoints_.size() - 1].time_end - t_now;
-}
-
-void Mission::waypoint_wait_start(seabot2_mission::msg::Waypoint &wp, const rclcpp::Time &t_now){
-    mission_enable_ = false;
-    wp.depth = 0.0;
-    wp.north = waypoints_[current_waypoint_].north + offset_north_;
-    wp.east = waypoints_[current_waypoint_].east + offset_east_;
-
-    wp.limit_velocity = waypoints_[current_waypoint_].limit_velocity;
-    wp.enable_thrusters = waypoints_[current_waypoint_].enable_thrusters;
-    wp.seafloor_landing = waypoints_[current_waypoint_].seafloor_landing;
-    duration_next_waypoint_ = time_start_ - t_now;
+void Mission::idle_state_configuration(const rclcpp::Time &t_now){
+    dc_msg_.enable_control = true;
+    dc_msg_.depth = 0.0;
+    dc_msg_.limit_velocity = waypoints_[0].first->velocity;
+    dc_msg_.header.stamp = t_now;
 }
 
 bool Mission::is_new_mission_file(const std::string &file_xml, const std::string &folder_path){
@@ -178,104 +150,121 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
     }
 
     time_end_ = time_start_;
-    current_waypoint_ = 0;
+    current_waypoint_id_ = 0;
     is_first_waypoint_ = true;
 
     int return_code = EXIT_SUCCESS;
     BOOST_FOREACH(pt::ptree::value_type &v, tree.get_child("mission.paths")){
-                    return_code &= decode_waypoint(v, time_end_, 0.0);
+                    return_code &= decode_paths(v, time_end_, 0.0);
                     if(return_code == EXIT_FAILURE)
                         break;
                 }
     return return_code;
 }
 
-int Mission::decode_waypoint(pt::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset){
-    if(v.first == "waypoint"){
-        Waypoint w;
-        try{
-
-            // North & East position
-            boost::optional<double> north_local = v.second.get_optional<double>("north");
-            boost::optional<double> east_local = v.second.get_optional<double>("east");
-            if(north_local.is_initialized() && east_local.is_initialized()){
-                w.north = north_local.value();
-                w.east = north_local.value();
-            }
-            else{
-                w.enable_thrusters = false;
-            }
-
-            boost::optional<double> depth = v.second.get_optional<double>("depth");
-            if(depth.is_initialized()){
-                w.depth = depth.value() + depth_offset;
-            }
-            else{
-                w.depth = 0.0;
-            }
-
-            boost::optional<bool> landing = v.second.get_optional<bool>("seafloor_landing");
-            if(landing.is_initialized()){
-                w.seafloor_landing = landing.value();
-            }
-            else{
-                w.seafloor_landing = false;
-            }
-
-
-            // Duration
-            boost::optional<double> t = v.second.get_optional<double>("duration_since_start");
-            boost::optional<double> d = v.second.get_optional<double>("duration");
-            if(t.is_initialized()) // End_time
-                w.time_end = time_start_ + rclcpp::Duration::from_seconds(t.value());
-            else if(d.is_initialized()){ // Duration
-                w.time_end = last_time + rclcpp::Duration::from_seconds(d.value());
-            }
-            else
-                throw(std::runtime_error("(No time or duration founded for a waypoint)"));
-
-            // Regulation parameters
-            boost::optional<double> vel = v.second.get_optional<double>("limit_velocity");
-            if(vel.is_initialized())
-                w.limit_velocity = vel.value();
-            else
-                w.limit_velocity = limit_velocity_default_;
-
-            boost::optional<bool> enable_thrusters = v.second.get_optional<bool>("enable_thrusters");
-            if(enable_thrusters.is_initialized())
-                w.enable_thrusters = enable_thrusters.value();
-        }
-        catch(std::exception const&  ex) {
-            RCLCPP_FATAL(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Wrong xml file %s", ex.what());
-            return EXIT_FAILURE;
-        }
-        last_time = w.time_end;
-        waypoints_.push_back(w);
-
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Waypoint %zu (t_end=%li, d=%lf, E=%lf, N=%lf, vel=%f)", waypoints_.size(), (long int)w.time_end.seconds(), w.depth, w.east, w.north, w.limit_velocity);
+void Mission::decode_waypoint(std::shared_ptr<Waypoint> w, pt::ptree::value_type &v, rclcpp::Time &last_time){
+    // Duration
+    boost::optional<double> t = v.second.get_optional<double>("duration_since_start");
+    boost::optional<double> d = v.second.get_optional<double>("duration");
+    if(t.is_initialized()) // End_time
+        w->time_end = time_start_ + rclcpp::Duration::from_seconds(t.value());
+    else if(d.is_initialized()){ // Duration
+        w->time_end = last_time + rclcpp::Duration::from_seconds(d.value());
     }
-    else if(v.first == "loop"){
-        const int nb_loop = v.second.get<int>("<xmlattr>.number", 1);
-        const double depth_increment = v.second.get<double>("<xmlattr>.depth_increment", 0.0);
+    else
+        throw(std::runtime_error("(No time or duration founded for a waypoint)"));
 
-        double depth_offset_tmp = depth_offset;
-        for(int i=0; i<nb_loop; i++){
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Loop %i/%i", i+1, nb_loop);
-            BOOST_FOREACH(pt::ptree::value_type &v_loop,v.second){
-                            decode_waypoint(v_loop, last_time, depth_offset_tmp);
-                        }
-            depth_offset_tmp += depth_increment;
+    // Regulation parameters
+    boost::optional<double> vel = v.second.get_optional<double>("limit_velocity");
+    if(vel.is_initialized())
+        w->velocity = vel.value();
+    else
+        w->velocity = limit_velocity_default_;
+
+    last_time = w->time_end;
+}
+
+void Mission::decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, pt::ptree::value_type &v, const double &depth_offset){
+    boost::optional<double> depth = v.second.get_optional<double>("depth");
+    if(depth.is_initialized()){
+        w->depth = depth.value() + depth_offset;
+    }
+    else{
+        w->depth = 0.0;
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Depth Waypoint %zu (t_end=%li, d=%lf, vel=%f)",
+                waypoints_.size(),
+                (long int)w->time_end.seconds(),
+                w->depth,
+                w->velocity);
+}
+
+int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset){
+    try{
+        if(std::find(std::begin(XML_TYPE), std::end(XML_TYPE), v.first) != std::end(XML_TYPE)){
+            if(v.first == XML_DEPTH || v.first == XML_DEPTH_LEGACY){ // "waypoint for leagcy
+                std::shared_ptr<WaypointDepth> w = std::make_shared<WaypointDepth>(this);
+                decode_waypoint(w, v, last_time);
+                decode_waypoint_depth(w, v, depth_offset);
+                waypoints_.emplace_back(w, WP_DEPTH);
+            }
+            else if(v.first == XML_SEAFLOOR_LANDING){
+
+            }
+            else if(v.first == XML_TEMPERATURE_KEEPING){
+
+            }
+            else if(v.first == XML_TEMPERATURE_PROFILE){
+
+            }
+            else if(v.first == XML_GNSS_PROFILE){
+
+            }
+        }
+        else if(v.first == "loop"){
+            const int nb_loop = v.second.get<int>("<xmlattr>.number", 1);
+            const double depth_increment = v.second.get<double>("<xmlattr>.depth_increment", 0.0);
+
+            double depth_offset_tmp = depth_offset;
+            for(int i=0; i<nb_loop; i++){
+                RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Loop %i/%i", i+1, nb_loop);
+                BOOST_FOREACH(pt::ptree::value_type &v_loop,v.second){
+                                decode_paths(v_loop, last_time, depth_offset_tmp);
+                            }
+                depth_offset_tmp += depth_increment;
+            }
         }
     }
+    catch(std::exception const&  ex) {
+        RCLCPP_FATAL(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Wrong xml file %s", ex.what());
+        return EXIT_FAILURE;
+    }
+
+
+//            // North & East position
+//            boost::optional<double> north_local = v.second.get_optional<double>("north");
+//            boost::optional<double> east_local = v.second.get_optional<double>("east");
+//            if(north_local.is_initialized() && east_local.is_initialized()){
+//                w.north = north_local.value();
+//                w.east = north_local.value();
+//            }
+//            else{
+//                w.enable_thrusters = false;
+//            }
+
     return EXIT_SUCCESS;
 }
 
 vector<float> Mission::get_velocity_list(){
     vector<float> velocity_list;
     for(auto & waypoint : waypoints_){
-        bool found = (find(velocity_list.begin(), velocity_list.end(), (float)waypoint.limit_velocity) != velocity_list.end());
-        if(!found)
-            velocity_list.push_back(waypoint.limit_velocity);
+        if(waypoint.second!=WP_GNSS_PROFILE) {
+            bool found = (find(velocity_list.begin(), velocity_list.end(), (float) waypoint.first->velocity) !=
+                          velocity_list.end());
+            if (!found)
+                velocity_list.push_back(waypoint.first->velocity);
+        }
     }
     return velocity_list;
 }

@@ -88,7 +88,7 @@ void IridiumNode::init_interfaces() {
     subscriber_depth_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&IridiumNode::depth_callback, this, _1));
 
-    subscriber_mission = this->create_subscription<seabot2_mission::msg::Waypoint>(
+    subscriber_mission = this->create_subscription<seabot2_mission::msg::MissionState >(
             "/mission/waypoint", 10, std::bind(&IridiumNode::mission_callback, this, _1));
 
     publisher_iridium_session_ = this->create_publisher<seabot2_iridium_driver::msg::IridiumSession>(
@@ -136,7 +136,7 @@ void IridiumNode::gnss_pose_callback(const seabot2_lambert::msg::GnssPose &msg){
     log_state_.gnss_mean_north_ = msg.north;
 }
 
-void IridiumNode::mission_callback(const seabot2_mission::msg::Waypoint &msg) {
+void IridiumNode::mission_callback(const seabot2_mission::msg::MissionState &msg) {
     log_state_.current_waypoint_ = msg.waypoint_id;
 }
 

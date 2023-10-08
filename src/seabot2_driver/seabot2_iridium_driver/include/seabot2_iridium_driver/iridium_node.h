@@ -16,7 +16,7 @@
 #include "seabot2_power_driver/msg/power_state.hpp"
 #include "seabot2_safety/msg/safety_status.hpp"
 #include "gpsd_client/msg/gps_fix.hpp"
-#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_mission/msg/mission_state.hpp"
 #include "seabot2_lambert/msg/gnss_pose.hpp"
 #include "std_msgs/msg/string.hpp"
 
@@ -71,11 +71,10 @@ private:
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
-    rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_data_;
     rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
     rclcpp::Subscription<seabot2_lambert::msg::GnssPose>::SharedPtr subscriber_gnss_pose_;
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_;
-    rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission;
+    rclcpp::Subscription<seabot2_mission::msg::MissionState >::SharedPtr subscriber_mission;
 
     rclcpp::Publisher<seabot2_iridium_driver::msg::IridiumSession>::SharedPtr publisher_iridium_session_;
     rclcpp::Publisher<seabot2_iridium_driver::msg::IridiumStatus>::SharedPtr publisher_iridium_status_;
@@ -124,7 +123,7 @@ private:
      * Mission callback
      * @param msg
      */
-    void mission_callback(const seabot2_mission::msg::Waypoint &msg);
+    void mission_callback(const seabot2_mission::msg::MissionState &msg);
 
     /**
      * Depth callback

@@ -10,7 +10,7 @@ simulation_node:
 
     kalman_robot_mass: 12.0
     kalman_enable_kalman_depth: 0.5
-    kalman_piston_volume_eq_init: 90.0e-6 #m3
+    kalman_piston_volume_eq_init: 130.0e-6 #m3
     kalman_init_chi: 0.0
     kalman_init_chi2: 0.0
     kalman_init_cz: 3.0

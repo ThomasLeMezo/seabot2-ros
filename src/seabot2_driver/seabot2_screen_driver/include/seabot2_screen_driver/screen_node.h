@@ -5,7 +5,7 @@
 #include <memory>
 #include "seabot2_screen_driver/screen.h"
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
-#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_mission/msg/mission_state.hpp"
 #include "seabot2_power_driver/msg/power_state.hpp"
 #include "seabot2_safety/msg/safety_status.hpp"
 
@@ -45,7 +45,7 @@ private:
 
     /// Topics
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_sensor_internal_;
-    rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_;
+    rclcpp::Subscription<seabot2_mission::msg::MissionState >::SharedPtr subscriber_mission_;
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_;
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
 
@@ -83,7 +83,7 @@ private:
      * Callback for waypoints
      * @param msg
      */
-    void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
+    void waypoint_callback(const seabot2_mission::msg::MissionState &msg);
 
     /**
      * Callback for voltage

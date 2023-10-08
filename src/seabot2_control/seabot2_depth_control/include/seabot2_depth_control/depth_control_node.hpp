@@ -6,7 +6,7 @@
 #define BUILD_DEPTH_CONTROL_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include "seabot2_mission/msg/waypoint.hpp"
+#include "seabot2_mission/msg/depth_control_set_point.hpp"
 #include "seabot2_kalman/msg/kalman_state.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
@@ -46,12 +46,13 @@ private:
     std::vector<float> velocity_limits_requests_;
     bool velocity_limits_computations_ = false;
 
+    bool enable_control_ = true; // Allow publish set point to piston
 
     /// Interfaces
     rclcpp::Subscription<seabot2_kalman::msg::KalmanState>::SharedPtr subscriber_kalman_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_state_data_;
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
-    rclcpp::Subscription<seabot2_mission::msg::Waypoint>::SharedPtr subscriber_mission_data_;
+    rclcpp::Subscription<seabot2_mission::msg::DepthControlSetPoint>::SharedPtr subscriber_mission_data_;
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
     rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
     rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
@@ -111,7 +112,7 @@ private:
      *
      * @param msg
      */
-    void waypoint_callback(const seabot2_mission::msg::Waypoint &msg);
+    void depth_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg);
 
     /**
      *

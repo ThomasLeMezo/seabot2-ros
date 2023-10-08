@@ -120,10 +120,16 @@ void WtfNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
     msg_first_received_safety_ = true;
 }
 
-void WtfNode::waypoint_callback(const seabot2_mission::msg::Waypoint &msg){
-    msg_waypoint_ = msg;
-    time_last_waypoint_ = this->now();
-    msg_first_received_waypoint_ = true;
+void WtfNode::mission_state_callback(const seabot2_mission::msg::MissionState &msg){
+    msg_mission_state_ = msg;
+    time_last_mission_state_ = this->now();
+    msg_first_received_mission_state_ = true;
+}
+
+void WtfNode::depth_control_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg){
+    msg_depth_control_set_point_ = msg;
+    time_last_depth_control_set_point_ = this->now();
+    msg_first_received_depth_control_set_point = true;
 }
 
 void WtfNode::depth_control_callback(const seabot2_depth_control::msg::DepthControlDebug &msg){
@@ -173,8 +179,11 @@ void WtfNode::init_interfaces() {
     subscriber_piston_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
             "/driver/piston", 10, std::bind(&WtfNode::piston_callback, this, _1));
 
-    subscriber_mission_ = this->create_subscription<seabot2_mission::msg::Waypoint>(
-            "/mission/waypoint", 10, std::bind(&WtfNode::waypoint_callback, this, _1));
+    subscriber_mission_state_ = this->create_subscription<seabot2_mission::msg::MissionState>(
+            "/mission/mission_state", 10, std::bind(&WtfNode::mission_state_callback, this, _1));
+
+    subscriber_depth_control_set_point_ = this->create_subscription<seabot2_mission::msg::DepthControlSetPoint>(
+            "/mission/depth_control_set_point", 10, std::bind(&WtfNode::depth_control_set_point_callback, this, _1));
 
     subscriber_control_debug_ = this->create_subscription<seabot2_depth_control::msg::DepthControlDebug>(
             "/control/depth_control_debug", 10, std::bind(&WtfNode::depth_control_callback, this, _1));
@@ -210,38 +219,38 @@ void WtfNode::update_internal_pressure_windows(){
 }
 
 void WtfNode::update_mission_windows(){
-    if(msg_first_received_waypoint_) {
-        mvwprintw(windows_mission_, 1, 25, "%0.2f", (this->now() - time_last_waypoint_).seconds());
+    if(msg_first_received_mission_state_ && msg_first_received_depth_control_set_point) {
+        mvwprintw(windows_mission_, 1, 25, "%0.2f", (this->now() - min(time_last_mission_state_, time_last_depth_control_set_point_)).seconds());
 
         mvwprintw(windows_mission_, 3, 1, "north");
-        mvwprintw(windows_mission_, 3, 25, "%f", msg_waypoint_.north);
+//        mvwprintw(windows_mission_, 3, 25, "%f", msg_waypoint_.north);
 
         mvwprintw(windows_mission_, 4, 1, "east");
-        mvwprintw(windows_mission_, 4, 25, "%f", msg_waypoint_.east);
+//        mvwprintw(windows_mission_, 4, 25, "%f", msg_waypoint_.east);
 
         mvwprintw(windows_mission_, 5, 1, "depth");
-        mvwprintw(windows_mission_, 5, 25, "%0.2f", msg_waypoint_.depth);
+        mvwprintw(windows_mission_, 5, 25, "%0.2f", msg_depth_control_set_point_.depth);
 
         mvwprintw(windows_mission_, 6, 1, "limit_velocity");
-        mvwprintw(windows_mission_, 6, 25, "%0.3f", msg_waypoint_.limit_velocity);
+        mvwprintw(windows_mission_, 6, 25, "%0.3f", msg_depth_control_set_point_.limit_velocity);
 
-        mvwprintw(windows_mission_, 7, 1, "mission_enable");
-        mvwprintw(windows_mission_, 7, 25, "%5s", get_bool_text(msg_waypoint_.mission_enable).c_str());
+//        mvwprintw(windows_mission_, 7, 1, "mission status");
+//        mvwprintw(windows_mission_, 7, 25, "%5s", get_bool_text(msg_mission_state_..mission_enable).c_str());
 
-        mvwprintw(windows_mission_, 8, 1, "enable_thrusters");
-        mvwprintw(windows_mission_, 8, 25, "%5s", get_bool_text(msg_waypoint_.enable_thrusters).c_str());
+//        mvwprintw(windows_mission_, 8, 1, "enable_thrusters");
+//        mvwprintw(windows_mission_, 8, 25, "%5s", get_bool_text(msg_waypoint_.enable_thrusters).c_str());
 
         mvwprintw(windows_mission_, 9, 1, "waypoint_id");
-        mvwprintw(windows_mission_, 9, 25, "%4d", msg_waypoint_.waypoint_id);
+        mvwprintw(windows_mission_, 9, 25, "%4d", msg_mission_state_.waypoint_id);
 
         mvwprintw(windows_mission_, 10, 1, "waypoint_length");
-        mvwprintw(windows_mission_, 10, 25, "%4d", msg_waypoint_.waypoint_length);
+        mvwprintw(windows_mission_, 10, 25, "%4d", msg_mission_state_.waypoint_length);
 
         mvwprintw(windows_mission_, 11, 1, "time_to_next_waypoint");
-        mvwprintw(windows_mission_, 11, 25, "%6d", static_cast<int>(round(msg_waypoint_.time_to_next_waypoint)));
+        mvwprintw(windows_mission_, 11, 25, "%6d", static_cast<int>(round(msg_mission_state_.time_to_next_waypoint)));
 
-        mvwprintw(windows_mission_, 12, 1, "seafloor_landing");
-        mvwprintw(windows_mission_, 12, 25, "%5s", get_bool_text(msg_waypoint_.seafloor_landing).c_str());
+        mvwprintw(windows_mission_, 12, 1, "mission mode");
+        mvwprintw(windows_mission_, 12, 25, "%5s", mission_mode_string_[msg_mission_state_.mode].c_str());
 
         wrefresh(windows_mission_);
     }

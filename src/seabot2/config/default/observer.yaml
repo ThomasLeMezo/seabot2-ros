@@ -23,7 +23,7 @@ observer:
   kalman_node:
     ros__parameters:
       enable_kalman_depth: 0.5 # m
-      piston_volume_eq_init: 90e-6 # m3
+      piston_volume_eq_init: 140e-6 # m3
       init_chi: 0.0 # m3/m
       init_chi2: 0.0 # m3/m2
       init_volume_air: 15e-6 # m3
