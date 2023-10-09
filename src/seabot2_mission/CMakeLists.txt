@@ -13,12 +13,14 @@ find_package(seabot2_light_driver REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(seabot2_depth_filter REQUIRED)
 find_package(temperature_tsys01_driver REQUIRED)
+find_package(seabot2_temperature_profile REQUIRED)
 
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/MissionState.msg"
         "srv/AlphaMission.srv"
         "msg/DepthControlSetPoint.msg"
+        "msg/Waypoint.msg"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target
@@ -31,6 +33,7 @@ ament_target_dependencies(mission_node
         seabot2_light_driver
         seabot2_depth_filter
         temperature_tsys01_driver
+        seabot2_temperature_profile
 )
 target_link_libraries(mission_node "${cpp_typesupport_target}")
 target_include_directories(mission_node PUBLIC

@@ -51,6 +51,9 @@ void MissionNode::init_interfaces() {
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&MissionNode::depth_callback, this, _1));
 
+    subscriber_temperature_profile_data_ = this->create_subscription<seabot2_temperature_profile::msg::TemperatureProfile>(
+            "/observer/temperature_profile", 10, std::bind(&MissionNode::temperature_profile, this, _1));
+
     subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&MissionNode::temperature_callback, this, _1));
 
@@ -69,6 +72,10 @@ void MissionNode::init_interfaces() {
 
 void MissionNode::depth_callback(const seabot2_depth_filter::msg::DepthPose::SharedPtr msg) {
     mission_.update_depth(msg->depth);
+}
+
+void MissionNode::temperature_profile(const seabot2_temperature_profile::msg::TemperatureProfile ::SharedPtr msg) {
+    mission_.update_temperature_profile(msg->profile_slope, msg->profile_intercept);
 }
 
 void MissionNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData::SharedPtr msg) {

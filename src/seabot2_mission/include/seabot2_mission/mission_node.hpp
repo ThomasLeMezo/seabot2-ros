@@ -15,6 +15,7 @@
 #include "seabot2_mission/srv/alpha_mission.hpp"
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
 #include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+#include "seabot2_temperature_profile/msg/temperature_profile.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -48,6 +49,7 @@ private:
 
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
+    rclcpp::Subscription<seabot2_temperature_profile::msg::TemperatureProfile>::SharedPtr subscriber_temperature_profile_data_;
 
     rclcpp::Client<seabot2_light_driver::srv::Light>::SharedPtr client_light_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_log_parameters_;
@@ -129,6 +131,12 @@ private:
      * @param msg
      */
     void temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData::SharedPtr msg);
+
+    /**
+     * Temp profile callback
+     * @param msg
+     */
+    void temperature_profile(const seabot2_temperature_profile::msg::TemperatureProfile ::SharedPtr msg);
 
 };
 #endif //BUILD_MISSION_NODE_HPP

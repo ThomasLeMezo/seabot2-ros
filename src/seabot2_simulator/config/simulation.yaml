@@ -7,6 +7,7 @@ simulation_node:
     simu_chi2: 0.0
     simu_volume_air_init: 15e-6 #m3
     simu_pressure_sensor_stddev: 2e-3 # bar
+    seafloor_depth: 40.0 # m
 
     kalman_robot_mass: 12.0
     kalman_enable_kalman_depth: 0.5

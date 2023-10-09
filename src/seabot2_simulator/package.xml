@@ -26,6 +26,7 @@
   <build_depend>pressure_bme280_driver</build_depend>
   <build_depend>temperature_tsys01_driver</build_depend>
   <build_depend>seabot2_safety</build_depend>
+  <build_depend>seabot2_temperature_profile</build_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 

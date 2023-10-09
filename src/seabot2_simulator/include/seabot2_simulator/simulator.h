@@ -12,6 +12,7 @@
 #include "seabot2_mission/mission.hpp"
 #include <random>
 #include "rosbag2_cpp/writer.hpp"
+#include "seabot2_temperature_profile/temperature_profile.h"
 
 //using namespace std::chrono_literals;
 using namespace std;
@@ -79,6 +80,8 @@ public:
 
     /// Parameters
     double latitude_ = 48.368894;
+    double seafloor_depth_ = 40.0;
+    double seafloor_hardness_ = 0.8; // Absorption of velocity when impact with seafloor
     double salinity_cst_ = 0.0;
     double robot_mass_ =  12.0;
     const double robot_diameter_ =  0.125;
@@ -142,6 +145,9 @@ public:
     /// ******* Kalman *******  ///
     Kalman k_;
 
+    /// ******* Kalman *******  ///
+    TemperatureProfile tp_;
+
     /// ******* Sensors *******  ///
     rclcpp::Time pressure_sensor_last_time = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration pressure_sensor_dt = 200ms; /// 5Hz
@@ -155,6 +161,10 @@ public:
     rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration piston_dt_ = 200ms; /// 5Hz
     double piston_position_ = 0.;
+
+    /// ******* Temperature *******  ///
+    rclcpp::Time temperature_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
+    rclcpp::Duration temperature_dt_ = 200ms; /// 5Hz
 
     /// ******* Fusion *******  ///
     double fusion_depth_{}, fusion_velocity_{};

@@ -31,6 +31,8 @@
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
 #include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 #include "seabot2_safety/msg/safety_status.hpp"
+#include "seabot2_temperature_profile/temperature_profile.h"
+#include "seabot2_temperature_profile/msg/temperature_profile.hpp"
 
 #include "seabot2_simulator/msg/simulation_debug.hpp"
 
@@ -45,6 +47,7 @@ double Simulator::get_density_from_depth(double z, double sea_pressure) {
 Simulator::Simulator():
     ts(),
     k_(),
+    tp_(),
     dc_(rclcpp::Time(0., RCL_ROS_TIME)),
     mission_()
 {
@@ -119,6 +122,9 @@ void Simulator::init_bag_writer(){
                                 rmw_get_serialization_format(), ""});
     bag_writer_->create_topic( {"/safety/safety",
                                 "seabot2_safety/msg/SafetyStatus",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/temperature_profile",
+                                "seabot2_temperature_profile/msg/TemperatureProfile",
                                 rmw_get_serialization_format(), ""});
 
 }
@@ -353,6 +359,11 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_piston.motor_current = x_(2);
     bag_writer_->write(msg_piston, "/driver/piston", t);
 
+    seabot2_temperature_profile::msg::TemperatureProfile msg_temperature_profile;
+    msg_temperature_profile.header.stamp = t_;
+    msg_temperature_profile.profile_slope = tp_.profile_slope_;
+    msg_temperature_profile.profile_intercept = tp_.profile_intercept_;
+    bag_writer_->write(msg_temperature_profile, "/observer/temperature_profile", t);
 }
 
 #include <filesystem>
@@ -387,6 +398,11 @@ void Simulator::run_simulation() {
         /// Physical simulation
         x_ += dt_.seconds() * f(x_, pwm);
 
+        /// Seafloor reached
+        if(x_(4)>seafloor_depth_ && x_(3)>0.0){
+            x_(3)=-x_(3)*seafloor_hardness_;
+        }
+
         /// PWM motor simuluation
         if((t_-control_pwm_last_time) >= control_pwm_dt) {
             control_pwm_last_time = t_;
@@ -417,6 +433,14 @@ void Simulator::run_simulation() {
 
             /// Compute Kalman
             k_.set_new_piston_data(piston_position_, dc_.piston_set_point_, t_);
+        }
+
+        if((t_-temperature_last_time_)>= temperature_dt_){
+            temperature_last_time_ = t_;
+            /// Temperature profile simulation
+            tp_.update_temperature(temperature_, fusion_depth_);
+            tp_.compute_profile();
+            mission_.update_temperature_profile(tp_.profile_slope_, tp_.profile_intercept_);
         }
 
         /// Mission simulation

@@ -21,6 +21,7 @@ void SimulatorNode::init_parameters() {
     this->declare_parameter<double>("simu_chi2", s_.chi2_);
     this->declare_parameter<double>("simu_volume_air_init", s_.volume_air_init_);
     this->declare_parameter<double>("simu_pressure_sensor_stddev", s_.pressure_sensor_stddev_);
+    this->declare_parameter<double>("simu_seafloor_depth", s_.seafloor_depth_);
 
     this->declare_parameter<double>("kalman_robot_mass", s_.k_.robot_mass_);
     this->declare_parameter<double>("kalman_enable_kalman_depth", s_.k_.enable_kalman_depth_);
@@ -72,6 +73,7 @@ void SimulatorNode::init_parameters() {
     s_.mission_file_name_ = this->get_parameter_or("simu_mission_file_name", s_.mission_file_name_);
     s_.mission_path_ = this->get_parameter_or("simu_mission_path", s_.mission_path_);
     s_.bag_path_ = this->get_parameter_or("bag_path", s_.bag_path_);
+    s_.seafloor_depth_ = this->get_parameter_or("simu_seafloor_depth", s_.seafloor_depth_);
 
     s_.k_.robot_mass_ = this->get_parameter_or("kalman_robot_mass", s_.k_.robot_mass_);
     s_.k_.enable_kalman_depth_ = this->get_parameter_or("kalman_enable_kalman_depth", s_.k_.enable_kalman_depth_);

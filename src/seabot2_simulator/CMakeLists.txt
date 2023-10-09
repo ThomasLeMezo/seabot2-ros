@@ -27,12 +27,13 @@ find_package(seabot2_power_driver REQUIRED)
 find_package(pressure_bme280_driver REQUIRED)
 find_package(temperature_tsys01_driver REQUIRED)
 find_package(seabot2_safety REQUIRED)
-find_package(seabot2_depth_control REQUIRED)
+find_package(seabot2_temperature_profile REQUIRED)
 
 find_library(LIBTEOS teos REQUIRED)
 find_library(LIBKALMAN kalman REQUIRED)
 find_library(LIBDEPTHCONTROL depth_control REQUIRED)
 find_library(LIBMISSION mission REQUIRED)
+find_library(LIBTEMPERATUREPROFILE temperature_profile REQUIRED)
 find_package(Ibex REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
@@ -62,6 +63,7 @@ ament_target_dependencies(simulator_node
         pressure_bme280_driver
         temperature_tsys01_driver
         seabot2_safety
+        seabot2_temperature_profile
 )
 target_link_libraries(simulator_node
         "${cpp_typesupport_target}"
@@ -69,6 +71,7 @@ target_link_libraries(simulator_node
         ${LIBKALMAN}
         ${LIBDEPTHCONTROL}
         ${LIBMISSION}
+        ${LIBTEMPERATUREPROFILE}
         Ibex::ibex
         )
 

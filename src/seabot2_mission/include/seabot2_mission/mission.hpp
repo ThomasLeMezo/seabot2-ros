@@ -135,7 +135,12 @@ public:
      * @param temperature in degree
      */
     void update_temperature(const double &temperature){
-        temeprature_ = temperature;
+        temperature_ = temperature;
+    }
+
+    void update_temperature_profile(const double &temp_slope, const double &temp_intercept){
+        temperature_slope_ = temp_slope;
+        temperature_intercept_ = temp_intercept;
     }
 
     /**
@@ -150,6 +155,30 @@ public:
      * Set set point parameters to idle state
      */
     void idle_state_configuration(const rclcpp::Time &t_now);
+
+    /**
+     * Get temperature
+     * @return
+     */
+    double get_temperature() const{
+        return temperature_;
+    }
+
+    /**
+     * Get temp slope
+     * @return
+     */
+    [[nodiscard]] double get_temp_slope() const{
+        return temperature_slope_;
+    }
+
+    /**
+     * Get temp intercept
+     * @return
+     */
+    [[nodiscard]] double get_temp_intercept() const{
+        return temperature_intercept_;
+    }
 
 private:
     /**
@@ -169,6 +198,13 @@ private:
      * @return
      */
     void decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, boost::property_tree::ptree::value_type &v, const double &depth_offset);
+
+    /**
+     * decode waypoint temp keeping
+     * @param w
+     * @param v
+     */
+    void decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w, boost::property_tree::ptree::value_type &v);
 
     /**
      *
@@ -204,6 +240,10 @@ private:
 
     double default_time_to_start_ = 60.0;
 
+    // Temperature profile
+    double temperature_slope_ = -0.2;
+    double temperature_intercept_ = 5.0;
+
     // Mission mode
     unsigned int mission_mode_ = seabot2_mission::msg::MissionState::MODE_IDLE;
 
@@ -230,7 +270,7 @@ private:
 
     // State
     double depth_ = 0.0;
-    double temeprature_ = 15.0; // in degree
+    double temperature_ = 15.0; // in degree
 
 };
 

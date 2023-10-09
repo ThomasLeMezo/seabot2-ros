@@ -53,6 +53,7 @@ bool Mission::update_state(const rclcpp::Time &t_now){
                     case WP_SEAFLOOR_LANDING:
                         break;
                     case WP_TEMPERATURE_KEEPING:
+                        std::dynamic_pointer_cast<WaypointTemperatureKeeping>(waypoints_[current_waypoint_id_].first)->process(t_now);
                         break;
                     case WP_TEMPERATURE_PROFILE:
                         break;
@@ -68,9 +69,10 @@ bool Mission::update_state(const rclcpp::Time &t_now){
         }
     }
     else{ /// Last waypoint was reached
+        if(mission_state_==RUNNING)
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Mission] End of waypoints");
         mission_state_ = ENDING;
         duration_next_waypoint_ = waypoints_[waypoints_.size() - 1].first->time_end - t_now;
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Mission] End of waypoints");
     }
 
     if(mission_state_==ENDING || mission_state_==NOT_STARTED){
@@ -200,6 +202,22 @@ void Mission::decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, pt::ptree:
                 w->velocity);
 }
 
+void Mission::decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w, pt::ptree::value_type &v){
+    boost::optional<double> temperature = v.second.get_optional<double>("temperature");
+    if(temperature.is_initialized()){
+        w->temperature = temperature.value();
+    }
+    else{
+        w->temperature = 20.0;
+    }
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Temperature Keeping Waypoint %zu (t_end=%li, temp=%lf, vel=%f)",
+                waypoints_.size(),
+                (long int)w->time_end.seconds(),
+                w->temperature,
+                w->velocity);
+}
+
 int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset){
     try{
         if(std::find(std::begin(XML_TYPE), std::end(XML_TYPE), v.first) != std::end(XML_TYPE)){
@@ -213,7 +231,10 @@ int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, con
 
             }
             else if(v.first == XML_TEMPERATURE_KEEPING){
-
+                std::shared_ptr<WaypointTemperatureKeeping> w = std::make_shared<WaypointTemperatureKeeping>(this);
+                decode_waypoint(w, v, last_time);
+                decode_waypoint_temperature_keeping(w, v);
+                waypoints_.emplace_back(w, WP_TEMPERATURE_KEEPING);
             }
             else if(v.first == XML_TEMPERATURE_PROFILE){
 
