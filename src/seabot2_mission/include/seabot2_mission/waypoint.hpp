@@ -75,6 +75,7 @@ public:
 
 public:
     double temperature = 0.0;
+    double depth_set_point_accumulator_ = 0.0;
 };
 
 class WaypointTemperatureProfile: public Waypoint{

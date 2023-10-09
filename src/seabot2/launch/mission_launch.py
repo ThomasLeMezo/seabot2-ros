@@ -59,5 +59,5 @@ def generate_launch_description():
         seabot2_mission,
         seabot2_safety,
         seabot2_record_parameters,
-        seabot2_iridium
+        # seabot2_iridium
     ])

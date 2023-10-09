@@ -130,7 +130,7 @@ void DepthControlNode::init_interfaces() {
     subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&DepthControlNode::temperature_callback, this, _1));
     subscriber_mission_data_ = this->create_subscription<seabot2_mission::msg::DepthControlSetPoint>(
-            "/mission/waypoint", 10, std::bind(&DepthControlNode::depth_set_point_callback, this, _1));
+            "/mission/depth_control_set_point", 10, std::bind(&DepthControlNode::depth_set_point_callback, this, _1));
     subscriber_safety_data_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
             "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
     subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(

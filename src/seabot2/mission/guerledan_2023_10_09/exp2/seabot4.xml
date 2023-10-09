@@ -6,17 +6,17 @@
             <year>2023</year>
             <month>10</month>
             <day>09</day>
-            <hour>09</hour>
+            <hour>19</hour>
             <min>45</min>
         </start_time_utc>
     </offset>
 
-    <description>Seabot 4</description>
+    <description>Temperature Keeping</description>
 
     <paths>
         <temperature_keeping>
-            <duration>3000</duration>
-            <temperature>12.0</temperature>
+            <duration>600</duration>
+            <temperature>14.0</temperature>
             <limit_velocity>0.1</limit_velocity>
         </temperature_keeping>
     </paths>

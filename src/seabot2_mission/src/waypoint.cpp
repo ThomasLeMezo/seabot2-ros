@@ -32,6 +32,16 @@ void WaypointTemperatureKeeping::process(const rclcpp::Time &time) {
 
     double depth_set_point = mission_->get_temp_slope()*this->temperature + mission_->get_temp_intercept();
 
+    if(this->temperature-mission_->get_temperature()<3){
+        depth_set_point_accumulator_ += 0.2;
+    }
+    else{
+        depth_set_point_accumulator_ = 0;
+    }
+
+    depth_set_point += depth_set_point_accumulator_;
+    depth_set_point = fmax(depth_set_point, 2.0);
+
     mission_->get_depth_control_set_point().depth = depth_set_point;
     mission_->get_depth_control_set_point().limit_velocity = velocity;
     mission_->get_depth_control_set_point().enable_control = true;

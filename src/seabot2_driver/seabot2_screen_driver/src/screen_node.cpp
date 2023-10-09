@@ -84,7 +84,7 @@ void ScreenNode::init_topics() {
             "/driver/pressure_internal", 10, std::bind(&ScreenNode::topic_internal_pressure_callback, this, _1));
 
     subscriber_mission_ = this->create_subscription<seabot2_mission::msg::MissionState >(
-            "/mission/waypoint", 10, std::bind(&ScreenNode::waypoint_callback, this, _1));
+            "/mission/mission_state", 10, std::bind(&ScreenNode::waypoint_callback, this, _1));
 
     subscriber_power_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
             "/driver/power", 10, std::bind(&ScreenNode::power_callback, this, _1));
