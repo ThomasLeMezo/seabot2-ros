@@ -62,6 +62,12 @@ void SimulatorNode::init_parameters() {
     this->declare_parameter<double>("dc_delta_position_lb", s_.dc_.delta_position_lb_);
     this->declare_parameter<double>("dc_delta_position_ub", s_.dc_.delta_position_ub_);
 
+    this->declare_parameter<std::vector<double>>("temperature_profile_depth", s_.temperature_profile_depth_);
+    this->declare_parameter<std::vector<double>>("temperature_profile_temp", s_.temperature_profile_temperature_);
+
+    this->declare_parameter<std::vector<double>>("solver_velocity", s_.solver_velocity_);
+    this->declare_parameter<std::vector<double>>("solver_alpha", s_.solver_alpha_);
+
     s_.robot_mass_ = this->get_parameter_or("simu_robot_mass", s_.robot_mass_);
     s_.salinity_cst_ = this->get_parameter_or("simu_salinity", s_.salinity_cst_);
     s_.Cz_ = this->get_parameter_or("simu_cz", s_.Cz_);
@@ -114,6 +120,16 @@ void SimulatorNode::init_parameters() {
     s_.dc_.delta_position_lb_ = this->get_parameter_or("dc_delta_position_lb", s_.dc_.delta_position_lb_);
     s_.dc_.delta_position_ub_ = this->get_parameter_or("dc_delta_position_ub", s_.dc_.delta_position_ub_);
 
+    s_.temperature_profile_depth_ = this->get_parameter_or("temperature_profile_depth", s_.temperature_profile_depth_);
+    s_.temperature_profile_temperature_ = this->get_parameter_or("temperature_profile_temp", s_.temperature_profile_temperature_);
+
+    s_.solver_velocity_ = this->get_parameter_or("solver_velocity", s_.solver_velocity_);
+    s_.solver_alpha_ = this->get_parameter_or("solver_alpha", s_.solver_alpha_);
+
+    if(s_.solver_velocity_.size()!=0){
+        for(size_t i=0; i<s_.solver_velocity_.size(); i++)
+            s_.dc_.alpha_solver_.add_to_memory(s_.solver_alpha_[i], s_.solver_velocity_[i]);
+    }
 }
 
 int main(int argc, char *argv[]) {

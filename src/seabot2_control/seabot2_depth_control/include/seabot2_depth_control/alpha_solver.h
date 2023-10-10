@@ -40,6 +40,22 @@ public:
      */
     void add_to_memory(const double beta, const double alpha);
 
+    /**
+     * get_computed_memory
+     * @return
+     */
+    vector<array<double, 2>>& get_computed_memory(){
+        return computed_memory_;
+    }
+
+    /**
+     * set_test_in_memory
+     * @param enable
+     */
+    void set_test_in_memory(bool enable){
+        enable_test_in_memory_ = enable;
+    }
+
 private:
     // B = rho*S/(2*mv)
     // A = rho*g/mv
@@ -54,6 +70,8 @@ private:
     double epsilon_ = 0.01; // Drive the time of the algorithm
 
     vector<array<double, 2>> computed_memory_;
+
+    bool enable_test_in_memory_ = true;
 
 };
 

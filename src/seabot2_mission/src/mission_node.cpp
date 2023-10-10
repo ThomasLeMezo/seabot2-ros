@@ -29,12 +29,14 @@ void MissionNode::init_parameters() {
     this->declare_parameter<double>("flash_next_waypoint_time", flash_next_waypoint_time_);
     this->declare_parameter<int>("flash_number", flash_number_);
     this->declare_parameter<double>("limit_velocity_default", limit_velocity_default_);
+    this->declare_parameter<double>("temperature_keeping_k", mission_.temperature_keeping_k_);
 
     mission_file_name_ = this->get_parameter_or("mission_file_name", mission_file_name_);
     mission_path_ = this->get_parameter_or("mission_path", mission_path_);
     flash_next_waypoint_time_ = this->get_parameter_or("flash_next_waypoint_time", flash_next_waypoint_time_);
     flash_number_ = this->get_parameter_or("flash_number", flash_number_);
     limit_velocity_default_ = this->get_parameter_or("limit_velocity_default", limit_velocity_default_);
+    mission_.temperature_keeping_k_ = this->get_parameter_or("limit_velocity_default", mission_.temperature_keeping_k_);
 
 }
 

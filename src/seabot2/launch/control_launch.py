@@ -2,6 +2,9 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
+import numpy as np
+import yaml
+import sys
 
 def generate_launch_description():
     home_path = os.path.expanduser('~')
@@ -22,6 +25,13 @@ def generate_launch_description():
     )
     if os.path.exists(config_physics):
         parameters_file_list.append(config_control)
+
+    # Load alpha values
+    file_alpha = home_path + "/config/default/alpha_values.txt"
+    if os.path.exists(file_alpha):
+        data = np.loadtxt(file_alpha)
+        parameters_file_list.append({'solver_alpha': data[0].tolist()})
+        parameters_file_list.append({'solver_velocity': data[1].tolist()})
 
     seabot2_depth_control = Node(
         package='seabot2_depth_control',

@@ -50,6 +50,9 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("cf_estimation", dc_.Cf_);
     this->declare_parameter<bool>("debug", dc_.debug_);
 
+    this->declare_parameter<std::vector<double>>("solver_velocity", solver_velocity_);
+    this->declare_parameter<std::vector<double>>("solver_alpha", solver_alpha_);
+
     dc_.physics_rho_ = this->get_parameter_or("physics_rho", dc_.physics_rho_);
     dc_.physics_g_ = this->get_parameter_or("physics_g", dc_.physics_g_);
     dc_.robot_mass_ = this->get_parameter_or("physics_mass", dc_.robot_mass_);
@@ -79,6 +82,14 @@ void DepthControlNode::init_parameters() {
     dc_.debug_ = this->get_parameter_or("debug", dc_.debug_);
 
     dc_.update_coeff();
+
+    solver_velocity_ = this->get_parameter_or("solver_velocity", solver_velocity_);
+    solver_alpha_ = this->get_parameter_or("solver_alpha", solver_alpha_);
+
+    if(solver_velocity_.size()!=0){
+        for(size_t i=0; i<solver_velocity_.size(); i++)
+            dc_.alpha_solver_.add_to_memory(solver_alpha_[i], solver_velocity_[i]);
+    }
 }
 
 void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &msg) {
@@ -142,6 +153,9 @@ void DepthControlNode::init_interfaces() {
 
     service_alpha_computation_ = this->create_service<seabot2_mission::srv::AlphaMission>("alpha_mission",
                                                                            bind(&DepthControlNode::alpha_mission_pre_computation, this, _1, _2, _3));
+
+    service_alpha_generation_ = this->create_service<std_srvs::srv::Trigger>("alpha_generation",
+                                                                             bind(&DepthControlNode::alpha_generation, this, _1, _2, _3));
 }
 
 void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
@@ -152,6 +166,12 @@ void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_r
     velocity_limits_requests_.clear();
     velocity_limits_requests_ = std::vector<float>(request->velocity_limits);
     velocity_limits_computations_ = true;
+}
+
+void DepthControlNode::alpha_generation(const std::shared_ptr<rmw_request_id_t> request_header,
+                                        const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+                                        std::shared_ptr<std_srvs::srv::Trigger::Response> response){
+    generate_velocity_pairs();
 }
 
 void DepthControlNode::density_callback(const seabot2_density::msg::Density &msg){
@@ -181,6 +201,28 @@ void DepthControlNode::timer_callback() { /// ToDo bug to be check
     dc_.state_machine_step(loop_dt_, this->now());
     publish_message();
 
+}
+
+#include <iostream>
+#include <fstream>
+void DepthControlNode::generate_velocity_pairs(){
+    dc_.alpha_solver_.set_test_in_memory(false);
+    for(double velocity = 0.0; velocity<0.3; velocity+=0.001) {
+        dc_.alpha_solver_.compute_alpha(velocity);
+    }
+
+    std::ofstream file("alpha_values.txt");
+
+
+    for (const auto& value : dc_.alpha_solver_.get_computed_memory()) {
+        file << value[0] << " ";
+    }
+    file << '\n';
+    for (const auto& value : dc_.alpha_solver_.get_computed_memory()) {
+        file << value[1] << " ";
+    }
+    dc_.alpha_solver_.set_test_in_memory(true);
+    file.close();
 }
 
 void DepthControlNode::publish_message(){

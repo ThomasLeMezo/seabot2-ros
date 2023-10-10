@@ -74,8 +74,9 @@ public:
     void process(const rclcpp::Time &time) override;
 
 public:
-    double temperature = 0.0;
+    double temperature_ = 0.0;
     double depth_set_point_accumulator_ = 0.0;
+    double coeff_K_ = 0.03;
 };
 
 class WaypointTemperatureProfile: public Waypoint{

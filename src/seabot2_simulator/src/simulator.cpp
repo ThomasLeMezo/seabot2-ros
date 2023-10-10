@@ -126,11 +126,34 @@ void Simulator::init_bag_writer(){
     bag_writer_->create_topic( {"/observer/temperature_profile",
                                 "seabot2_temperature_profile/msg/TemperatureProfile",
                                 rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/observer/temperature",
+                                "temperature_tsys01_driver/msg/TemperatureSensorData",
+                                rmw_get_serialization_format(), ""});
 
 }
 
 double Simulator::temperature_from_depth(double z) {
-    temperature_ = max(min(18.0-0.25*z, 18.0), 8.0);
+    if(temperature_profile_temperature_.size()<2) {
+        temperature_ = max(min(18.0 - 0.25 * z, 18.0), 8.0);
+    }
+    else{
+        // Find first value of temperature_profile_depth_ which is greater than z
+        size_t idx = 0;
+        for(size_t i=idx+1; i<temperature_profile_depth_.size(); i++){
+            if(temperature_profile_depth_[i]<z)
+                idx = i;
+            else
+                break;
+        }
+        double z0 = temperature_profile_depth_[idx];
+        double z1 = temperature_profile_depth_[idx+1];
+        double t0 = temperature_profile_temperature_[idx];
+        double t1 = temperature_profile_temperature_[idx+1];
+        if(z1-z0 != 0.0)
+            temperature_ = (z-z0)/(z1-z0)*(t1-t0)+t0;
+        else
+            temperature_ = t0;
+    }
     return temperature_;
 }
 
@@ -287,6 +310,7 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_temperature.temperature = temperature_;
     msg_temperature.header.stamp = t_;
     bag_writer_->write(msg_temperature, "/driver/temperature", t);
+    bag_writer_->write(msg_temperature, "/observer/temperature", t);
 
     pressure_bme280_driver::msg::Bme280Data msg_pressure_internal;
     msg_pressure_internal.pressure = 0.7;
@@ -440,12 +464,14 @@ void Simulator::run_simulation() {
             /// Temperature profile simulation
             tp_.update_temperature(temperature_, fusion_depth_);
             tp_.compute_profile();
+            mission_.update_temperature(temperature_);
             mission_.update_temperature_profile(tp_.profile_slope_, tp_.profile_intercept_);
         }
 
         /// Mission simulation
         if(t_-mission_last_time_>= mission_dt_){
             mission_last_time_ = t_;
+            mission_.update_depth(k_.x_forcast_(1));
             mission_.update_state(t_);
         }
 

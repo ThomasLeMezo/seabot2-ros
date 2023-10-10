@@ -174,6 +174,8 @@ public:
     rclcpp::Time dc_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration dc_dt_ = 200ms; /// 5Hz
 
+    std::vector<double> solver_velocity_, solver_alpha_;
+
     /// ******* Mission *******  ///
     Mission mission_;
     rclcpp::Time mission_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
@@ -185,6 +187,10 @@ public:
 
     /// ******* Log *******  ///
     std::string bag_path_ = "./mission";
+
+    /// ******* Temperature profile *******  ///
+    std::vector<double> temperature_profile_depth_;
+    std::vector<double> temperature_profile_temperature_;
 };
 
 

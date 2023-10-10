@@ -272,6 +272,9 @@ private:
     double depth_ = 0.0;
     double temperature_ = 15.0; // in degree
 
+public:
+    double temperature_keeping_k_ = 0.03;
+
 };
 
 

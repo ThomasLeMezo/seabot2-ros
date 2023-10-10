@@ -20,6 +20,7 @@
 #include "seabot2_depth_control/alpha_solver.h"
 #include "seabot2_depth_control/msg/alpha_debug.hpp"
 #include "seabot2_mission/srv/alpha_mission.hpp"
+#include "std_srvs/srv/trigger.hpp"
 
 #include "seabot2_depth_control/depth_control.h"
 
@@ -48,6 +49,8 @@ private:
 
     bool enable_control_ = true; // Allow publish set point to piston
 
+    std::vector<double> solver_velocity_, solver_alpha_;
+
     /// Interfaces
     rclcpp::Subscription<seabot2_kalman::msg::KalmanState>::SharedPtr subscriber_kalman_data_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_state_data_;
@@ -62,6 +65,7 @@ private:
     rclcpp::Publisher<seabot2_depth_control::msg::AlphaDebug>::SharedPtr publisher_alpha_debug_;
 
     rclcpp::Service<seabot2_mission::srv::AlphaMission>::SharedPtr service_alpha_computation_;
+    rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_alpha_generation_;
 
     /**
      *  Init and get parameters of the Node
@@ -131,8 +135,22 @@ private:
                                                          std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response);
 
     /**
+     *
+     * @param request_header
+     * @param request
+     * @param response
+     */
+    void alpha_generation(const std::shared_ptr<rmw_request_id_t> request_header,
+                                            const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+                                            std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+    /**
      * Publish messages
      */
     void publish_message();
+
+    /**
+     * Generate velocities
+     */
+    void generate_velocity_pairs();
 };
 #endif //BUILD_DEPTH_CONTROL_NODE_HPP

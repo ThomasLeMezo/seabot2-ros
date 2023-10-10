@@ -205,16 +205,16 @@ void Mission::decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, pt::ptree:
 void Mission::decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w, pt::ptree::value_type &v){
     boost::optional<double> temperature = v.second.get_optional<double>("temperature");
     if(temperature.is_initialized()){
-        w->temperature = temperature.value();
+        w->temperature_ = temperature.value();
     }
     else{
-        w->temperature = 20.0;
+        w->temperature_ = 20.0;
     }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Temperature Keeping Waypoint %zu (t_end=%li, temp=%lf, vel=%f)",
                 waypoints_.size(),
                 (long int)w->time_end.seconds(),
-                w->temperature,
+                w->temperature_,
                 w->velocity);
 }
 
