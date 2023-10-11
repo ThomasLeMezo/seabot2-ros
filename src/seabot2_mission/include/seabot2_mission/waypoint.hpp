@@ -10,12 +10,12 @@
 #include <array>
 #include <rclcpp/rclcpp.hpp>
 
-#include <rclcpp/rclcpp.hpp>
 #include "seabot2_mission/msg/depth_control_set_point.hpp"
 #include "seabot2_mission/msg/mission_state.hpp"
 #include "seabot2_mission/waypoint.hpp"
 #include "seabot2_mission/mission.hpp"
 
+using namespace std::chrono_literals;
 class Mission;
 
 class Waypoint{
@@ -74,9 +74,10 @@ public:
     void process(const rclcpp::Time &time) override;
 
 public:
-    double temperature_ = 0.0;
+    double temperature_ = 20.0;
     double depth_set_point_accumulator_ = 0.0;
     double coeff_K_ = 0.03;
+    double error_temperature_ = 0.0;
 };
 
 class WaypointTemperatureProfile: public Waypoint{
@@ -90,10 +91,16 @@ public:
     void process(const rclcpp::Time &time) override;
 
 public:
-    double temperature_high = 0.0;
-    double temperature_low = 0.0;
-    double depth_min = 0.0;
-    double depth_max = 0.0;
+    double temperature_high_ = 20.0;
+    double temperature_low_ = 20.0;
+    double depth_min_ = 0.0;
+    double depth_max_ = 0.0;
+    rclcpp::Duration max_delay_ = 100s;
+private:
+    rclcpp::Time time_last_transition_;
+    enum PROFILE_STATE{PROFILE_GO_DOWN, PROFILE_GO_UP};
+    PROFILE_STATE state_ = PROFILE_GO_DOWN;
+    bool first_init_ = true;
 };
 
 class WaypointGNSSProfile: public Waypoint{

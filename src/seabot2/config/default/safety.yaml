@@ -5,7 +5,7 @@ safety:
       internal_humidity_limit: 70.0 # %
       internal_pressure_limit: 800.0 # mbar
       battery_volt_limit: 12.5 # V
-      depth_flash_surface: 0.5 # m
+      depth_flash_surface: 2.0 # m
       depth_limit_max_: 110.0 # m
       depth_no_data_warning: 1000 # ms
       battery_no_data_warning: 5000 # ms
@@ -14,7 +14,7 @@ safety:
       ping_no_data_warning: 4000 # ms
       limit_depth_default: 100.0 # m
       robot_height_ping: 1.1 # m (distance between pressure sensor and ping1D)
-      offset_max_depth: 0.5 # m (0.5 default, no go zone from seafloor)
+      offset_max_depth: 2.0 # m (0.5 default, no go zone from seafloor)
       seabed_delay_detection: 30000 # ms
       max_depth_reset_zero: 2.0 #m
       gnss_fix_once_enable: true

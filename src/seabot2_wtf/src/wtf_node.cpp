@@ -222,17 +222,23 @@ void WtfNode::update_mission_windows(){
     if(msg_first_received_mission_state_ && msg_first_received_depth_control_set_point) {
         mvwprintw(windows_mission_, 1, 25, "%0.2f", (this->now() - min(time_last_mission_state_, time_last_depth_control_set_point_)).seconds());
 
-        mvwprintw(windows_mission_, 3, 1, "north");
-//        mvwprintw(windows_mission_, 3, 25, "%f", msg_waypoint_.north);
+//        mvwprintw(windows_mission_, 3, 1, "north");
+////        mvwprintw(windows_mission_, 3, 25, "%f", msg_waypoint_.north);
+//
+//        mvwprintw(windows_mission_, 4, 1, "east");
+////        mvwprintw(windows_mission_, 4, 25, "%f", msg_waypoint_.east);
 
-        mvwprintw(windows_mission_, 4, 1, "east");
-//        mvwprintw(windows_mission_, 4, 25, "%f", msg_waypoint_.east);
+        mvwprintw(windows_mission_, 3, 1, "depth");
+        mvwprintw(windows_mission_, 3, 25, "%0.2f", msg_depth_control_set_point_.depth);
 
-        mvwprintw(windows_mission_, 5, 1, "depth");
-        mvwprintw(windows_mission_, 5, 25, "%0.2f", msg_depth_control_set_point_.depth);
+        mvwprintw(windows_mission_, 4, 1, "limit_velocity");
+        mvwprintw(windows_mission_, 4, 25, "%0.3f", msg_depth_control_set_point_.limit_velocity);
 
-        mvwprintw(windows_mission_, 6, 1, "limit_velocity");
-        mvwprintw(windows_mission_, 6, 25, "%0.3f", msg_depth_control_set_point_.limit_velocity);
+        mvwprintw(windows_mission_, 5, 1, "mission mode");
+        mvwprintw(windows_mission_, 5, 25, "%5s", mission_mode_string_[msg_mission_state_.mode].c_str());
+
+        mvwprintw(windows_mission_, 6, 1, "mission state");
+        mvwprintw(windows_mission_, 6, 25, "%5s", mission_state_string_[msg_mission_state_.state].c_str());
 
 //        mvwprintw(windows_mission_, 7, 1, "mission status");
 //        mvwprintw(windows_mission_, 7, 25, "%5s", get_bool_text(msg_mission_state_..mission_enable).c_str());
@@ -240,17 +246,14 @@ void WtfNode::update_mission_windows(){
 //        mvwprintw(windows_mission_, 8, 1, "enable_thrusters");
 //        mvwprintw(windows_mission_, 8, 25, "%5s", get_bool_text(msg_waypoint_.enable_thrusters).c_str());
 
-        mvwprintw(windows_mission_, 9, 1, "waypoint_id");
-        mvwprintw(windows_mission_, 9, 25, "%4d", msg_mission_state_.waypoint_id);
+        mvwprintw(windows_mission_, 7, 1, "waypoint_id");
+        mvwprintw(windows_mission_, 7, 25, "%4d", msg_mission_state_.waypoint_id);
 
         mvwprintw(windows_mission_, 10, 1, "waypoint_length");
         mvwprintw(windows_mission_, 10, 25, "%4d", msg_mission_state_.waypoint_length);
 
         mvwprintw(windows_mission_, 11, 1, "time_to_next_waypoint");
         mvwprintw(windows_mission_, 11, 25, "%6d", static_cast<int>(round(msg_mission_state_.time_to_next_waypoint)));
-
-        mvwprintw(windows_mission_, 12, 1, "mission mode");
-        mvwprintw(windows_mission_, 12, 25, "%5s", mission_mode_string_[msg_mission_state_.mode].c_str());
 
         wrefresh(windows_mission_);
     }

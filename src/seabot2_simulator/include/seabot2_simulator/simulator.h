@@ -70,7 +70,7 @@ public:
      */
     Matrix<double, SIMU_NB_STATES, 1> x_ = Matrix<double, SIMU_NB_STATES, 1>::Zero();
     int motor_cmd_ = MOTOR_STOP;
-    double temperature_{}, salinity_{}, rho_{}, g_{};
+    double salinity_{}, rho_{}, g_{};
     double sea_pressure_{}; // Sea pressure at depth z in dbar (0 dbar at depth 0.0m)
     double abs_pressure_{}; // Absolute pressure at depth z in Pa (101325 Pa at depth 0.0m)
     double piston_volume_ = 0.0;
@@ -156,6 +156,10 @@ public:
     double pressure_sensor_stddev_ = 0.002; // in bar (2mm)
     std::default_random_engine generator_;
     std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
+    double temperature_sensor_ = 0.;
+    double temperature_sensor_stddev_ = 0.02; // in °C
+    std::default_random_engine generator_temperature_;
+    std::normal_distribution<double> temperature_sensor_dist_{0.0, temperature_sensor_stddev_};
 
     /// ******* Piston *******  ///
     rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);

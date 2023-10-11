@@ -133,8 +133,9 @@ void Simulator::init_bag_writer(){
 }
 
 double Simulator::temperature_from_depth(double z) {
+    double temperature;
     if(temperature_profile_temperature_.size()<2) {
-        temperature_ = max(min(18.0 - 0.25 * z, 18.0), 8.0);
+        temperature = max(min(18.0 - 0.25 * z, 18.0), 8.0);
     }
     else{
         // Find first value of temperature_profile_depth_ which is greater than z
@@ -150,11 +151,11 @@ double Simulator::temperature_from_depth(double z) {
         double t0 = temperature_profile_temperature_[idx];
         double t1 = temperature_profile_temperature_[idx+1];
         if(z1-z0 != 0.0)
-            temperature_ = (z-z0)/(z1-z0)*(t1-t0)+t0;
+            temperature = (z-z0)/(z1-z0)*(t1-t0)+t0;
         else
-            temperature_ = t0;
+            temperature = t0;
     }
-    return temperature_;
+    return temperature;
 }
 
 double Simulator::salinity_from_depth(double z) {
@@ -250,6 +251,8 @@ void Simulator::simulate_sensors(){
     fusion_depth_ = (pressure_sensor_*1e5 - ts.gtc.gsw_p0) / (g_*rho_);
 //    fusion_depth_ = x_(4) + pressure_sensor_dist_(generator_);
     fusion_velocity_ = x_(3);
+
+    temperature_sensor_ = temperature_from_depth(x_(4)) + temperature_sensor_dist_(generator_temperature_);
 }
 
 void Simulator::simulate_piston_position() {
@@ -307,7 +310,7 @@ void Simulator::save_data(const rclcpp::Time &t){
     bag_writer_->write(msg_depth_control_set_point, "/mission/depth_control_set_point", t);
 
     temperature_tsys01_driver::msg::TemperatureSensorData msg_temperature;
-    msg_temperature.temperature = temperature_;
+    msg_temperature.temperature = temperature_sensor_;
     msg_temperature.header.stamp = t_;
     bag_writer_->write(msg_temperature, "/driver/temperature", t);
     bag_writer_->write(msg_temperature, "/observer/temperature", t);
@@ -320,7 +323,7 @@ void Simulator::save_data(const rclcpp::Time &t){
 
     seabot2_depth_filter::msg::PressureSensorData msg_pressure_external;
     msg_pressure_external.pressure = pressure_sensor_;
-    msg_pressure_external.temperature = temperature_;
+    msg_pressure_external.temperature = temperature_sensor_;
     msg_pressure_external.header.stamp = t_;
     bag_writer_->write(msg_pressure_external, "/driver/pressure_external", t);
 
@@ -382,12 +385,6 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_piston.battery_voltage = battery_tension_;
     msg_piston.motor_current = x_(2);
     bag_writer_->write(msg_piston, "/driver/piston", t);
-
-    seabot2_temperature_profile::msg::TemperatureProfile msg_temperature_profile;
-    msg_temperature_profile.header.stamp = t_;
-    msg_temperature_profile.profile_slope = tp_.profile_slope_;
-    msg_temperature_profile.profile_intercept = tp_.profile_intercept_;
-    bag_writer_->write(msg_temperature_profile, "/observer/temperature_profile", t);
 }
 
 #include <filesystem>
@@ -439,7 +436,7 @@ void Simulator::run_simulation() {
             simulate_sensors();
 
             k_.update_density(rho_);
-            k_.update_temperature(temperature_);
+            k_.update_temperature(temperature_sensor_);
             k_.update_pressure(abs_pressure_/1e5);
 
             /// Compute Kalman
@@ -452,7 +449,7 @@ void Simulator::run_simulation() {
             simulate_piston_position();
 
             k_.update_density(rho_);
-            k_.update_temperature(temperature_);
+            k_.update_temperature(temperature_sensor_);
             k_.update_pressure(abs_pressure_/1e5);
 
             /// Compute Kalman
@@ -462,10 +459,8 @@ void Simulator::run_simulation() {
         if((t_-temperature_last_time_)>= temperature_dt_){
             temperature_last_time_ = t_;
             /// Temperature profile simulation
-            tp_.update_temperature(temperature_, fusion_depth_);
-            tp_.compute_profile();
-            mission_.update_temperature(temperature_);
-            mission_.update_temperature_profile(tp_.profile_slope_, tp_.profile_intercept_);
+            tp_.update_temperature(temperature_sensor_, fusion_depth_);
+            mission_.update_temperature(temperature_sensor_);
         }
 
         /// Mission simulation
@@ -504,7 +499,7 @@ void Simulator::run_simulation() {
                                 t_,
                                 mission_.get_depth_control_set_point().enable_control);
             dc_.update_density(rho_);
-            dc_.update_temperature(temperature_);
+            dc_.update_temperature(temperature_sensor_);
 
             dc_.state_machine_step(dc_dt_, t_);
         }

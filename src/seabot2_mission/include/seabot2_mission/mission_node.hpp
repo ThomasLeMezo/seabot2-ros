@@ -16,6 +16,7 @@
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
 #include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 #include "seabot2_temperature_profile/msg/temperature_profile.hpp"
+#include "seabot2_mission/msg/temperature_keeping_debug.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -46,6 +47,7 @@ private:
     /// Interfaces
     rclcpp::Publisher<seabot2_mission::msg::MissionState>::SharedPtr publisher_mission_state_;
     rclcpp::Publisher<seabot2_mission::msg::DepthControlSetPoint>::SharedPtr publisher_depth_control_set_point_;
+    rclcpp::Publisher<seabot2_mission::msg::TemperatureKeepingDebug>::SharedPtr publisher_temperature_keeping_debug_;
 
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;

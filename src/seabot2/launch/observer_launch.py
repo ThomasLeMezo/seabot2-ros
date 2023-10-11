@@ -88,13 +88,13 @@ def generate_launch_description():
         parameters=parameters_file_list
     )
 
-    temperature_profile = Node(
-        package='seabot2_temperature_profile',
-        executable='temperature_profile_node',
-        namespace='observer',
-        name='temperature_profile_node',
-        parameters=parameters_file_list
-    )
+    # temperature_profile = Node(
+    #     package='seabot2_temperature_profile',
+    #     executable='temperature_profile_node',
+    #     namespace='observer',
+    #     name='temperature_profile_node',
+    #     parameters=parameters_file_list
+    # )
 
     return LaunchDescription([
         bag_recorder,
@@ -105,5 +105,5 @@ def generate_launch_description():
         lambert_node,
         power_filter_node,
         density_node,
-        temperature_profile
+        # temperature_profile
     ])

@@ -38,8 +38,8 @@ void WaypointTemperatureKeeping::process(const rclcpp::Time &time) {
     else
         depth_set_point = 2.0;
 
-    double error = abs(this->temperature_ - mission_->get_temperature());
-    double velocity = fmin(mission_->temperature_keeping_k_*error, this->velocity);
+    error_temperature_ = abs(this->temperature_ - mission_->get_temperature());
+    double velocity = fmin(mission_->temperature_keeping_k_*error_temperature_, this->velocity);
 
     mission_->get_depth_control_set_point().depth = depth_set_point;
     mission_->get_depth_control_set_point().limit_velocity = velocity;
@@ -51,4 +51,35 @@ void WaypointTemperatureProfile::process(const rclcpp::Time &time) {
     // Make a profile between two depth and two temperature
     // Max and min depth are limit boundaries
     // max and min temperature give the threshold to change the velocity
+
+    if(first_init_){
+        time_last_transition_ = time;
+        first_init_ = false;
+
+        mission_->get_depth_control_set_point().limit_velocity = this->velocity;
+        mission_->get_depth_control_set_point().enable_control = true;
+        mission_->get_depth_control_set_point().header.stamp = time;
+        mission_->get_depth_control_set_point().depth = depth_max_;
+    }
+
+    switch (state_) {
+        case PROFILE_GO_DOWN:
+            if(mission_->get_temperature()<temperature_low_
+                || mission_->get_depth()>depth_max_
+                || (time-time_last_transition_)>max_delay_){
+                state_ = PROFILE_GO_UP;
+                mission_->get_depth_control_set_point().depth = depth_min_;
+                time_last_transition_ = time;
+            }
+            break;
+        case PROFILE_GO_UP:
+            if(mission_->get_temperature()>temperature_high_
+               || mission_->get_depth()<depth_min_
+               || (time-time_last_transition_)>max_delay_){
+                state_ = PROFILE_GO_DOWN;
+                mission_->get_depth_control_set_point().depth = depth_max_;
+                time_last_transition_ = time;
+            }
+            break;
+    }
 }

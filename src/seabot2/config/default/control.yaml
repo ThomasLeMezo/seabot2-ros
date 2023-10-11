@@ -18,5 +18,3 @@ control:
       delta_velocity_ub: 1e-3 # m/s
       delta_position_lb: -10e-3 # m
       delta_position_ub: 10e-3 # m
-
-      temperature_keeping_k: 0.03

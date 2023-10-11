@@ -21,6 +21,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         "srv/AlphaMission.srv"
         "msg/DepthControlSetPoint.msg"
         "msg/Waypoint.msg"
+        "msg/TemperatureKeepingDebug.msg"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target

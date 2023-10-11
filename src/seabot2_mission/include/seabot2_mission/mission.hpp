@@ -123,6 +123,14 @@ public:
     }
 
     /**
+     * @brief get_mission_state
+     * @return
+     */
+    [[nodiscard]] unsigned int get_mission_state() const{
+        return mission_state_;
+    }
+
+    /**
      * @brief update depth
      * @param depth in meter
      */
@@ -207,6 +215,13 @@ private:
     void decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w, boost::property_tree::ptree::value_type &v);
 
     /**
+     * Decode Temperature profile waypoint
+     * @param w
+     * @param v
+     */
+    void decode_waypoint_temperature_profile(const std::shared_ptr<WaypointTemperatureProfile>& w, boost::property_tree::ptree::value_type &v);
+
+    /**
      *
      * @param v
      * @param last_time
@@ -215,14 +230,16 @@ private:
      */
     int decode_paths(boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset);
 
+public:
+    enum WAYPOINT_TYPE:unsigned int {WP_IDLE=0,
+        WP_DEPTH=1,
+        WP_SEAFLOOR_LANDING=2,
+        WP_TEMPERATURE_KEEPING=3,
+        WP_TEMPERATURE_PROFILE=4,
+        WP_GNSS_PROFILE=5};
 private:
     std::string file_name_ = "mission_empty.xml";
 
-    enum WAYPOINT_TYPE:unsigned int {WP_DEPTH=0,
-        WP_SEAFLOOR_LANDING=1,
-        WP_TEMPERATURE_KEEPING=2,
-        WP_TEMPERATURE_PROFILE=3,
-        WP_GNSS_PROFILE=4};
     std::vector<std::pair<std::shared_ptr<Waypoint>, WAYPOINT_TYPE>> waypoints_;
 
     size_t current_waypoint_id_ = 0;
@@ -248,7 +265,9 @@ private:
     unsigned int mission_mode_ = seabot2_mission::msg::MissionState::MODE_IDLE;
 
     // Mission state
-    enum MISSION_STATE:unsigned int {NOT_STARTED=0, RUNNING=1, ENDING=2};
+    enum MISSION_STATE:unsigned int {NOT_STARTED=0,
+        RUNNING=1,
+        ENDING=2};
     MISSION_STATE mission_state_ = NOT_STARTED;
 
     // Control messages
@@ -262,11 +281,11 @@ private:
     const std::string XML_TEMPERATURE_PROFILE = "temperature_profile";
     const std::string XML_GNSS_PROFILE =   "gnss_profile";
     const std::vector<std::string> XML_TYPE = {XML_DEPTH,
-                                              XML_DEPTH_LEGACY,
-                                              XML_SEAFLOOR_LANDING,
-                                              XML_TEMPERATURE_KEEPING,
-                                              XML_TEMPERATURE_PROFILE,
-                                              XML_GNSS_PROFILE};
+                                               XML_DEPTH_LEGACY,
+                                               XML_SEAFLOOR_LANDING,
+                                               XML_TEMPERATURE_KEEPING,
+                                               XML_TEMPERATURE_PROFILE,
+                                               XML_GNSS_PROFILE};
 
     // State
     double depth_ = 0.0;
@@ -274,6 +293,26 @@ private:
 
 public:
     double temperature_keeping_k_ = 0.03;
+
+public:
+    /**
+     *
+     * @param type
+     * @return
+     */
+    bool is_current_waypoint_of_type(const WAYPOINT_TYPE &type);
+
+    /**
+     *
+     * @return
+     */
+    std::shared_ptr<WaypointTemperatureKeeping> get_current_waypoint_temperature_keeping();
+
+    /**
+     *
+     * @return
+     */
+    double get_depth(){return depth_;}
 
 };
 

@@ -36,7 +36,7 @@ void MissionNode::init_parameters() {
     flash_next_waypoint_time_ = this->get_parameter_or("flash_next_waypoint_time", flash_next_waypoint_time_);
     flash_number_ = this->get_parameter_or("flash_number", flash_number_);
     limit_velocity_default_ = this->get_parameter_or("limit_velocity_default", limit_velocity_default_);
-    mission_.temperature_keeping_k_ = this->get_parameter_or("limit_velocity_default", mission_.temperature_keeping_k_);
+    mission_.temperature_keeping_k_ = this->get_parameter_or("temperature_keeping_k", mission_.temperature_keeping_k_);
 
 }
 
@@ -62,6 +62,8 @@ void MissionNode::init_interfaces() {
     publisher_mission_state_ = this->create_publisher<seabot2_mission::msg::MissionState>("mission_state", 10);
 
     publisher_depth_control_set_point_ = this->create_publisher<seabot2_mission::msg::DepthControlSetPoint>("depth_control_set_point", 10);
+
+    publisher_temperature_keeping_debug_ = this->create_publisher<seabot2_mission::msg::TemperatureKeepingDebug>("temperature_keeping_debug", 10);
 
     client_light_ = this->create_client<seabot2_light_driver::srv::Light>("/driver/light", rmw_qos_profile_services_default,callback_group_);
 
@@ -197,12 +199,20 @@ void MissionNode::timer_callback() {
     // Publish depth control set point
     publisher_depth_control_set_point_->publish(mission_.get_depth_control_set_point());
 
-    // Publish other control set point
-    // Todo
+    // Publish Temperature Keeping waypoint data (if it is activated)
+    shared_ptr<WaypointTemperatureKeeping> wtk = mission_.get_current_waypoint_temperature_keeping();
+    if(wtk != nullptr){
+        seabot2_mission::msg::TemperatureKeepingDebug msg_debug;
+        msg_debug.temperature = wtk->temperature_;
+        msg_debug.error = wtk->error_temperature_;
+        msg_debug.header.stamp = this->now();
+        publisher_temperature_keeping_debug_->publish(msg_debug);
+    }
 
     // Publish mission state
     seabot2_mission::msg::MissionState state_msg;
     state_msg.mode = mission_.get_mission_mode();
+    state_msg.state = mission_.get_mission_state();
     state_msg.waypoint_id = mission_.get_current_waypoint_id();
     state_msg.waypoint_length = mission_.get_number_waypoints();
     state_msg.time_to_next_waypoint = mission_.get_time_to_next_waypoint();

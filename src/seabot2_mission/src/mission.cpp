@@ -26,6 +26,7 @@ bool Mission::update_state(const rclcpp::Time &t_now){
         if(t_now < time_start_){ /// Wait before mission start
             duration_next_waypoint_ = time_start_ - t_now;
             mission_state_ = NOT_STARTED;
+            mission_mode_ = WP_IDLE;
         }
         else{ /// Mission started
             mission_enable_ = true;
@@ -56,15 +57,18 @@ bool Mission::update_state(const rclcpp::Time &t_now){
                         std::dynamic_pointer_cast<WaypointTemperatureKeeping>(waypoints_[current_waypoint_id_].first)->process(t_now);
                         break;
                     case WP_TEMPERATURE_PROFILE:
+                        std::dynamic_pointer_cast<WaypointTemperatureProfile>(waypoints_[current_waypoint_id_].first)->process(t_now);
                         break;
                     case WP_GNSS_PROFILE:
                         break;
                 }
-
+                // ToDo set mission mode !
                 mission_state_ = RUNNING;
+                mission_mode_ = waypoints_[current_waypoint_id_].second;
             }
             else{
                 mission_state_ = ENDING;
+                mission_mode_ = WP_IDLE;
             }
         }
     }
@@ -80,6 +84,27 @@ bool Mission::update_state(const rclcpp::Time &t_now){
     }
 
     return is_new_waypoint;
+}
+
+bool Mission::is_current_waypoint_of_type(const WAYPOINT_TYPE &type){
+    if(current_waypoint_id_ < waypoints_.size()){
+        if(waypoints_[current_waypoint_id_].second == type)
+            return true;
+        else
+            return false;
+    }
+    else{
+        return false;
+    }
+}
+
+std::shared_ptr<WaypointTemperatureKeeping> Mission::get_current_waypoint_temperature_keeping(){
+    if(current_waypoint_id_ < waypoints_.size()){
+        if(waypoints_[current_waypoint_id_].second == WP_TEMPERATURE_KEEPING){
+            return std::dynamic_pointer_cast<WaypointTemperatureKeeping>(waypoints_[current_waypoint_id_].first);
+        }
+    }
+    return nullptr;
 }
 
 void Mission::idle_state_configuration(const rclcpp::Time &t_now){
@@ -207,14 +232,38 @@ void Mission::decode_waypoint_temperature_keeping(const std::shared_ptr<Waypoint
     if(temperature.is_initialized()){
         w->temperature_ = temperature.value();
     }
-    else{
-        w->temperature_ = 20.0;
-    }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Temperature Keeping Waypoint %zu (t_end=%li, temp=%lf, vel=%f)",
                 waypoints_.size(),
                 (long int)w->time_end.seconds(),
                 w->temperature_,
+                w->velocity);
+}
+
+void Mission::decode_waypoint_temperature_profile(const std::shared_ptr<WaypointTemperatureProfile>& w, pt::ptree::value_type &v){
+    boost::optional<double> temperature_high = v.second.get_optional<double>("temperature_high");
+    if(temperature_high.is_initialized())
+        w->temperature_high_ = temperature_high.value();
+
+    boost::optional<double> temperature_low = v.second.get_optional<double>("temperature_low");
+    if(temperature_low.is_initialized())
+        w->temperature_low_ = temperature_low.value();
+
+    boost::optional<double> depth_min = v.second.get_optional<double>("depth_min");
+    if(depth_min.is_initialized())
+        w->depth_min_ = depth_min.value();
+
+    boost::optional<double> depth_max = v.second.get_optional<double>("depth_max");
+    if(depth_max.is_initialized())
+        w->depth_max_ = depth_max.value();
+
+    boost::optional<double> max_delay = v.second.get_optional<double>("max_delay");
+    if(max_delay.is_initialized())
+        w->max_delay_ = rclcpp::Duration::from_seconds(max_delay.value());
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Temperature Profiling Waypoint %zu (t_end=%li, vel=%f)",
+                waypoints_.size(),
+                (long int)w->time_end.seconds(),
                 w->velocity);
 }
 
@@ -237,7 +286,10 @@ int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, con
                 waypoints_.emplace_back(w, WP_TEMPERATURE_KEEPING);
             }
             else if(v.first == XML_TEMPERATURE_PROFILE){
-
+                std::shared_ptr<WaypointTemperatureProfile> w = std::make_shared<WaypointTemperatureProfile>(this);
+                decode_waypoint(w, v, last_time);
+                decode_waypoint_temperature_profile(w, v);
+                waypoints_.emplace_back(w, WP_TEMPERATURE_PROFILE);
             }
             else if(v.first == XML_GNSS_PROFILE){
 

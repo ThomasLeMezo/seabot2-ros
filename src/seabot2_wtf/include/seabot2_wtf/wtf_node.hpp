@@ -58,11 +58,15 @@ private:
                                                         "PISTON_ISSUE",
                                                         "HOLD_DEPTH"};
 
-    const array<std::string, 8> mission_mode_string_ = {"DEPTH_CONTROL",
+    const array<std::string, 8> mission_mode_string_ = {"IDLE",
+                                                        "DEPTH_CONTROL",
                                                          "SEAFLOOR_LANDING",
                                                          "TEMPERATURE_KEEPING",
                                                          "TEMPERATURE_PROFILE",
                                                          "GNSS_PROFILE"};
+    const array<std::string, 8> mission_state_string_ = {"NOT_STARTED",
+                                                        "RUNNING",
+                                                        "ENDING"};
 
     /// Variable
     WINDOW *windows_robot_;
