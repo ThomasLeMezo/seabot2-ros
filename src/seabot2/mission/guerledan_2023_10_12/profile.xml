@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<mission>
+    <offset>
+        <start_time_utc>
+            <year>2023</year>
+            <month>10</month>
+            <day>12</day>
+            <hour>19</hour>
+            <min>15</min>
+        </start_time_utc>
+    </offset>
+
+    <description>Temperature Keeping</description>
+
+    <paths>
+        <waypoint>
+            <duration>400</duration>
+            <depth>15.0</depth>
+            <limit_velocity>0.1</limit_velocity>
+        </waypoint>
+
+        <temperature_profile>
+            <duration>75400</duration>
+            <temperature_low>11.0</temperature_low>
+            <temperature_high>16.0</temperature_high>
+            <depth_min>5.0</depth_min>
+            <depth_max>25.0</depth_max>
+            <limit_velocity>0.02</limit_velocity>
+            <max_delay>600.0</max_delay>
+        </temperature_profile>
+    </paths>
+
+</mission>

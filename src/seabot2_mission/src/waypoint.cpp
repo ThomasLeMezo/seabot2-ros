@@ -58,9 +58,10 @@ void WaypointTemperatureProfile::process(const rclcpp::Time &time) {
 
         mission_->get_depth_control_set_point().limit_velocity = this->velocity;
         mission_->get_depth_control_set_point().enable_control = true;
-        mission_->get_depth_control_set_point().header.stamp = time;
         mission_->get_depth_control_set_point().depth = depth_max_;
+        state_ = PROFILE_GO_DOWN;
     }
+    mission_->get_depth_control_set_point().header.stamp = time;
 
     switch (state_) {
         case PROFILE_GO_DOWN:

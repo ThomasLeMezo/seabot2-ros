@@ -53,8 +53,8 @@ void MissionNode::init_interfaces() {
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&MissionNode::depth_callback, this, _1));
 
-    subscriber_temperature_profile_data_ = this->create_subscription<seabot2_temperature_profile::msg::TemperatureProfile>(
-            "/observer/temperature_profile", 10, std::bind(&MissionNode::temperature_profile, this, _1));
+//    subscriber_temperature_profile_data_ = this->create_subscription<seabot2_temperature_profile::msg::TemperatureProfile>(
+//            "/observer/temperature_profile", 10, std::bind(&MissionNode::temperature_profile, this, _1));
 
     subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&MissionNode::temperature_callback, this, _1));
@@ -78,9 +78,9 @@ void MissionNode::depth_callback(const seabot2_depth_filter::msg::DepthPose::Sha
     mission_.update_depth(msg->depth);
 }
 
-void MissionNode::temperature_profile(const seabot2_temperature_profile::msg::TemperatureProfile ::SharedPtr msg) {
-    mission_.update_temperature_profile(msg->profile_slope, msg->profile_intercept);
-}
+//void MissionNode::temperature_profile(const seabot2_temperature_profile::msg::TemperatureProfile ::SharedPtr msg) {
+//    mission_.update_temperature_profile(msg->profile_slope, msg->profile_intercept);
+//}
 
 void MissionNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData::SharedPtr msg) {
     mission_.update_temperature(msg->temperature);
@@ -200,13 +200,15 @@ void MissionNode::timer_callback() {
     publisher_depth_control_set_point_->publish(mission_.get_depth_control_set_point());
 
     // Publish Temperature Keeping waypoint data (if it is activated)
-    shared_ptr<WaypointTemperatureKeeping> wtk = mission_.get_current_waypoint_temperature_keeping();
-    if(wtk != nullptr){
-        seabot2_mission::msg::TemperatureKeepingDebug msg_debug;
-        msg_debug.temperature = wtk->temperature_;
-        msg_debug.error = wtk->error_temperature_;
-        msg_debug.header.stamp = this->now();
-        publisher_temperature_keeping_debug_->publish(msg_debug);
+    if(mission_.is_current_waypoint_of_type(Mission::WP_TEMPERATURE_KEEPING)) {
+        shared_ptr<WaypointTemperatureKeeping> wtk = mission_.get_current_waypoint_temperature_keeping();
+        if (wtk != nullptr) {
+            seabot2_mission::msg::TemperatureKeepingDebug msg_debug;
+            msg_debug.temperature = wtk->temperature_;
+            msg_debug.error = wtk->error_temperature_;
+            msg_debug.header.stamp = this->now();
+            publisher_temperature_keeping_debug_->publish(msg_debug);
+        }
     }
 
     // Publish mission state
