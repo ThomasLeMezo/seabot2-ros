@@ -267,7 +267,8 @@ private:
     // Mission state
     enum MISSION_STATE:unsigned int {NOT_STARTED=0,
         RUNNING=1,
-        ENDING=2};
+        ENDING=2,
+        NO_WP=3};
     MISSION_STATE mission_state_ = NOT_STARTED;
 
     // Control messages

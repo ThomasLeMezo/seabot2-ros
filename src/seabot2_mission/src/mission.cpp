@@ -22,6 +22,11 @@ namespace gt = boost::gregorian;
 bool Mission::update_state(const rclcpp::Time &t_now){
 
     bool is_new_waypoint = false;
+    if(waypoints_.empty()){
+        duration_next_waypoint_ = rclcpp::Duration::from_seconds(0.0);
+        mission_mode_ = WP_IDLE;
+        mission_state_ = NO_WP;
+    }
     if(current_waypoint_id_ < waypoints_.size()){
         if(t_now < time_start_){ /// Wait before mission start
             duration_next_waypoint_ = time_start_ - t_now;

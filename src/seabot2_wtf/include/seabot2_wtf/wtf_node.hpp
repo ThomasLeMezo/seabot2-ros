@@ -66,7 +66,8 @@ private:
                                                          "GNSS_PROFILE"};
     const array<std::string, 8> mission_state_string_ = {"NOT_STARTED",
                                                         "RUNNING",
-                                                        "ENDING"};
+                                                        "ENDING",
+                                                        "NO_WP"};
 
     /// Variable
     WINDOW *windows_robot_;
