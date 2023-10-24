@@ -64,6 +64,8 @@ void SimulatorNode::init_parameters() {
 
     this->declare_parameter<std::vector<double>>("temperature_profile_depth", s_.temperature_profile_depth_);
     this->declare_parameter<std::vector<double>>("temperature_profile_temp", s_.temperature_profile_temperature_);
+    this->declare_parameter<double>("temperature_sensor_coeff", s_.temperature_sensor_coeff_);
+    this->declare_parameter<double>("temperature_sensor_stddev", s_.temperature_sensor_stddev_);
 
     this->declare_parameter<std::vector<double>>("solver_velocity", s_.solver_velocity_);
     this->declare_parameter<std::vector<double>>("solver_alpha", s_.solver_alpha_);
@@ -122,6 +124,8 @@ void SimulatorNode::init_parameters() {
 
     s_.temperature_profile_depth_ = this->get_parameter_or("temperature_profile_depth", s_.temperature_profile_depth_);
     s_.temperature_profile_temperature_ = this->get_parameter_or("temperature_profile_temp", s_.temperature_profile_temperature_);
+    s_.temperature_sensor_coeff_ = this->get_parameter_or("temperature_sensor_coeff", s_.temperature_sensor_coeff_);
+    s_.temperature_sensor_stddev_ = this->get_parameter_or("temperature_sensor_stddev", s_.temperature_sensor_stddev_);
 
     s_.solver_velocity_ = this->get_parameter_or("solver_velocity", s_.solver_velocity_);
     s_.solver_alpha_ = this->get_parameter_or("solver_alpha", s_.solver_alpha_);

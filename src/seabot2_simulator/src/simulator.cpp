@@ -45,11 +45,11 @@ double Simulator::get_density_from_depth(double z, double sea_pressure) {
 }
 
 Simulator::Simulator():
-    ts(),
-    k_(),
-    tp_(),
-    dc_(rclcpp::Time(0., RCL_ROS_TIME)),
-    mission_()
+        ts(),
+        k_(),
+        tp_(),
+        dc_(rclcpp::Time(0., RCL_ROS_TIME)),
+        mission_()
 {
 
 }
@@ -191,7 +191,7 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
 
     if(isnan(volume_air_) || isnan(x(3)) || isnan(piston_volume_) || isnan(abs_pressure_)){
         cout << V << " " << x(0) << " " << x(1) << " " << x(2) << " " << x(3) << " " << x(4) << ' '
-        << sea_pressure_ << ' ' << piston_volume_ << ' ' << volume_air_ << ' '  << abs_pressure_ << endl;
+             << sea_pressure_ << ' ' << piston_volume_ << ' ' << volume_air_ << ' '  << abs_pressure_ << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -252,7 +252,9 @@ void Simulator::simulate_sensors(){
 //    fusion_depth_ = x_(4) + pressure_sensor_dist_(generator_);
     fusion_velocity_ = x_(3);
 
-    temperature_sensor_ = temperature_from_depth(x_(4)) + temperature_sensor_dist_(generator_temperature_);
+    temperature_sensor_ = temperature_from_depth(x_(4))*temperature_sensor_coeff_
+                          + temperature_sensor_*(1.-temperature_sensor_coeff_)
+                          + temperature_sensor_dist_(generator_temperature_);
 }
 
 void Simulator::simulate_piston_position() {
@@ -299,7 +301,7 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_mission_state.waypoint_id = mission_.get_current_waypoint_id();
     msg_mission_state.waypoint_length = mission_.get_number_waypoints();
     msg_mission_state.time_to_next_waypoint = mission_.get_time_to_next_waypoint(),
-    msg_mission_state.header.stamp = t_;
+            msg_mission_state.header.stamp = t_;
     bag_writer_->write(msg_mission_state, "/mission/state", t);
 
     seabot2_mission::msg::DepthControlSetPoint msg_depth_control_set_point;
@@ -412,6 +414,7 @@ void Simulator::run_simulation() {
 
     k_.init_parameters(start_time_);
     dc_.set_start_time(start_time_);
+    temperature_sensor_ = temperature_from_depth(x_(4));
 
     auto start = high_resolution_clock::now();
     for(t_=start_time_; t_<=end_time_; t_+=dt_) {
@@ -489,11 +492,11 @@ void Simulator::run_simulation() {
                               switch_top_,
                               switch_bottom_,
                               (int)DepthControl::PISTON_STATE_OK,
-                                piston_last_time_);
+                              piston_last_time_);
             dc_.update_depth(fusion_depth_,
                              abs_pressure_/1e5);
             dc_.update_safety(false,
-                               100.0);
+                              100.0);
             dc_.update_waypoint(mission_.get_depth_control_set_point().depth,
                                 mission_.get_depth_control_set_point().limit_velocity,
                                 t_,

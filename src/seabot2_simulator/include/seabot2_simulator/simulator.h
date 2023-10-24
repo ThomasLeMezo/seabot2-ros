@@ -160,6 +160,7 @@ public:
     double temperature_sensor_stddev_ = 0.02; // in °C
     std::default_random_engine generator_temperature_;
     std::normal_distribution<double> temperature_sensor_dist_{0.0, temperature_sensor_stddev_};
+    double temperature_sensor_coeff_ = 0.005;
 
     /// ******* Piston *******  ///
     rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
