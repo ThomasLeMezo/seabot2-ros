@@ -1,59 +1,9 @@
 observer:
-
-  depth_filter_node:
+  voice_text:
     ros__parameters:
-      velocity_dt_gap_sample: 5
-      filter_window_size: 5
-      filter_median_remove_side_samples: 1
-      filter_velocity_median_remove_side_samples: 1
-      filter_velocity_window_size: 6
-      max_depth_reset_zero: 1.25
-      threshold_wrong_depth_measure: 1.0
+      mean_target_velocity_v500: 35.0 # kts (always add decimal point)
 
-  filter_internal_sensor_node:
+  height_audio:
     ros__parameters:
-      filter_window_size: 5
-      filter_median_remove_side_samples: 1
-
-  temperature_filter_node:
-    ros__parameters:
-      filter_window_size: 5
-      filter_median_remove_side_samples: 1
-
-  kalman_node:
-    ros__parameters:
-      enable_kalman_depth: 0.5 # m
-      piston_volume_eq_init: 140e-6 # m3
-      init_chi: 0.0 # m3/m
-      init_chi2: 0.0 # m3/m2
-      init_volume_air: 15e-6 # m3
-      init_cz: 2.0
-      gamma_alpha_velocity: 1e-05
-      gamma_alpha_depth: 1e-06
-      gamma_alpha_offset: 1e-09
-      gamma_alpha_chi: 1e-15
-      gamma_alpha_chi2: 1e-15
-      gamma_alpha_cz: 1e-03
-      gamma_alpha_volume_air: 1e-06
-      gamma_init_velocity: 1e-3
-      gamma_init_depth: 1e-3
-      gamma_init_offset: 1e-6
-      gamma_init_chi: 1e-10
-      gamma_init_chi2: 1e-10
-      gamma_init_cz: 0.1
-      gamma_init_volume_air: 1e-6
-      gamma_beta_depth: 2e-3 # 5.0e-3 nominal (to be tuned)
-
-  lambert_node:
-    ros__parameters:
-      loop_dt: 200 #ms
-
-  power_filter_node:
-    ros__parameters:
-      loop_dt: 200 #ms
-
-  density_node:
-    ros__parameters:
-      loop_dt: 1000 #ms
-
-
+      height_too_low: 0.3
+      height_high: 0.5

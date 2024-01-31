@@ -94,7 +94,7 @@ Model
 \dot{z}\\
 \dot{V}_{p}
 \end{array}\right)=\left(\begin{array}{c}
--A\left(V_{p}-\left(\chi_{1}z+\chi_{2}z^{2}\right)\right)-C_{z}B\left|\dot{z}\right|\dot{z}\\
+-A\left(\delta V_{\text{eq}}+V_{p}-\left(\chi_{1}z+\chi_{2}z^{2}\right)+V_{\text{air}}\frac{T}{P}\right)-C_{z}B\left|\dot{z}\right|\dot{z}\\
 \dot{z}\\
 u
 \end{array}\right)\label{eq:dynamics}
@@ -114,6 +114,59 @@ u
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+The unknown coefficients are : 
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\delta V_{\text{eq}}$
+\end_inset
+
+ : constant volume to be at equilibrium when 
+\begin_inset Formula $V_{p}$
+\end_inset
+
+ (volume of piston measured) is at zero and 
+\begin_inset Formula $\dot{z}=0$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\chi_{1},\chi_{2}$
+\end_inset
+
+ compressiblity coefficients
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $V_{\text{air}}$
+\end_inset
+
+ : volume of air at 1 bar in the hull of the robot.
+ Note that 
+\begin_inset Formula $T$
+\end_inset
+
+ and 
+\begin_inset Formula $P$
+\end_inset
+
+ are function of 
+\begin_inset Formula $z$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $C_{z}$
+\end_inset
+
+ : drag coefficient
 \end_layout
 
 \begin_layout Section

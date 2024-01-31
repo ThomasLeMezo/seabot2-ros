@@ -20,6 +20,9 @@
 #include "seabot2_density/msg/density.hpp"
 #include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 
+#include "rcl_interfaces/msg/log.hpp"
+#include <deque>
+
 using namespace std::chrono_literals;
 using namespace std;
 
@@ -31,7 +34,7 @@ public:
 private:
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::milliseconds loop_dt_ = 1s; /// loop dt
+    std::chrono::milliseconds loop_dt_ = 100ms; /// loop dt
 
     string hostname_ = "Seabot";
 
@@ -80,6 +83,7 @@ private:
     WINDOW *windows_mission_;
     WINDOW *windows_gnss_;
     WINDOW *windows_sensors_;
+    WINDOW *windows_log_;
 
     int windows_max_y_{}, windows_max_x_{};
     int windows_default_y_=4;
@@ -100,6 +104,7 @@ private:
     bluerobotics_ping_driver::msg::Profile msg_profile_;
     seabot2_density::msg::Density msg_density_;
     temperature_tsys01_driver::msg::TemperatureSensorData msg_temperature_sensor_data_;
+    deque<rcl_interfaces::msg::Log> msg_queue_log_;
 
     rclcpp::Time time_last_safety_ = this->now();
     rclcpp::Time time_last_depth_data_ = this->now();
@@ -126,6 +131,7 @@ private:
     bool msg_first_received_profile_ = false;
     bool msg_first_received_density_ = false;
     bool msg_first_received_temperature_sensor_data_ = false;
+    size_t msg_queue_log_size_ = 5;
 
     /// Interfaces
     rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
@@ -140,6 +146,7 @@ private:
     rclcpp::Subscription<bluerobotics_ping_driver::msg::Profile>::SharedPtr subscriber_profile_;
     rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
     rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_sensor_data_;
+    rclcpp::Subscription<rcl_interfaces::msg::Log>::SharedPtr subscriber_log_;
 
     /**
      *  Init and get parameters of the Node
@@ -229,6 +236,12 @@ private:
     void temperature_sensor_data_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg);
 
     /**
+     * Log callback
+     * @param msg
+     */
+    void log_callback(const rcl_interfaces::msg::Log &msg);
+
+    /**
      *  Update safety windows
      */
     void update_safety_windows();
@@ -277,6 +290,11 @@ private:
      * Update sensor windows
      */
     void update_sensors();
+
+    /**
+     * Update log windows
+     */
+    void update_log();
 
     /**
      *  Update all windows

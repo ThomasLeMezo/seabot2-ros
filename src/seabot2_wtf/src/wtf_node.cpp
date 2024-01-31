@@ -39,9 +39,16 @@ void WtfNode::create_windows(){
     /// |
     /// y
     /// height, width, point_x, point_y
-    windows_robot_              = subwin(stdscr, windows_default_y_, windows_max_x_, 0, 0);
+    windows_robot_              = subwin(stdscr, 4, windows_max_x_, 0, 0);
     box(windows_robot_, ACS_VLINE, ACS_HLINE);
     mvwprintw(windows_robot_, 1, 1, "SEABOT");
+
+    windows_log_                = subwin(stdscr, 8, windows_max_x_, 4, 0);
+    box(windows_log_, ACS_VLINE, ACS_HLINE);
+    mvwprintw(windows_log_, 1, 1, "LOG");
+
+    windows_default_y_ = 12; // Size of upper windows (sum of windows_robot_ and windows_log_)
+    windows_current_y_ = windows_default_y_;
 
     windows_safety_             = create_new_sub_window(16, 40, "SAFETY");
     windows_internal_pressure_  = create_new_sub_window(7, 40, "INTERNAL PRESSURE");
@@ -162,6 +169,13 @@ void WtfNode::temperature_sensor_data_callback(const temperature_tsys01_driver::
     msg_first_received_temperature_sensor_data_ = true;
 }
 
+void WtfNode::log_callback(const rcl_interfaces::msg::Log &msg) {
+    msg_queue_log_.push_back(msg);
+    if(msg_queue_log_.size() > msg_queue_log_size_){
+        msg_queue_log_.pop_front();
+    }
+}
+
 void WtfNode::init_interfaces() {
 
     subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
@@ -199,6 +213,9 @@ void WtfNode::init_interfaces() {
 
     subscriber_temperature_sensor_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&WtfNode::temperature_sensor_data_callback, this, _1));
+
+    subscriber_log_ = this->create_subscription<rcl_interfaces::msg::Log>(
+            "/rosout", 10, std::bind(&WtfNode::log_callback, this, _1));
 }
 
 void WtfNode::update_internal_pressure_windows(){
@@ -507,6 +524,19 @@ void WtfNode::update_sensors(){
     wrefresh(windows_sensors_);
 }
 
+void WtfNode::update_log(){
+    size_t i = 0;
+    for(auto &msg:msg_queue_log_){
+        string msg_string = msg.name + ": " + msg.msg;
+        size_t space_numbers = max(0, (windows_max_x_-2) - (int)msg_string.length());
+        string spaces(space_numbers, ' ');
+        msg_string += spaces;
+        mvwprintw(windows_log_, 2+i, 1, "%s", msg_string.c_str());
+        i++;
+    }
+    wrefresh(windows_log_);
+}
+
 void WtfNode::timer_callback() {
     update_safety_windows();
     update_mission_windows();
@@ -518,6 +548,7 @@ void WtfNode::timer_callback() {
     update_depth_control();
     update_gnss();
     update_sensors();
+    update_log();
 }
 
 int main(int argc, char *argv[]) {

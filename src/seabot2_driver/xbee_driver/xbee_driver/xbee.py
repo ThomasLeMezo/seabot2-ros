@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from digi.xbee.devices import *
+import socket
 
 from seabot2_safety.msg import SafetyStatus
 from pressure_bme280_driver.msg import Bme280Data
@@ -8,7 +9,7 @@ from seabot2_power_driver.msg import PowerState
 from gpsd_client.msg import GpsFix
 from seabot2_lambert.msg import GnssPose
 from seabot2_depth_filter.msg import DepthPose
-from seabot2_mission.msg import Waypoint
+from seabot2_mission.msg import MissionState
 
 
 def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None, flag_debug=False):
@@ -44,6 +45,8 @@ class XbeeNode(Node):
 
     def __init__(self):
         super().__init__('xbee_node')
+
+        # Interfaces
         self.subscription_mission = None
         self.subscription_depth = None
         self.subscription_gnss_pose = None
@@ -51,12 +54,16 @@ class XbeeNode(Node):
         self.subscription_power_data = None
         self.subscription_internal_sensor_filter = None
         self.subscription_safety_data = None
-        self.xbee_network_id = None
-        self.xbee_encryption_key = None
-        self.xbee_node_id = None
-        self.time_between_communication = None
-        self.serial_baudrate = None
-        self.serial_port = None
+
+        # Parameters
+        self.xbee_network_id = 0x42
+        self.xbee_encryption_key = "ABCDEFGHIFKLMNOP"
+        self.xbee_node_id = socket.gethostname()
+        self.time_between_communication = 5
+        self.serial_baudrate = 9600
+        self.serial_port = "/dev/ttyMAX0"
+
+        # Initialization
         self.init_interfaces()
         self.init_parameters()
 
@@ -95,7 +102,8 @@ class XbeeNode(Node):
 
         self.depth = 0.0
 
-        self.current_waypoint = 0.0
+        self.current_waypoint = 0
+        self.mission_mode = 0
 
         self.CMD_MSG_TYPE = {"LOG_STATE": 0, "CMD_SLEEP": 1, "CMD_PARAMETERS": 2, "CMD_MISSION_NEW": 3,
                              "CMD_MISSION_KEEP": 4}
@@ -131,12 +139,12 @@ class XbeeNode(Node):
         print("Received data from %s: %s" % (address, data))
 
     def init_parameters(self):
-        self.declare_parameter('serial_port', '/dev/ttyUSB0')
-        self.declare_parameter('serial_baudrate', 9600)
-        self.declare_parameter('xbee_node_id', 'SeabotA')
-        self.declare_parameter('time_between_communication', '5')  # in seconds
-        self.declare_parameter('xbee_encryption_key', "ABCDEFGHIFKLMNOP")  # 16 bytes
-        self.declare_parameter('xbee_network_id', 0x42)  # between 0x0 and 0x7FFF
+        self.declare_parameter('serial_port', self.serial_port)
+        self.declare_parameter('serial_baudrate', self.serial_baudrate)
+        self.declare_parameter('xbee_node_id', self.xbee_node_id)
+        self.declare_parameter('time_between_communication', self.time_between_communication)  # in seconds
+        self.declare_parameter('xbee_encryption_key', self.xbee_encryption_key)  # 16 bytes
+        self.declare_parameter('xbee_network_id', self.xbee_network_id)  # between 0x0 and 0x7FFF
 
         self.serial_port = self.get_parameter('serial_port').get_parameter_value().string_value
         self.serial_baudrate = self.get_parameter('serial_baudrate').get_parameter_value().integer_value
@@ -156,7 +164,8 @@ class XbeeNode(Node):
         self.subscription_gnss_pose = self.create_subscription(GnssPose,
                                                                '/observer/pose_mean', self.gnss_pose_callback, 10)
         self.subscription_depth = self.create_subscription(DepthPose, '/observer/depth', self.depth_callback, 10)
-        self.subscription_mission = self.create_subscription(Waypoint, '/mission/waypoint', self.mission_callback, 10)
+        self.subscription_mission_state = self.create_subscription(MissionState, '/mission/mission_state',
+                                                                    self.mission_callback, 10)
 
     def safety_callback(self, msg):
         self.safety_global_safety_valid = msg.global_safety_valid
@@ -192,10 +201,12 @@ class XbeeNode(Node):
 
     def mission_callback(self, msg):
         self.current_waypoint = msg.waypoint_id
+        self.mission_mode = msg.mission_mode
 
     def timer_callback(self):
         # Send data to xbee
-        self.xbee.send_data_broadcast(self.serialize_log_state()[0])
+        if self.depth < 0.5 or self.mission_mode == 0:
+            self.xbee.send_data_broadcast(self.serialize_log_state()[0])
 
     def serialize_log_state(self):
         bit_position = 0

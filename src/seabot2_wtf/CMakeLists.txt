@@ -24,6 +24,7 @@ find_package(Curses REQUIRED)
 find_package(bluerobotics_ping_driver REQUIRED)
 find_package(seabot2_density REQUIRED)
 find_package(temperature_tsys01_driver REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 
 ### Executable
 
@@ -43,6 +44,7 @@ ament_target_dependencies(wtf_node
         bluerobotics_ping_driver
         seabot2_density
         temperature_tsys01_driver
+        rcl_interfaces
         )
 target_link_libraries(wtf_node "${cpp_typesupport_target}" ${CURSES_LIBRARIES})
 

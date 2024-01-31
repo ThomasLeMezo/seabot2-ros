@@ -155,4 +155,12 @@ def generate_launch_description():
     )
     list_node.append(temperature_node)
 
+    xbee_node = Node(
+        package='xbee_driver',
+        executable='xbee',
+        namespace='driver',
+        name='xbee_node',
+        parameters=parameters_file_list
+    )
+
     return LaunchDescription(list_node)
