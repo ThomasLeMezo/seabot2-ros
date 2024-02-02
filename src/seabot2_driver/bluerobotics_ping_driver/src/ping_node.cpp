@@ -45,10 +45,10 @@ void PingNode::init_driver(){
 
     device_->set_mode_auto(false); /// Set mode
     device_->set_speed_of_sound(static_cast<int>(round(speed_of_sound_*1e3))); /// Set speed of sound
-    device_->set_ping_interval(200); /// Set interval
-    device_->set_gain_setting(1); /// Set gain
+    device_->set_ping_interval(ping_interval_); /// Set interval
+    device_->set_gain_setting(gain_setting_); /// Set gain
 
-    device_->set_mode_auto(true);
+    device_->set_mode_auto(mode_auto_);
     device_->set_ping_enable(enable_ping_); /// Set ping enable
 
     if(enable_ping_) {

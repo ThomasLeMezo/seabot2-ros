@@ -37,11 +37,10 @@ private:
     std::shared_ptr<AbstractLink> port_;
 
     bool enable_ping_ = false;
-    bool mode_auto_ = false; /// mode
+    bool mode_auto_ = true; /// mode
     double speed_of_sound_ = 1550.0; /// speed of sound [m/s]
     int ping_interval_ = 200; /// interval [ms]
     int gain_setting_ = 1; /// gain [1, 2, 3, 4, 5, 6]
-
 
     /**
      *  Init and get parameters of the Node

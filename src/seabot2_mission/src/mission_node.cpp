@@ -66,7 +66,7 @@ void MissionNode::init_interfaces() {
 
     client_log_parameters_ = this->create_client<std_srvs::srv::Trigger>("/observer/log_parameters", rmw_qos_profile_services_default,callback_group_);
 
-    client_alpha_mission_ =  this->create_client<seabot2_mission::srv::AlphaMission>("/control/alpha_mission", rmw_qos_profile_services_default,callback_group_);
+//    client_alpha_mission_ =  this->create_client<seabot2_mission::srv::AlphaMission>("/control/alpha_mission", rmw_qos_profile_services_default,callback_group_);
 
     client_bag_recorder_ = this->create_client<std_srvs::srv::Trigger>("/observer/restart_bag", rmw_qos_profile_services_default,callback_group_);
 }
@@ -141,24 +141,24 @@ void MissionNode::call_restart_bag(){
     }
 }
 
-void MissionNode::call_velocity_computation(std::vector<float> &velocity_list){
-    auto request = std::make_shared<seabot2_mission::srv::AlphaMission::Request>();
-    request->velocity_limits = velocity_list;
-    client_alpha_mission_->wait_for_service(500ms);
-    if (!client_alpha_mission_->service_is_ready()) {
-        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Alpha Mission service not available");
-    }
-    else {
-        if(rclcpp::ok()) {
-            auto future = client_alpha_mission_->async_send_request(request);
-            rclcpp::sleep_for(2s);
-            // Do not wait to the result because cannont handle async call (deadlock with this node)
-        }
-        else{
-            RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");
-        }
-    }
-}
+//void MissionNode::call_velocity_computation(std::vector<float> &velocity_list){
+//    auto request = std::make_shared<seabot2_mission::srv::AlphaMission::Request>();
+//    request->velocity_limits = velocity_list;
+//    client_alpha_mission_->wait_for_service(500ms);
+//    if (!client_alpha_mission_->service_is_ready()) {
+//        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Alpha Mission service not available");
+//    }
+//    else {
+//        if(rclcpp::ok()) {
+//            auto future = client_alpha_mission_->async_send_request(request);
+//            rclcpp::sleep_for(2s);
+//            // Do not wait to the result because cannont handle async call (deadlock with this node)
+//        }
+//        else{
+//            RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");
+//        }
+//    }
+//}
 
 int MissionNode::load_mission(){
     // Call for a new ros2 bag
@@ -168,15 +168,15 @@ int MissionNode::load_mission(){
     // Reload mission
     int ret =  mission_.load_mission(mission_file_name_, mission_path_, this->now());
 
-    if(ret==EXIT_SUCCESS){
-        vector<float> velocity_list = mission_.get_velocity_list();
-        for(auto &v: velocity_list)
-            RCLCPP_INFO(this->get_logger(), "[Mission_node] Velocity to compute : %f", v);
-        call_velocity_computation(velocity_list);
-    }
-    else{
-        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Error in mission file !");
-    }
+//    if(ret==EXIT_SUCCESS){
+//        vector<float> velocity_list = mission_.get_velocity_list();
+//        for(auto &v: velocity_list)
+//            RCLCPP_INFO(this->get_logger(), "[Mission_node] Velocity to compute : %f", v);
+//        call_velocity_computation(velocity_list);
+//    }
+//    else{
+//        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Error in mission file !");
+//    }
 
     // Call for log of parameters
     call_log_params();

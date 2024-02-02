@@ -47,10 +47,11 @@ driver:
 
   ping_node:
     ros__parameters:
-      loop_dt: 10 #ms
+      ping_interval: 200 #ms
       enable_ping: true
       mode_auto: true
       speed_of_sound: 1440.0
+      gain_setting: 1
 
   temperature_node:
     ros__parameters:

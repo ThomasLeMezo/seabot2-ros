@@ -94,7 +94,7 @@ void DepthControl::update_coeff(){
     flow_max_ = (motor_max_rpm_ / 60.) * screw_thread_ * pow(piston_diameter_/2.0, 2)*M_PI;
 
     /// Ensuring a safety margin on the piston flow of piston_flow_security_percentage
-    alpha_solver_.update_coeff(Cf_, coeff_A_, coeff_B_, flow_max_*piston_flow_security_percentage_);
+//    alpha_solver_.update_coeff(Cf_, coeff_A_, coeff_B_, flow_max_*piston_flow_security_percentage_);
 }
 
 void DepthControl::update_temperature(const float &temperature){

@@ -54,7 +54,7 @@ private:
 
     rclcpp::Client<seabot2_light_driver::srv::Light>::SharedPtr client_light_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_log_parameters_;
-    rclcpp::Client<seabot2_mission::srv::AlphaMission>::SharedPtr client_alpha_mission_;
+//    rclcpp::Client<seabot2_mission::srv::AlphaMission>::SharedPtr client_alpha_mission_;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_bag_recorder_;
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_mission_reload_ ;
