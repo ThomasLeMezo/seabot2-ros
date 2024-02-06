@@ -50,6 +50,7 @@ private:
                                                         "BATT_LOW"};
     const array<std::string, 6> power_state_string_ = {"IDLE",
                                                        "MEASURE_VOLTAGE",
+                                                       "WIRE_DETECTION",
                                                        "POWER_ON",
                                                        "WAIT_TO_SLEEP",
                                                        "SLEEP"};

@@ -7,6 +7,8 @@ eval "$(register-python-argcomplete3 ros2)"
 eval "$(register-python-argcomplete3 colcon)"
 
 # seabot2-ros
+export export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+
 source /home/pi/seabot2-ros/install/local_setup.zsh
 export ROS_HOME=/home/pi/.ros/
 export ROS_LOG_DIR=$ROS_HOME/log/

@@ -8,7 +8,7 @@ sudo systemctl enable fake-hwclock.service
 
 sudo mkdir -p /opt/bin
 cd /opt/bin
-sudo ln -s /home/pi/seabot2-ros/src/seabot2/linux/wtf.sh wtf
+sudo ln -s /home/pi/seabot2-ros/install/seabot2/share/seabot2/linux/wtf.sh wtf
 
 # autologin
 # sudo nano /etc/gdm3/custom.conf

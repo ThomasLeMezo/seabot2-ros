@@ -162,5 +162,26 @@ def generate_launch_description():
         name='xbee_node',
         parameters=parameters_file_list
     )
+    list_node.append(xbee_node)
+
+    icm20948_node = Node(
+        package='icm20948_driver',
+        executable='icm20948',
+        namespace='driver',
+        name='icm20948_node',
+        output='screen',
+        parameters=parameters_file_list
+    )
+    list_node.append(icm20948_node)
+
+    audio_recorder = Node(
+        package='seabot2_audio_recorder',
+        executable='audio_recorder',
+        namespace='driver',
+        output='screen',
+        name='audio_recorder',
+        parameters=parameters_file_list
+    )
+    list_node.append(audio_recorder)
 
     return LaunchDescription(list_node)

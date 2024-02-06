@@ -31,7 +31,6 @@ def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None,
         print("val = ", val)
     return data, nb_bit + start_bit, val / scale + value_min
 
-
 def deserialize_data(data, nb_bit, start_bit, value_min=None, value_max=None):
     mask = ((1 << nb_bit) - 1) << start_bit
     v = (data & mask) >> start_bit
@@ -58,7 +57,7 @@ class XbeeNode(Node):
         # Parameters
         self.xbee_network_id = 0x42
         self.xbee_encryption_key = "ABCDEFGHIFKLMNOP"
-        self.xbee_node_id = socket.gethostname()
+        self.xbee_node_id = "seabot_test" #socket.gethostname()
         self.time_between_communication = 5
         self.serial_baudrate = 9600
         self.serial_port = "/dev/ttyMAX0"
@@ -117,15 +116,19 @@ class XbeeNode(Node):
         self.xbee.set_node_id(self.xbee_node_id)
 
         # Set network id
+        print("Set network ID")
         self.xbee.set_parameter('ID', self.xbee_network_id.to_bytes(2, 'big'))
 
         # Set encryption key
+        print("Set encryption key")
         self.xbee.set_parameter('KY', bytearray(self.xbee_encryption_key, 'utf-8'))
 
         # Set encryption enable
-        self.xbee.set_parameter('EE', b'01')
+        print("Enable Encryption")
+        self.xbee.set_parameter('EE', b'\x01')
 
         # Apply changes.
+        print("Apply changes & write")
         self.xbee.apply_changes()
         # Write changes (to flash).
         self.xbee.write_changes()

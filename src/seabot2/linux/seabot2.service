@@ -8,13 +8,14 @@ Description= Launch seabot2 algorithms
 After=multi-user.target
 After=network-online.target
 Requires=network-online.target
+#Requires=seabot2
 
 [Service]
 #ExecStartPre=/bin/sleep 15
 User=pi
 Group=pi
 UMask=022
-ExecStart=/bin/zsh -c "source /home/pi/seabot2-ros/src/seabot2/linux/source-ros.sh && ros2 launch seabot2 seabot_launch.py"
+ExecStart=/bin/zsh -c "source /home/pi/seabot2-ros/install/seabot2/share/seabot2/linux/source-ros.sh && ros2 launch seabot2 seabot_launch.py"
 TimeoutStopSec=5
 
 [Install]

@@ -7,6 +7,7 @@
 
 //#include "ibex.h"
 #include <array>
+#include <vector>
 using namespace std;
 
 class AlphaSolver {

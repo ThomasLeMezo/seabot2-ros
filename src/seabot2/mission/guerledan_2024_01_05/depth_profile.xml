@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<mission>
+    <offset>
+        <start_time_utc>
+            <year>2024</year>
+            <month>02</month>
+            <day>05</day>
+            <hour>19</hour>
+            <min>55</min>
+        </start_time_utc>
+    </offset>
+
+    <description>Depth profile</description>
+
+    <paths>
+        <loop number="2" depth_increment="0.0">
+            <waypoint>
+                <duration>600</duration>
+                <depth>30.0</depth>
+                <limit_velocity>0.1</limit_velocity>
+            </waypoint>
+
+            <waypoint>
+                <duration>600</duration>
+                <depth>5.0</depth>
+                <limit_velocity>0.1</limit_velocity>
+            </waypoint>
+        </loop>
+    </paths>
+
+</mission>

@@ -106,6 +106,7 @@ private:
 class WaypointGNSSProfile: public Waypoint{
 public:
     explicit WaypointGNSSProfile(Mission *mission):Waypoint(mission){}
+
     ~WaypointGNSSProfile() override = default;
 
     /**
