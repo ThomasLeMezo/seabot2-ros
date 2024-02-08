@@ -14,6 +14,8 @@
 #include <atomic>
 #include <filesystem>
 #include "std_srvs/srv/set_bool.hpp"
+#include "seabot2_audio_recorder/tlv320adc.h"
+#include "std_msgs/msg/bool.hpp"
 
 using namespace std::chrono_literals;
 
@@ -24,7 +26,8 @@ public:
     ~AudioRecorderNode();
 
 public:
-    const std::string command_ = "arecord -D dmic_sv -f S32_LE -c2 -r 192000 -t wav -v --max-file-time 900 --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
+    // --max-file-time 900
+    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 192000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
 
 private:
 
@@ -33,10 +36,16 @@ private:
     bool thread_currently_running_ = false;
     std::future<int> subprocessFuture_;
 
+    TLV320ADC tlv_;
+
+    uint8_t gain_ch1_, gain_ch2_;
+
     bool ask_restart_ = false;
 
     /// Interfaces
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_rosbag_;
+
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_record_;
 
     /// Parameters
 

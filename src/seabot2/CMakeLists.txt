@@ -24,12 +24,12 @@ if(BUILD_TESTING)
 endif()
 
 # Install launch files.
-install(DIRECTORY launch mission linux
+install(DIRECTORY launch mission linux config maintenance
         DESTINATION share/${PROJECT_NAME}/
 )
 
-install(DIRECTORY config
-        DESTINATION $ENV{HOME})
+#install(DIRECTORY config
+#        DESTINATION $ENV{HOME})
 
 if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64")
 install(PROGRAMS linux/restart_alim.sh linux/turn_off_light.sh linux/turn_on_light.sh linux/journal.sh

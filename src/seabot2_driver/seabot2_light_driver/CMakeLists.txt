@@ -22,7 +22,11 @@ rosidl_get_typesupport_target(cpp_typesupport_target
         ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ### Executable
-add_executable(light_node src/light_node.cpp src/light.cpp)
+add_executable(light_node
+        src/light_node.cpp
+        src/light.cpp
+)
+
 ament_target_dependencies(light_node
         rclcpp
         rosidl_default_generators

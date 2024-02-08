@@ -56,12 +56,10 @@ void LightNode::init_parameters() {
     this->declare_parameter<int>("flash_duration", light_.flash_duration_);
     this->declare_parameter<int>("flash_pause_between_flash", light_.flash_pause_between_flash_);
     this->declare_parameter<int>("flash_pause_end", light_.flash_pause_end_);
-    this->declare_parameter<double>("depth_flash_enable", depth_flash_enable_);
 
     light_.flash_duration_ = this->get_parameter_or("flash_duration", light_.flash_duration_);
     light_.flash_pause_between_flash_ = this->get_parameter_or("flash_pause_between_flash", light_.flash_pause_between_flash_);
     light_.flash_pause_end_ = this->get_parameter_or("flash_pause_end", light_.flash_pause_end_);
-    depth_flash_enable_ = this->get_parameter_or("depth_flash_enable", depth_flash_enable_);
 }
 
 void LightNode::service_light_callback(const std::shared_ptr<rmw_request_id_t> request_header,

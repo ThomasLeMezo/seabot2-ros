@@ -43,6 +43,7 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<int>("seabed_delay_detection", seabed_delay_detection_.count());
     this->declare_parameter<bool>("gnss_fix_once_enable", gnss_fix_once_enable_);
     this->declare_parameter<bool>("enable_limit_depth", enable_limit_depth_);
+    this->declare_parameter<bool>("enable_flash_underwater", enable_flash_underwater_);
 
     internal_humidity_limit_ = this->get_parameter_or("internal_humidity_limit", internal_humidity_limit_);
     internal_pressure_limit_ = this->get_parameter_or("internal_pressure_limit", internal_pressure_limit_);
@@ -62,6 +63,7 @@ void SafetyNode::init_parameters() {
     seabed_delay_detection_ = std::chrono::milliseconds(this->get_parameter_or("seabed_delay_detection", seabed_delay_detection_.count()));
     gnss_fix_once_enable_ = this->get_parameter_or("gnss_fix_once_enable", gnss_fix_once_enable_);
     enable_limit_depth_ = this->get_parameter_or("enable_limit_depth", enable_limit_depth_);
+    enable_flash_underwater_ = this->get_parameter_or("enable_flash_underwater", enable_flash_underwater_);
 
     piston_error_threshold_set_point_ = this->get_parameter_or("piston_error_threshold_set_point", piston_error_threshold_set_point_);
     piston_error_threshold_position_ = this->get_parameter_or("piston_error_threshold_position", piston_error_threshold_position_);
@@ -305,10 +307,11 @@ void SafetyNode::flash_surface(){
         if(call_service_flash_surface(true)==EXIT_SUCCESS)
             flash_surface_enable_ = true;
     }
-//    else if(flash_surface_enable_ && depth_ > depth_flash_surface_){
-//        if(call_service_flash_surface(false)==EXIT_SUCCESS)
-//            flash_surface_enable_ = false;
-//    }
+    // if enable_flash_underwater then deactivate the 'else if'
+    else if(!enable_flash_underwater_ && (flash_surface_enable_ && depth_ > depth_flash_surface_)){
+        if(call_service_flash_surface(false)==EXIT_SUCCESS)
+            flash_surface_enable_ = false;
+    }
 }
 
 void SafetyNode::get_ram_cpu(){

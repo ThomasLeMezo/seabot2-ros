@@ -10,22 +10,26 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(std_msgs REQUIRED)
 
 ## Interfaces
 
 ### Executable
 add_executable(audio_recorder
         src/audio_recorder_node.cpp
+        src/tlv320adc.cpp
 )
 
 ament_target_dependencies(audio_recorder
         rclcpp
         rosidl_default_generators
         std_srvs
+        std_msgs
 )
 
 target_link_libraries(audio_recorder
         "${cpp_typesupport_target}"
+        i2c
 )
 
 ### Includes

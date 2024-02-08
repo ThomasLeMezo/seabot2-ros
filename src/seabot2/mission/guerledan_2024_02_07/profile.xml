@@ -3,11 +3,11 @@
 <mission>
     <offset>
         <start_time_utc>
-            <year>2023</year>
-            <month>10</month>
-            <day>12</day>
-            <hour>19</hour>
-            <min>15</min>
+            <year>2024</year>
+            <month>02</month>
+            <day>07</day>
+            <hour>15</hour>
+            <min>45</min>
         </start_time_utc>
     </offset>
 
@@ -15,15 +15,15 @@
 
     <paths>
         <waypoint>
-            <duration>400</duration>
+            <duration>300</duration>
             <depth>15.0</depth>
             <limit_velocity>0.1</limit_velocity>
         </waypoint>
 
         <temperature_profile>
-            <duration>75400</duration>
-            <temperature_low>11.0</temperature_low>
-            <temperature_high>16.0</temperature_high>
+            <duration>60000</duration>
+            <temperature_low>6.5</temperature_low>
+            <temperature_high>8.5</temperature_high>
             <depth_min>5.0</depth_min>
             <depth_max>25.0</depth_max>
             <limit_velocity>0.02</limit_velocity>

@@ -14,5 +14,5 @@ ToDo
 ```
 mkdir /seabot2-ros -p && cd /seabot2-ros && rsync -r /home/src . && colcon build
 
-rsync -r --info=progress2 install pi@192.168.0.102:~/seabot2-ros/
+rsync -r --info=progress2 /seabot2-ros/install pi@192.168.0.101:~/seabot2-ros/
 ```

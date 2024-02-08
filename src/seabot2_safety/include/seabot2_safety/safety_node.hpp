@@ -109,6 +109,7 @@ private:
     bool gnss_fix_once_enable_ = true;
 
     bool enable_limit_depth_ = true;
+    bool enable_flash_underwater_ = false;
 
     /// Interfaces
     rclcpp::Publisher<seabot2_safety::msg::SafetyStatus>::SharedPtr publisher_safety_;

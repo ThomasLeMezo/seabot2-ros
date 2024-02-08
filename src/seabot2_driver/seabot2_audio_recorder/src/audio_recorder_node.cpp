@@ -13,12 +13,14 @@ using namespace std;
 using namespace std::placeholders;
 
 AudioRecorderNode::AudioRecorderNode()
-        : Node("audio_recorder_node"){
+        : Node("audio_recorder_node"), tlv_(this){
 
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
     init_parameters();
-    init_interfaces();
+
+    tlv_.i2c_open();
+    tlv_.set_adc_gain(gain_ch1_, gain_ch2_);
 
     // Find home directory and append log folder
     struct passwd *pw = getpwuid(getuid());
@@ -36,16 +38,26 @@ AudioRecorderNode::AudioRecorderNode()
         std::cerr << "Error changing working directory to " << workingDirectory_ << std::endl;
     }
 
-//    start_subprocess();
+    // Start recording
+    manage_subprocess(true);
+
+    init_interfaces();
 
     RCLCPP_INFO(this->get_logger(), "[audio_recorder_node] Start Ok");
 }
 
+AudioRecorderNode::~AudioRecorderNode() {
+    wait_kill();
+}
+
 void AudioRecorderNode::manage_subprocess(bool start_new_bag) {
+    std_msgs::msg::Bool msg;
 
     // Check if the subprocess is still running
     if (thread_currently_running_) {
         wait_kill();
+        msg.data = false;
+        publisher_record_->publish(msg);
     }
     usleep(1000000);
 
@@ -57,7 +69,11 @@ void AudioRecorderNode::manage_subprocess(bool start_new_bag) {
             return std::system(command_launch.c_str());
         });
         thread_currently_running_ = true;
+        RCLCPP_INFO(this->get_logger(), "[recorder_node] Start audio recording");
     }
+
+    msg.data = start_new_bag;
+    publisher_record_->publish(msg);
 }
 
 void AudioRecorderNode::wait_kill() {
@@ -69,18 +85,20 @@ void AudioRecorderNode::wait_kill() {
     thread_currently_running_ = false;
 }
 
-AudioRecorderNode::~AudioRecorderNode() {
-    wait_kill();
-}
-
 void AudioRecorderNode::init_parameters() {
+    this->declare_parameter<int>("gain_ch1", gain_ch1_);
+    this->declare_parameter<int>("gain_ch2", gain_ch2_);
 
+    gain_ch1_ = this->get_parameter_or("gain_ch1", gain_ch1_);
+    gain_ch2_ = this->get_parameter_or("gain_ch2", gain_ch2_);
 }
 
 void AudioRecorderNode::init_interfaces() {
     service_rosbag_ = this->create_service<std_srvs::srv::SetBool>(
             "restart_audio_record",
             std::bind(&AudioRecorderNode::callback_trigger, this, _1, _2, _3));
+
+    publisher_record_ = this->create_publisher<std_msgs::msg::Bool>("audio_record_sync", 10);
 }
 
 void AudioRecorderNode::callback_trigger(const std::shared_ptr<rmw_request_id_t> request_header,

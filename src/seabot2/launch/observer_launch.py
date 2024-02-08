@@ -64,14 +64,6 @@ def generate_launch_description():
         parameters=parameters_file_list
     )
 
-    # lambert_node = Node(
-    #     package='seabot2_lambert',
-    #     executable='lambert_node',
-    #     namespace='observer',
-    #     name='lambert_node',
-    #     parameters=parameters_file_list
-    # )
-
     power_filter_node = Node(
         package='seabot2_power_filter',
         executable='filter_power_node',
@@ -88,13 +80,22 @@ def generate_launch_description():
         parameters=parameters_file_list
     )
 
+    audio_recorder = Node(
+        package='seabot2_audio_recorder',
+        executable='audio_recorder',
+        namespace='driver',
+        output='screen',
+        name='audio_recorder',
+        parameters=parameters_file_list
+    )
+
     return LaunchDescription([
         bag_recorder,
         depth_filter_node,
         internal_sensor_filter_node,
         temperature_filter_node,
         kalman_node,
-        # lambert_node,
         power_filter_node,
         density_node,
+        audio_recorder
     ])

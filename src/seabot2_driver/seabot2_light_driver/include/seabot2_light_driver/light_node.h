@@ -35,7 +35,6 @@ private:
     bool light_is_on_ = false;
     bool is_surface_ = false;
     const int nb_surface_flash_ = 1;
-    double depth_flash_enable_ = 0.5;
 
     /// Functions
     void timer_callback();

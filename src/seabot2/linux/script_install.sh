@@ -10,6 +10,8 @@ sudo mkdir -p /opt/bin
 cd /opt/bin
 sudo ln -s /home/pi/seabot2-ros/install/seabot2/share/seabot2/linux/wtf.sh wtf
 
+ln -s /home/pi/seabot2-ros/install/seabot2/share/seabot2/config config
+
 # autologin
 # sudo nano /etc/gdm3/custom.conf
 #AutomaticLogginEnable=True
