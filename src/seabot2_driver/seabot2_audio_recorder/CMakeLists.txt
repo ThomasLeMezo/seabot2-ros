@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(gpsd_client REQUIRED)
 
 ## Interfaces
 
@@ -18,6 +19,7 @@ find_package(std_msgs REQUIRED)
 add_executable(audio_recorder
         src/audio_recorder_node.cpp
         src/tlv320adc.cpp
+        src/dspic_acoustic.cpp
 )
 
 ament_target_dependencies(audio_recorder
@@ -25,6 +27,7 @@ ament_target_dependencies(audio_recorder
         rosidl_default_generators
         std_srvs
         std_msgs
+        gpsd_client
 )
 
 target_link_libraries(audio_recorder

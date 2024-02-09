@@ -33,6 +33,7 @@ int TLV320ADC::set_adc_gain(uint8_t gain_ch1, uint8_t gain_ch2) {
     return EXIT_FAILURE;
 }
 
+
 int TLV320ADC::getI2CAddr() const {
     return i2c_addr_;
 }

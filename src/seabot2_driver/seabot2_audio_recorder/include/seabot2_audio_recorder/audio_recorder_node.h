@@ -6,6 +6,8 @@
 #define BUILD_RECORDER_NODE_H
 
 #include "rclcpp/rclcpp.hpp"
+#include <chrono>
+#include <functional>
 #include <memory>
 #include <cstdlib>
 #include <csignal>
@@ -16,6 +18,9 @@
 #include "std_srvs/srv/set_bool.hpp"
 #include "seabot2_audio_recorder/tlv320adc.h"
 #include "std_msgs/msg/bool.hpp"
+#include "seabot2_audio_recorder/dspic_acoustic.h"
+#include "gpsd_client/msg/gps_fix.hpp"
+#include "std_msgs/msg/byte.hpp"
 
 using namespace std::chrono_literals;
 
@@ -30,6 +35,8 @@ public:
     const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 192000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
 
 private:
+    rclcpp::TimerBase::SharedPtr timer_;
+    std::chrono::milliseconds  loop_dt_ = 200ms; // loop dt
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     std::string workingDirectory_ = "";
@@ -37,15 +44,21 @@ private:
     std::future<int> subprocessFuture_;
 
     TLV320ADC tlv_;
+    DspicAcoustic dspic_;
 
     uint8_t gain_ch1_, gain_ch2_;
+    uint8_t chirp_id_;
 
-    bool ask_restart_ = false;
+    bool gnss_fix_once_ = false;
 
     /// Interfaces
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_rosbag_;
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_record_;
+
+    rclcpp::Publisher<std_msgs::msg::Byte>::SharedPtr publisher_pps_;
+
+    rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
 
     /// Parameters
 
@@ -74,6 +87,16 @@ private:
                           const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                           std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
+    /**
+     *
+     * @param msg
+     */
+    void gpsd_callback(const gpsd_client::msg::GpsFix &msg);
+
+    /**
+     *
+     */
+    void timer_callback();
 };
 
 #endif //BUILD_RECORDER_NODE_H
