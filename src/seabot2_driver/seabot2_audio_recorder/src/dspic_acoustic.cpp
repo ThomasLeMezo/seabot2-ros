@@ -31,19 +31,18 @@ int DspicAcoustic::sync_pps() {
         if (dt < 0.2) {
             int modulo = (int) ceil(t) % 15;
             if (i2c_smbus_write_byte_data(file_, 0x00, modulo) < 0) {
-                RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set light enable");
+                RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - sync pps");
             }
             else {
-                pps_sync = true;
                 RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Synchronized PPS");
+                pps_sync = true;
             }
-
         } else {
             // Sleep for 10 ms
             usleep(10000);
         }
     }
-    return true;
+    return EXIT_SUCCESS;
 }
 
 int DspicAcoustic::set_pps_sync_chirp_id(uint8_t chirp_id) {
@@ -75,8 +74,8 @@ void DspicAcoustic::setI2CPeriph(const std::string &i2CPeriph) {
     i2c_periph_ = i2CPeriph;
 }
 
-int DspicAcoustic::enable_chirp(){
-    if (i2c_smbus_write_byte_data(file_, 0x08, 0x01) < 0) {
+int DspicAcoustic::enable_chirp(bool enable){
+    if (i2c_smbus_write_byte_data(file_, 0x08, enable?0x01:0x00) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Enable chirp");
         return EXIT_FAILURE;
     }

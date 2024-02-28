@@ -26,6 +26,7 @@ PingNode::~PingNode(){
         ping1d_continuous_stop ping_msg = ping1d_continuous_stop();
         ping_msg.set_id(static_cast<uint16_t>(PingMessageId::PING1D_PROFILE));
         device_->writeMessage(ping_msg);
+        device_->set_mode_auto(false);
     }
 }
 

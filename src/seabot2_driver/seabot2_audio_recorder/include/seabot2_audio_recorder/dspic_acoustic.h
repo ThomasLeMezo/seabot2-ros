@@ -48,7 +48,7 @@ public:
 
     int set_pps_sync_chirp_id(uint8_t chirp_id);
 
-    int enable_chirp();
+    int enable_chirp(bool enable=true);
 
     /**
      *

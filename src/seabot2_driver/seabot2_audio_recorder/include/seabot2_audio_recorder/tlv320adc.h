@@ -61,6 +61,13 @@ public:
      */
     int set_adc_gain(uint8_t gain_ch1, uint8_t gain_ch2);
 
+    /**
+     * @brief Set the signal id
+     * @param signal_id
+     * @return
+     */
+    int set_signal_id(uint8_t signal_id);
+
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
 

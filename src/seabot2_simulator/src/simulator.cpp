@@ -54,6 +54,11 @@ Simulator::Simulator():
 
 }
 
+void Simulator::compute_std_generators(){
+    pressure_sensor_dist_= std::normal_distribution<double>{pressure_sensor_mean_, pressure_sensor_stddev_};
+    temperature_sensor_dist_ = std::normal_distribution<double>{0.0, temperature_sensor_stddev_};
+}
+
 void Simulator::init_bag_writer(){
     bag_writer_ = std::make_unique<rosbag2_cpp::Writer>();
     rosbag2_storage::StorageOptions storage_options({bag_path_, "mcap"});;
@@ -132,16 +137,56 @@ void Simulator::init_bag_writer(){
 
 }
 
+double Simulator::find_index_center_thermocline(){
+    // Compute the derivative of temperature over depth
+    vector<double> dTdz;
+    for(size_t i=0; i<temperature_profile_temperature_.size()-1; i++){
+        if(temperature_profile_depth_[i+1]-temperature_profile_depth_[i] != 0.0)
+            dTdz.push_back(abs((temperature_profile_temperature_[i+1]-temperature_profile_temperature_[i])/
+                       (temperature_profile_depth_[i+1]-temperature_profile_depth_[i])));
+        else
+            dTdz.push_back(0.0);
+    }
+
+    // Find the index of the maximum value of the derivative
+    auto max = max_element(dTdz.begin(), dTdz.end());
+
+    index_center_thermocline_ = distance(dTdz.begin(), max);
+    thermocline_depth_ = temperature_profile_depth_[index_center_thermocline_];
+    return thermocline_depth_;
+}
+
+double Simulator::compute_wave(double t, double z) {
+    double dz1 = 0.0;
+    for(auto & wave_generator : wave_generators_){
+        if(wave_generator.starting_time_<=t && (t<=wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
+            if(!wave_generator.is_contraction_)
+                dz1 += wave_generator.offset_ + wave_generator.amplitude_ * sin(2.*M_PI/wave_generator.period_*(t-wave_generator.starting_time_)+wave_generator.phase_);
+        }
+    }
+
+    double dz2 = 0.0;
+    for(auto & wave_generator : wave_generators_){
+        if(wave_generator.starting_time_<=t && (t<=wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
+            if(wave_generator.is_contraction_)
+                dz2 += wave_generator.offset_ + (z+dz1-thermocline_depth_)*wave_generator.amplitude_ * sin(2*M_PI/wave_generator.period_*(t-wave_generator.starting_time_)+wave_generator.phase_);
+        }
+    }
+
+    return dz1+dz2;
+}
+
 double Simulator::temperature_from_depth(double z) {
     double temperature;
     if(temperature_profile_temperature_.size()<2) {
         temperature = max(min(18.0 - 0.25 * z, 18.0), 8.0);
     }
     else{
+        double dz = compute_wave((t_-start_time_).seconds(), z);
         // Find first value of temperature_profile_depth_ which is greater than z
         size_t idx = 0;
         for(size_t i=idx+1; i<temperature_profile_depth_.size(); i++){
-            if(temperature_profile_depth_[i]<z)
+            if(temperature_profile_depth_[i]<(z+dz))
                 idx = i;
             else
                 break;
@@ -401,8 +446,10 @@ void Simulator::run_simulation() {
             if (entry.path().extension() == ".xml") {
                 mission_file_name_ = entry.path().filename();
                 bag_path_ = entry.path().stem();
+            }
 
-                break;
+            if(entry.path().extension() == ".wave"){
+                wave_file_name_ = entry.path().filename();
             }
         }
     }
@@ -415,6 +462,10 @@ void Simulator::run_simulation() {
     k_.init_parameters(start_time_);
     dc_.set_start_time(start_time_);
     temperature_sensor_ = temperature_from_depth(x_(4));
+
+    // Thermocline computation
+    std::cout << "Thermocline depth = " << find_index_center_thermocline() << std::endl;
+    init_wave_file();
 
     auto start = high_resolution_clock::now();
     for(t_=start_time_; t_<=end_time_; t_+=dt_) {
@@ -517,4 +568,38 @@ void Simulator::run_simulation() {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time exec = %ld ms", duration_cast<milliseconds>((end-start)).count());
 }
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
+namespace pt = boost::property_tree;
 
+int Simulator::init_wave_file(){
+    if(wave_file_name_.empty())
+        return EXIT_FAILURE;
+
+    pt::ptree tree;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Simulator] Read xml file : %s", wave_file_name_.c_str());
+    try {
+        pt::read_xml(wave_file_name_, tree);
+    } catch (std::exception const&  ex) {
+        RCLCPP_FATAL(rclcpp::get_logger("rclcpp"),"[Seabot_Simulator] %s", ex.what());
+        return EXIT_FAILURE;
+    }
+
+    int return_code = EXIT_SUCCESS;
+    BOOST_FOREACH(pt::ptree::value_type &v, tree.get_child("")){
+        WaveGenerator w(v.second.get<double>("amplitude", 0.0),
+                        v.second.get<double>("period", 0.0),
+                        v.second.get<double>("phase", 0.0),
+                        v.second.get<double>("offset", 0.0),
+                        v.second.get<bool>("is_contraction", false),
+                        v.second.get<double>("starting_time", 0.0),
+                        v.second.get<double>("duration", 0.0));
+        wave_generators_.emplace_back(w);
+        cout << "Amplitude = " << w.amplitude_ << " Period = " << w.period_ << " Phase = " << w.phase_
+             << " Offset = " << w.offset_
+             << " Contraction = " << w.is_contraction_ << " Starting time = " << w.starting_time_
+             << " Duration = " << w.duration_ << endl;
+    }
+    return return_code;
+}

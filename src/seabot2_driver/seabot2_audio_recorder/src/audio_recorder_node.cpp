@@ -28,6 +28,7 @@ AudioRecorderNode::AudioRecorderNode()
 
     dspic_.i2c_open();
     dspic_.set_pps_sync_chirp_id(chirp_id_);
+    dspic_.enable_chirp(enable_chirp_);
 
     // Find home directory and append log folder
     struct passwd *pw = getpwuid(getuid());
@@ -50,11 +51,13 @@ AudioRecorderNode::AudioRecorderNode()
 
 
 
+
     RCLCPP_INFO(this->get_logger(), "[audio_recorder_node] Start Ok");
 }
 
 AudioRecorderNode::~AudioRecorderNode() {
     wait_kill();
+    dspic_.enable_chirp(false);
 }
 
 void AudioRecorderNode::manage_subprocess(bool start_new_bag) {
@@ -86,7 +89,7 @@ void AudioRecorderNode::manage_subprocess(bool start_new_bag) {
 void AudioRecorderNode::timer_callback(){
     if(gnss_fix_once_){
         dspic_.sync_pps();
-        dspic_.enable_chirp();
+        gnss_fix_once_ = true;
     }
 
     // Read pps_sync value and publish
@@ -109,10 +112,13 @@ void AudioRecorderNode::init_parameters() {
     this->declare_parameter<int>("gain_ch1", gain_ch1_);
     this->declare_parameter<int>("gain_ch2", gain_ch2_);
     this->declare_parameter<int>("chirp_id", chirp_id_);
+    this->declare_parameter<bool>("enable_chirp", enable_chirp_);
 
     gain_ch1_ = this->get_parameter_or("gain_ch1", gain_ch1_);
     gain_ch2_ = this->get_parameter_or("gain_ch2", gain_ch2_);
     chirp_id_ = this->get_parameter_or("chirp_id", chirp_id_);
+
+    enable_chirp_ = this->get_parameter_or("enable_chirp", enable_chirp_);
 
     this->declare_parameter<long>("loop_dt", loop_dt_.count());
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));

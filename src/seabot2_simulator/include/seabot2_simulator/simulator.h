@@ -18,6 +18,28 @@
 using namespace std;
 using namespace Eigen;
 
+class WaveGenerator{
+public:
+    WaveGenerator(double amplitude,
+                  double period,
+                  double phase,
+                  double offset,
+                  bool is_contraction = false,
+                  double starting_time = 0.0,
+                  double duration = 0.0){
+        amplitude_ = amplitude;
+        period_ = period;
+        phase_ = phase;
+        offset_ = offset;
+        is_contraction_ = is_contraction;
+        starting_time_ = starting_time;
+        duration_ = duration;
+    }
+
+    double amplitude_{}, period_{}, phase_{}, offset_{}, starting_time_{}, duration_{};
+    bool is_contraction_{};
+};
+
 #define SIMU_NB_STATES 5
 
 #define MOTOR_STOP 2000
@@ -28,27 +50,35 @@ using namespace Eigen;
 class Simulator{
 
 public:
-        Simulator();
+    Simulator();
 
-        Matrix<double, SIMU_NB_STATES, 1> f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm=MOTOR_STOP);
+    Matrix<double, SIMU_NB_STATES, 1> f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm=MOTOR_STOP);
 
-        void run_simulation();
+    void run_simulation();
 
-        double salinity_from_depth(double z);
+    double salinity_from_depth(double z);
 
-        double temperature_from_depth(double z);
+    double temperature_from_depth(double z);
 
-        double get_density_from_depth(double z, double sea_pressure);
+    double get_density_from_depth(double z, double sea_pressure);
 
-        int control_pwm(int position_set_point);
+    int control_pwm(int position_set_point);
 
-        void simulate_sensors();
+    void simulate_sensors();
 
-        void simulate_piston_position();
+    void simulate_piston_position();
 
-        void save_data(const rclcpp::Time &time);
+    void save_data(const rclcpp::Time &time);
 
-        void init_bag_writer();
+    void init_bag_writer();
+
+    double find_index_center_thermocline();
+
+    int init_wave_file();
+
+    double compute_wave(double t, double z);
+
+    void compute_std_generators();
 
 private:
     std::unique_ptr<rosbag2_cpp::Writer> bag_writer_;
@@ -126,9 +156,9 @@ public:
     //const double Tz_coeff = pistonSurface_ * force_to_torque_coeff_ / maxon_Reduction_;
 
     /// ******* dsPic control loop *******  ///
-    #define REGULATION_LOOP_FREQ 50
-    #define MOTOR_PWM_MAX 4000
-    #define MOTOR_V_TO_CMD MOTOR_PWM_MAX/(2*16)
+#define REGULATION_LOOP_FREQ 50
+#define MOTOR_PWM_MAX 4000
+#define MOTOR_V_TO_CMD MOTOR_PWM_MAX/(2*16)
     int motor_delta_speed = (100/REGULATION_LOOP_FREQ)*MOTOR_V_TO_CMD; // Limit to 100V/s, delta_speed in PWM quantum/0.02s = 250
     rclcpp::Time control_pwm_last_time = rclcpp::Time(0., RCL_ROS_TIME);
     rclcpp::Duration control_pwm_dt = 20ms; /// 50Hz
@@ -155,12 +185,12 @@ public:
     const double pressure_sensor_mean_ = 0.0;
     double pressure_sensor_stddev_ = 0.002; // in bar (2mm)
     std::default_random_engine generator_;
-    std::normal_distribution<double> pressure_sensor_dist_{pressure_sensor_mean_, pressure_sensor_stddev_};
+    std::normal_distribution<double> pressure_sensor_dist_; //{pressure_sensor_mean_, pressure_sensor_stddev_};
     double temperature_sensor_ = 0.;
     double temperature_sensor_stddev_ = 0.02; // in °C
     std::default_random_engine generator_temperature_;
-    std::normal_distribution<double> temperature_sensor_dist_{0.0, temperature_sensor_stddev_};
-    double temperature_sensor_coeff_ = 0.005;
+    std::normal_distribution<double> temperature_sensor_dist_; //{0.0, temperature_sensor_stddev_};
+    double temperature_sensor_coeff_ = 0.04;
 
     /// ******* Piston *******  ///
     rclcpp::Time piston_last_time_ = rclcpp::Time(0., RCL_ROS_TIME);
@@ -196,7 +226,13 @@ public:
     /// ******* Temperature profile *******  ///
     std::vector<double> temperature_profile_depth_;
     std::vector<double> temperature_profile_temperature_;
-};
 
+    /// ******* Thermocline computation *******  ///
+    size_t index_center_thermocline_ = 0;
+    double thermocline_depth_ = 0.0;
+    std::vector<WaveGenerator> wave_generators_;
+    string wave_file_name_ = "";
+
+};
 
 #endif //BUILD_SIMULATOR_H

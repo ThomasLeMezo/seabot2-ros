@@ -36,7 +36,7 @@ public:
 
 private:
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::milliseconds  loop_dt_ = 200ms; // loop dt
+    std::chrono::milliseconds  loop_dt_ = 1s; // loop dt
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     std::string workingDirectory_ = "";
@@ -46,8 +46,10 @@ private:
     TLV320ADC tlv_;
     DspicAcoustic dspic_;
 
-    uint8_t gain_ch1_, gain_ch2_;
-    uint8_t chirp_id_;
+    uint8_t gain_ch1_ = 58;
+    uint8_t gain_ch2_ = 58;
+    uint8_t chirp_id_ = 0;
+    bool enable_chirp_ = false;
 
     bool gnss_fix_once_ = false;
 

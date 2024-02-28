@@ -33,6 +33,13 @@ int TLV320ADC::set_adc_gain(uint8_t gain_ch1, uint8_t gain_ch2) {
     return EXIT_FAILURE;
 }
 
+int TLV320ADC::set_signal_id(uint8_t signal_id) {
+    if(i2c_smbus_write_byte_data(file_, 0x0D, signal_id)<0) {
+        RCLCPP_WARN(n_->get_logger(), "[TLV320ADC_driver] I2C bus Failure - Set light enable");
+    }
+    return EXIT_FAILURE;
+}
+
 
 int TLV320ADC::getI2CAddr() const {
     return i2c_addr_;

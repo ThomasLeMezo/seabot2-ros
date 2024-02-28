@@ -12,6 +12,7 @@ def generate_launch_description():
 
     print(sys.argv)
 
+    # Load config simulation
     config_simulation = os.path.join(
         home_path,
         'config/',  # Directory where yaml are
@@ -43,7 +44,8 @@ def generate_launch_description():
         executable='simulator_node',
         namespace='',
         name='simulation_node',
-        parameters=parameters_file_list
+        parameters=parameters_file_list,
+        output='screen',
     )
 
     return LaunchDescription([

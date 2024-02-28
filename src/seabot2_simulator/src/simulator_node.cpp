@@ -66,6 +66,7 @@ void SimulatorNode::init_parameters() {
     this->declare_parameter<std::vector<double>>("temperature_profile_temp", s_.temperature_profile_temperature_);
     this->declare_parameter<double>("temperature_sensor_coeff", s_.temperature_sensor_coeff_);
     this->declare_parameter<double>("temperature_sensor_stddev", s_.temperature_sensor_stddev_);
+    this->declare_parameter<double>("temperature_keeping_k", s_.mission_.temperature_keeping_k_);
 
     this->declare_parameter<std::vector<double>>("solver_velocity", s_.solver_velocity_);
     this->declare_parameter<std::vector<double>>("solver_alpha", s_.solver_alpha_);
@@ -126,6 +127,7 @@ void SimulatorNode::init_parameters() {
     s_.temperature_profile_temperature_ = this->get_parameter_or("temperature_profile_temp", s_.temperature_profile_temperature_);
     s_.temperature_sensor_coeff_ = this->get_parameter_or("temperature_sensor_coeff", s_.temperature_sensor_coeff_);
     s_.temperature_sensor_stddev_ = this->get_parameter_or("temperature_sensor_stddev", s_.temperature_sensor_stddev_);
+    s_.mission_.temperature_keeping_k_ = this->get_parameter_or("temperature_keeping_k", s_.mission_.temperature_keeping_k_);
 
     s_.solver_velocity_ = this->get_parameter_or("solver_velocity", s_.solver_velocity_);
     s_.solver_alpha_ = this->get_parameter_or("solver_alpha", s_.solver_alpha_);
@@ -134,6 +136,10 @@ void SimulatorNode::init_parameters() {
         for(size_t i=0; i<s_.solver_velocity_.size(); i++)
             s_.dc_.alpha_solver_.add_to_memory(s_.solver_alpha_[i], s_.solver_velocity_[i]);
     }
+
+    s_.compute_std_generators();
+    RCLCPP_INFO(this->get_logger(), "[Simulator_node] temperature_sensor_stddev = %f", s_.temperature_sensor_stddev_);
+    RCLCPP_INFO(this->get_logger(), "[Simulator_node] simu_pressure_sensor_stddev = %f", s_.pressure_sensor_stddev_);
 }
 
 int main(int argc, char *argv[]) {
