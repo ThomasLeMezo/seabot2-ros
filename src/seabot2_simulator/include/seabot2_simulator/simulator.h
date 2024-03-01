@@ -107,6 +107,7 @@ public:
     double volume_total_ = 0.0;
     double volume_air_ = 0.0;
     double volume_antenna_ = 0.0;
+    double temperature_degree_ = 10.0;
 
     /// Parameters
     double latitude_ = 48.368894;

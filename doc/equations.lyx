@@ -421,5 +421,36 @@ beta*(np.tanh(alpha*e))-(dz_init+beta)*np.tanh(alpha*(z-z_init))+np.sign(zbar-z_
 t)*(dz_init+beta)
 \end_layout
 
+\begin_layout Section
+Thermocline regulation
+\end_layout
+
+\begin_layout Itemize
+Calcul 
+\begin_inset Formula $\dot{V}_{P}=\Omega p\pi\left(d/2\right)^{2}$
+\end_inset
+
+ avec 
+\begin_inset Formula $\Omega$
+\end_inset
+
+ rotation par seconde du moteur, 
+\begin_inset Formula $p$
+\end_inset
+
+ pas de la tige filetée, 
+\begin_inset Formula $d$
+\end_inset
+
+ diamètre du piston
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $w<\left(\frac{\pi\left(\frac{d}{2}\right)^{2}\Omega pA}{\eta}\right)^{1/3}$
+\end_inset
+
+
+\end_layout
+
 \end_body
 \end_document

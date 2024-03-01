@@ -159,33 +159,34 @@ double Simulator::find_index_center_thermocline(){
 double Simulator::compute_wave(double t, double z) {
     double dz1 = 0.0;
     for(auto & wave_generator : wave_generators_){
-        if(wave_generator.starting_time_<=t && (t<=wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
-            if(!wave_generator.is_contraction_)
+        if(wave_generator.starting_time_<=t && (t<wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
+            if(!wave_generator.is_contraction_ && wave_generator.period_ !=0.)
                 dz1 += wave_generator.offset_ + wave_generator.amplitude_ * sin(2.*M_PI/wave_generator.period_*(t-wave_generator.starting_time_)+wave_generator.phase_);
         }
     }
 
     double dz2 = 0.0;
     for(auto & wave_generator : wave_generators_){
-        if(wave_generator.starting_time_<=t && (t<=wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
-            if(wave_generator.is_contraction_)
+        if(wave_generator.starting_time_<=t && (t<wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
+            if(wave_generator.is_contraction_ && wave_generator.period_ !=0.)
                 dz2 += wave_generator.offset_ + (z+dz1-thermocline_depth_)*wave_generator.amplitude_ * sin(2*M_PI/wave_generator.period_*(t-wave_generator.starting_time_)+wave_generator.phase_);
         }
     }
-
+    
     return dz1+dz2;
 }
 
 double Simulator::temperature_from_depth(double z) {
     double temperature;
+    double dz = compute_wave((t_-start_time_).seconds(), z);
+
     if(temperature_profile_temperature_.size()<2) {
-        temperature = max(min(18.0 - 0.25 * z, 18.0), 8.0);
+        temperature = max(min(18.0 - 0.25 * (z+dz), 18.0), 8.0);
     }
     else{
-        double dz = compute_wave((t_-start_time_).seconds(), z);
         // Find first value of temperature_profile_depth_ which is greater than z
         size_t idx = 0;
-        for(size_t i=idx+1; i<temperature_profile_depth_.size(); i++){
+        for(size_t i=idx+1; i<temperature_profile_depth_.size()-1; i++){
             if(temperature_profile_depth_[i]<(z+dz))
                 idx = i;
             else
@@ -196,7 +197,7 @@ double Simulator::temperature_from_depth(double z) {
         double t0 = temperature_profile_temperature_[idx];
         double t1 = temperature_profile_temperature_[idx+1];
         if(z1-z0 != 0.0)
-            temperature = (z-z0)/(z1-z0)*(t1-t0)+t0;
+            temperature = ((z+dz)-z0)/(z1-z0)*(t1-t0)+t0;
         else
             temperature = t0;
     }
@@ -211,7 +212,9 @@ double Simulator::salinity_from_depth(double z) {
 Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm) {
     Matrix<double, SIMU_NB_STATES, 1> dx = Matrix<double, SIMU_NB_STATES, 1>::Zero();
 
-    double temp_K = temperature_from_depth(x(4))+ts.gtc.gsw_t0; /// in K
+
+
+    double temp_K = temperature_degree_+ts.gtc.gsw_t0; /// in K
     sea_pressure_ = rho_*g_*x(4); /// ts.gsw_p_from_z(-x(4), latitude_)*1e4; /// in Pa (z is negative, output dbar)
     abs_pressure_ = sea_pressure_ + ts.gtc.gsw_p0; /// Pa
     g_ = ts.gsw_grav(latitude_, sea_pressure_*1e-4);
@@ -236,7 +239,8 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
 
     if(isnan(volume_air_) || isnan(x(3)) || isnan(piston_volume_) || isnan(abs_pressure_)){
         cout << V << " " << x(0) << " " << x(1) << " " << x(2) << " " << x(3) << " " << x(4) << ' '
-             << sea_pressure_ << ' ' << piston_volume_ << ' ' << volume_air_ << ' '  << abs_pressure_ << endl;
+             << sea_pressure_ << ' ' << piston_volume_ << ' ' << volume_air_ << ' '  << abs_pressure_ << ' '
+             << temperature_degree_ << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -297,7 +301,7 @@ void Simulator::simulate_sensors(){
 //    fusion_depth_ = x_(4) + pressure_sensor_dist_(generator_);
     fusion_velocity_ = x_(3);
 
-    temperature_sensor_ = temperature_from_depth(x_(4))*temperature_sensor_coeff_
+    temperature_sensor_ = temperature_degree_*temperature_sensor_coeff_
                           + temperature_sensor_*(1.-temperature_sensor_coeff_)
                           + temperature_sensor_dist_(generator_temperature_);
 }
@@ -461,7 +465,6 @@ void Simulator::run_simulation() {
 
     k_.init_parameters(start_time_);
     dc_.set_start_time(start_time_);
-    temperature_sensor_ = temperature_from_depth(x_(4));
 
     // Thermocline computation
     std::cout << "Thermocline depth = " << find_index_center_thermocline() << std::endl;
@@ -472,6 +475,7 @@ void Simulator::run_simulation() {
 
         /// Physical simulation
         x_ += dt_.seconds() * f(x_, pwm);
+        temperature_degree_ = temperature_from_depth(x_(4));
 
         /// Seafloor reached
         if(x_(4)>seafloor_depth_ && x_(3)>0.0){
@@ -484,7 +488,7 @@ void Simulator::run_simulation() {
             pwm = control_pwm(round(dc_.piston_set_point_));
         }
 
-        /// Pressure Simulation
+        /// Pressure and temperature Simulation
         if((t_-pressure_sensor_last_time) >= pressure_sensor_dt) {
             pressure_sensor_last_time = t_;
             simulate_sensors();
