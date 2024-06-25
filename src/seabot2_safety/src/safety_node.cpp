@@ -132,6 +132,8 @@ void SafetyNode::init_interfaces() {
     client_zero_pressure_ = this->create_client<std_srvs::srv::Trigger>("/observer/zero_pressure");
 
     client_flash_surface_ = this->create_client<std_srvs::srv::SetBool>("/driver/surface");
+
+    client_chirp_enable_ = this->create_client<std_srvs::srv::SetBool>("/driver/chirp_enable");
 }
 
 bool SafetyNode::test_depth(){
@@ -302,6 +304,26 @@ int SafetyNode::call_service_flash_surface(const bool &is_surface){
     return EXIT_SUCCESS;
 }
 
+int SafetyNode::call_service_chirp_enable(const bool &enable){
+    client_chirp_enable_->wait_for_service(500ms);
+    if (!client_chirp_enable_->service_is_ready()) {
+        RCLCPP_ERROR(this->get_logger(), "[Safety_node] Chirp enable service not available");
+        return EXIT_FAILURE;
+    }
+    else {
+        if(rclcpp::ok()) {
+            auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+            request->data = enable;
+            auto result = client_chirp_enable_->async_send_request(request);
+        }
+        else{
+            RCLCPP_ERROR(this->get_logger(), "[Safety_node] rclcpp not ok");
+            return EXIT_FAILURE;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
 void SafetyNode::flash_surface(){
     if(!flash_surface_enable_ && depth_ < depth_flash_surface_){
         if(call_service_flash_surface(true)==EXIT_SUCCESS)
@@ -311,6 +333,18 @@ void SafetyNode::flash_surface(){
     else if(!enable_flash_underwater_ && (flash_surface_enable_ && depth_ > depth_flash_surface_)){
         if(call_service_flash_surface(false)==EXIT_SUCCESS)
             flash_surface_enable_ = false;
+    }
+}
+
+void SafetyNode::enable_chirp(){
+    if(!chirp_is_enable_ && depth_ > depth_chrip_enable_){
+        if(call_service_chirp_enable(true)==EXIT_SUCCESS)
+            chirp_is_enable_ = true;
+    }
+    // if enable_flash_underwater then deactivate the 'else if'
+    else if(chirp_is_enable_ && depth_ < depth_flash_surface_){
+        if(call_service_chirp_enable(false)==EXIT_SUCCESS)
+            chirp_is_enable_ = false;
     }
 }
 
@@ -424,6 +458,7 @@ void SafetyNode::timer_callback() {
     global_safety_ok_ &= test_battery();
     global_safety_ok_ &= test_gnss_fix();
     flash_surface();
+    enable_chirp();
     get_ram_cpu();
     test_depth_max();
     global_safety_ok_ &= test_seabed_reached();

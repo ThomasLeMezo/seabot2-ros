@@ -32,7 +32,7 @@ public:
 
 public:
     // --max-file-time 900
-    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 192000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
+    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S24_LE -c2 -r 48000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
 
 private:
     rclcpp::TimerBase::SharedPtr timer_;
@@ -49,12 +49,14 @@ private:
     uint8_t gain_ch1_ = 58;
     uint8_t gain_ch2_ = 58;
     uint8_t chirp_id_ = 0;
-    bool enable_chirp_ = true;
+    bool enable_chirp_ = false;
 
     bool gnss_fix_once_ = false;
 
     /// Interfaces
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_rosbag_;
+
+    rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_chirp_;
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_record_;
 
@@ -99,6 +101,16 @@ private:
      *
      */
     void timer_callback();
+
+    /**
+     * Callback for the service chirp
+     * @param request_header
+     * @param request
+     * @param response
+     */
+    void chirp_callback(const std::shared_ptr<rmw_request_id_t> request_header,
+                      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+                      std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 };
 
 #endif //BUILD_RECORDER_NODE_H

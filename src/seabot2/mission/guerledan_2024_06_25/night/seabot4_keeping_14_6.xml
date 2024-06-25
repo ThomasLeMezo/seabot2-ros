@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<mission>
+    <offset>
+        <start_time_utc>
+            <year>2024</year>
+            <month>06</month>
+            <day>25</day>
+            <hour>20</hour>
+            <min>50</min>
+        </start_time_utc>
+    </offset>
+
+    <description>Temperature Keeping</description>
+
+    <paths>
+        <temperature_keeping>
+            <duration>37800</duration>
+            <temperature>14.6</temperature>
+            <limit_velocity>0.1</limit_velocity>
+        </temperature_keeping>
+    </paths>
+
+</mission>

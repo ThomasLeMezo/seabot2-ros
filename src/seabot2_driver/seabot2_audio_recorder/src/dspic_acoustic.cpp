@@ -28,7 +28,7 @@ int DspicAcoustic::sync_pps() {
     while (!pps_sync){
         double t = n_->now().seconds();
         double dt = t - ceil(t);
-        if (dt < 0.2) {
+        if (dt > 0.6 && dt < 0.8) {
             int modulo = (int) ceil(t) % 15;
             if (i2c_smbus_write_byte_data(file_, 0x00, modulo) < 0) {
                 RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - sync pps");

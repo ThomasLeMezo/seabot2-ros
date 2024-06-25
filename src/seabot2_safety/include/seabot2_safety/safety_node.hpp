@@ -64,6 +64,10 @@ private:
     double depth_flash_surface_ = 0.5;
     bool flash_surface_enable_ = false;
 
+    double depth_chrip_enable_ = 0.5;
+    bool chirp_enable_ = true;
+    bool chirp_is_enable_ = false;
+
     double piston_position_ = 0.0;
     double piston_set_point_ = 0.0;
     bool piston_switch_top_ = false;
@@ -123,6 +127,7 @@ private:
 
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_zero_pressure_;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_flash_surface_;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_chirp_enable_;
 
     /**
      *  Init and get parameters of the Node
@@ -227,11 +232,23 @@ private:
     void flash_surface();
 
     /**
+     * Enable chirp
+     */
+    void enable_chirp();
+
+    /**
      *
      * @param is_surface
      * @return
      */
     int call_service_flash_surface(const bool &is_surface);
+
+    /**
+     * call_service_chirp_enable
+     * @param enable
+     * @return
+     */
+    int call_service_chirp_enable(const bool &enable);
 
     /**
      *

@@ -126,6 +126,10 @@ void AudioRecorderNode::init_interfaces() {
             "restart_audio_record",
             std::bind(&AudioRecorderNode::callback_trigger, this, _1, _2, _3));
 
+    service_chirp_ = this->create_service<std_srvs::srv::SetBool>(
+            "enable_chirp",
+            std::bind(&AudioRecorderNode::chirp_callback, this, _1, _2, _3));
+
     publisher_record_ = this->create_publisher<std_msgs::msg::Bool>("audio_record_sync", 10);
 
     subscriber_gnss_data_ = this->create_subscription<gpsd_client::msg::GpsFix>(
@@ -138,6 +142,15 @@ void AudioRecorderNode::gpsd_callback(const gpsd_client::msg::GpsFix &msg){
     if(msg.mode>=gpsd_client::msg::GpsFix::MODE_2D){
         gnss_fix_once_ = true;
     }
+}
+
+void AudioRecorderNode::chirp_callback(const std::shared_ptr<rmw_request_id_t> request_header,
+                                     const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+                                     std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+    enable_chirp_ = request->data;
+    dspic_.enable_chirp(enable_chirp_);
+    response->success = true;
+    response->message = "Chirp state changed";
 }
 
 void AudioRecorderNode::callback_trigger(const std::shared_ptr<rmw_request_id_t> request_header,
