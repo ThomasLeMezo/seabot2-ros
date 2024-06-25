@@ -220,8 +220,8 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
     g_ = ts.gsw_grav(latitude_, sea_pressure_*1e-4);
     rho_ = get_density_from_depth(x(4), sea_pressure_);
 
-    double coeff_A_ = g_ * rho_ / (2.0 * robot_mass_);
-    double coeff_B_ = 0.5 * rho_ * S_ / (2.0 * robot_mass_);
+    double coeff_A_ = g_ * rho_ / (robot_added_mass_ + robot_mass_);
+    double coeff_B_ = 0.5 * rho_ * S_ / (robot_added_mass_ + robot_mass_);
 
     double V = battery_tension_*(static_cast<double>(pwm-MOTOR_STOP))/(double)MOTOR_STOP;
 
@@ -233,8 +233,10 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
     volume_air_ = (volume_air_nR_)*(temp_K/abs_pressure_);
     volume_antenna_ = min(0.0, M_PI*pow(robot_diameter_/2.0, 2)*x(4)-volume_equilibrium_); /// Volume of antenna when emerged [neg]
 
+    double Fz = 119.9*pow(x(3), 5)+1.0928*pow(x(3), 4)-29.224*pow(x(3), 3)-0.0388*pow(x(3), 2)-0.4588*x(4);
+
     volume_total_ = volume_antenna_+volume_equilibrium_+piston_volume_-(chi_*x(4)+chi2_*pow(x(4), 2))+volume_air_;
-    dx(3) = -coeff_A_*(volume_total_)-coeff_B_*Cz_*abs(x(3))*x(3);
+    dx(3) = -coeff_A_*(volume_total_)-coeff_B_*Fz;
     dx(4) = x(3);
 
     if(isnan(volume_air_) || isnan(x(3)) || isnan(piston_volume_) || isnan(abs_pressure_)){

@@ -35,7 +35,7 @@ int DspicAcoustic::sync_pps() {
             }
             else {
                 RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Synchronized PPS");
-                pps_sync = true;
+                break;
             }
         } else {
             // Sleep for 10 ms
@@ -47,14 +47,14 @@ int DspicAcoustic::sync_pps() {
 
 int DspicAcoustic::set_pps_sync_chirp_id(uint8_t chirp_id) {
     if (i2c_smbus_write_byte_data(file_, 0x02, chirp_id) < 0) {
-        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set light enable");
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set PPS sync chirp id to %d", chirp_id);
     }
     else
         RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set PPS sync chirp id to %d", chirp_id);
     return 0;
 }
 
-uint8_t DspicAcoustic::get_pps_value(){
+uint8_t DspicAcoustic::get_pps_value() const{
     return i2c_smbus_read_byte_data(file_, 0x00);
 }
 

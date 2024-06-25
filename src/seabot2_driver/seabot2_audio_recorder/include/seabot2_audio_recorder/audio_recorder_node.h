@@ -49,7 +49,7 @@ private:
     uint8_t gain_ch1_ = 58;
     uint8_t gain_ch2_ = 58;
     uint8_t chirp_id_ = 0;
-    bool enable_chirp_ = false;
+    bool enable_chirp_ = true;
 
     bool gnss_fix_once_ = false;
 

@@ -49,9 +49,6 @@ AudioRecorderNode::AudioRecorderNode()
     // Start recording
     manage_subprocess(true);
 
-
-
-
     RCLCPP_INFO(this->get_logger(), "[audio_recorder_node] Start Ok");
 }
 
@@ -60,7 +57,7 @@ AudioRecorderNode::~AudioRecorderNode() {
     dspic_.enable_chirp(false);
 }
 
-void AudioRecorderNode::manage_subprocess(bool start_new_bag) {
+void AudioRecorderNode::manage_subprocess(bool start_new_audio) {
     std_msgs::msg::Bool msg;
 
     // Check if the subprocess is still running
@@ -71,7 +68,7 @@ void AudioRecorderNode::manage_subprocess(bool start_new_bag) {
     }
     usleep(1000000);
 
-    if(start_new_bag) {
+    if(start_new_audio) {
         string command_launch = command_;
         // Create a thread for the subprocess
         subprocessFuture_ = std::async(std::launch::async, [command_launch] {
@@ -82,7 +79,7 @@ void AudioRecorderNode::manage_subprocess(bool start_new_bag) {
         RCLCPP_INFO(this->get_logger(), "[recorder_node] Start audio recording");
     }
 
-    msg.data = start_new_bag;
+    msg.data = start_new_audio;
     publisher_record_->publish(msg);
 }
 

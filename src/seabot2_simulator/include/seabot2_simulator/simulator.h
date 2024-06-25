@@ -115,6 +115,7 @@ public:
     double seafloor_hardness_ = 0.8; // Absorption of velocity when impact with seafloor
     double salinity_cst_ = 0.0;
     double robot_mass_ =  12.0;
+    double robot_added_mass_ =  2.51;
     const double robot_diameter_ =  0.125;
     const double screw_thread_ =  1.e-3;
     double tick_per_turn_ =  2048*4;

@@ -32,6 +32,16 @@ void Kalman::update_density(double physics_rho){
 Matrix<double,Kalman::NB_STATES, 1> Kalman::f_dyn(const Matrix<double,NB_STATES,1> &x, const Matrix<double,NB_COMMAND, 1> &u) const{
     Matrix<double,NB_STATES, 1> dx = Matrix<double,NB_STATES, 1>::Zero();
 
+//    Frottements
+//            y= 119.9 * pow(x, 5)
+//               + 1.0928 * pow(x, 4)
+//               - 29.224 * pow(x, 3)
+//               -0.0388 * pow(x, 2)
+//               -0.4588 * x
+
+// Masse ajoutée
+// Ma = 2.51kg
+
     dx(0) = -coeff_A_*(u(0)+x(2)+x(6)*temperature_/pressure_-x(3)*x(1)-x(4)*pow(x(1),2))-coeff_B_*x(5)*copysign(x(0)*x(0), x(0));
     dx(1) = x(0);
     dx(2) = 0.0;

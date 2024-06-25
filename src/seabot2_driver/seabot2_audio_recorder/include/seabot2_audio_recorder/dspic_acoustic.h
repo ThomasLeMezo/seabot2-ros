@@ -54,14 +54,15 @@ public:
      *
      * @return
      */
-    uint8_t get_pps_value();
+    uint8_t get_pps_value() const;
 
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node
 
     int file_ = 0; /// File to the i2c port
     std::string i2c_periph_ = "/dev/i2c-0";
-    int i2c_addr_ = 0x1A;
+    int i2c_addr_ = 0x1E;
+    int code_version = 0x05;
 
 public:
 

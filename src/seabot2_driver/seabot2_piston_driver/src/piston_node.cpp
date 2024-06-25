@@ -10,6 +10,9 @@ PistonNode::PistonNode()
 
     piston_.i2c_open();
 
+    // Reset the position of the piston to ensure correct initialization
+    piston_.set_piston_reset();
+
     timer_ = this->create_wall_timer(
             loop_dt_, std::bind(&PistonNode::timer_callback, this));
 

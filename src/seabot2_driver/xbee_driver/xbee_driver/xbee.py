@@ -54,13 +54,24 @@ class XbeeNode(Node):
         self.subscription_internal_sensor_filter = None
         self.subscription_safety_data = None
 
+        # Get hostname of device
+        self.hostname = socket.gethostname()
+        # limit size
+        self.hostname = self.hostname[:20] if len(self.hostname) >= 21 else self.hostname
+
+        # Test if hostname starts with "seabot"
+        self.hostname_is_seabot = True
+        if not self.hostname.startswith("seabot"):
+            self.hostname_is_seabot = False
+
         # Parameters
         self.xbee_network_id = 0x42
         self.xbee_encryption_key = "ABCDEFGHIFKLMNOP"
-        self.xbee_node_id = "seabot_test" #socket.gethostname()
+        self.xbee_node_id = self.hostname
         self.time_between_communication = 5
         self.serial_baudrate = 9600
-        self.serial_port = "/dev/ttyMAX0"
+
+        self.serial_port = "/dev/ttyMAX0" if self.hostname_is_seabot else "/dev/ttyUSB0"
 
         # Initialization
         self.init_interfaces()
