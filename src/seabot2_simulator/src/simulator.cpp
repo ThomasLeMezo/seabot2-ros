@@ -35,6 +35,7 @@
 #include "seabot2_temperature_profile/msg/temperature_profile.hpp"
 
 #include "seabot2_simulator/msg/simulation_debug.hpp"
+#include "seabot2_simulator/msg/simulation_thermocline.hpp"
 
 using namespace std::chrono;
 
@@ -67,6 +68,9 @@ void Simulator::init_bag_writer(){
 
     bag_writer_->create_topic( {"/simulation/debug",
                                 "seabot2_simulator/msg/SimulationDebug",
+                                rmw_get_serialization_format(), ""});
+    bag_writer_->create_topic( {"/simulation/thermocline",
+                                "seabot2_simulator/msg/SimulationThermocline",
                                 rmw_get_serialization_format(), ""});
     bag_writer_->create_topic( {"/control/alpha_debug",
                                 "seabot2_depth_control/msg/AlphaDebug",
@@ -137,57 +141,68 @@ void Simulator::init_bag_writer(){
 
 }
 
-double Simulator::find_index_center_thermocline(){
-    // Compute the derivative of temperature over depth
-    vector<double> dTdz;
-    for(size_t i=0; i<temperature_profile_temperature_.size()-1; i++){
-        if(temperature_profile_depth_[i+1]-temperature_profile_depth_[i] != 0.0)
-            dTdz.push_back(abs((temperature_profile_temperature_[i+1]-temperature_profile_temperature_[i])/
-                       (temperature_profile_depth_[i+1]-temperature_profile_depth_[i])));
-        else
-            dTdz.push_back(0.0);
-    }
+//double Simulator::find_index_center_thermocline(){
+//    // Compute the derivative of temperature over depth
+//    vector<double> dTdz;
+//    for(size_t i=0; i<temperature_profile_temperature_.size()-1; i++){
+//        if(temperature_profile_depth_[i+1]-temperature_profile_depth_[i] != 0.0)
+//            dTdz.push_back(abs((temperature_profile_temperature_[i+1]-temperature_profile_temperature_[i])/
+//                       (temperature_profile_depth_[i+1]-temperature_profile_depth_[i])));
+//        else
+//            dTdz.push_back(0.0);
+//    }
+//
+//    // Find the index of the maximum value of the derivative
+//    auto max = max_element(dTdz.begin(), dTdz.end());
+//
+//    index_center_thermocline_ = distance(dTdz.begin(), max);
+//    thermocline_depth_ = temperature_profile_depth_[index_center_thermocline_];
+//    return thermocline_depth_;
+//}
 
-    // Find the index of the maximum value of the derivative
-    auto max = max_element(dTdz.begin(), dTdz.end());
+std::array<double, 3> Simulator::compute_wave(double t, bool water_velocity) {
+    double Dz_w = 0.0; // variation of z
+    double dz_w = 0.0;
+    double ddz_w = 0.0;
 
-    index_center_thermocline_ = distance(dTdz.begin(), max);
-    thermocline_depth_ = temperature_profile_depth_[index_center_thermocline_];
-    return thermocline_depth_;
-}
+    // Obtenir vitesse et accélération
 
-double Simulator::compute_wave(double t, double z) {
-    double dz1 = 0.0;
     for(auto & wave_generator : wave_generators_){
-        if(wave_generator.starting_time_<=t && (t<wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
-            if(!wave_generator.is_contraction_ && wave_generator.period_ !=0.)
-                dz1 += wave_generator.offset_ + wave_generator.amplitude_ * sin(2.*M_PI/wave_generator.period_*(t-wave_generator.starting_time_)+wave_generator.phase_);
-        }
-    }
+        if(t >= wave_generator.starting_time_
+                && (wave_generator.starting_time_+wave_generator.duration_ < t || wave_generator.duration_==-1)){
+//            if(!wave_generator.is_contraction_) {
+                Dz_w += wave_generator.offset_ + wave_generator.amplitude_/2.0 * sin(2. * M_PI / wave_generator.period_ *
+                                                                                 (t - wave_generator.starting_time_) +
+                                                                                 wave_generator.phase_);
+                dz_w += wave_generator.amplitude_/2.0 * 2. * M_PI / wave_generator.period_ *
+                         cos(2. * M_PI / wave_generator.period_ * (t - wave_generator.starting_time_) +
+                             wave_generator.phase_);
 
-    double dz2 = 0.0;
-    for(auto & wave_generator : wave_generators_){
-        if(wave_generator.starting_time_<=t && (t<wave_generator.starting_time_+wave_generator.duration_ || wave_generator.duration_==-1)){
-            if(wave_generator.is_contraction_ && wave_generator.period_ !=0.)
-                dz2 += wave_generator.offset_ + (z+dz1-thermocline_depth_)*wave_generator.amplitude_ * sin(2*M_PI/wave_generator.period_*(t-wave_generator.starting_time_)+wave_generator.phase_);
+                ddz_w += - pow(wave_generator.amplitude_/2.0 * 2. * M_PI / wave_generator.period_, 2) *
+                         sin(2. * M_PI / wave_generator.period_ * (t - wave_generator.starting_time_) +
+                             wave_generator.phase_);
+//            }
+
+//            if(wave_generator.is_contraction_ && wave_generator.period_ !=0.)
+//                dz_w += wave_generator.offset_ + (z+dz1-thermocline_depth_)*wave_generator.amplitude_ * sin(2*M_PI/wave_generator.period_*(t-wave_generator.starting_time_)+wave_generator.phase_);
         }
     }
     
-    return dz1+dz2;
+    return {Dz_w, dz_w, ddz_w};
 }
 
 double Simulator::temperature_from_depth(double z) {
     double temperature;
-    double dz = compute_wave((t_-start_time_).seconds(), z);
+    double Dz_w = compute_wave((t_-start_time_).seconds(), true)[0];
 
     if(temperature_profile_temperature_.size()<2) {
-        temperature = max(min(18.0 - 0.25 * (z+dz), 18.0), 8.0);
+        temperature = max(min(18.0 - 0.25 * (z-Dz_w), 18.0), 8.0);
     }
     else{
         // Find first value of temperature_profile_depth_ which is greater than z
         size_t idx = 0;
         for(size_t i=idx+1; i<temperature_profile_depth_.size()-1; i++){
-            if(temperature_profile_depth_[i]<(z+dz))
+            if(temperature_profile_depth_[i]<(z-Dz_w))
                 idx = i;
             else
                 break;
@@ -197,11 +212,40 @@ double Simulator::temperature_from_depth(double z) {
         double t0 = temperature_profile_temperature_[idx];
         double t1 = temperature_profile_temperature_[idx+1];
         if(z1-z0 != 0.0)
-            temperature = ((z+dz)-z0)/(z1-z0)*(t1-t0)+t0;
+            temperature = ((z-Dz_w)-z0)/(z1-z0)*(t1-t0)+t0;
         else
             temperature = t0;
     }
     return temperature;
+}
+
+double Simulator::depth_from_temperature(double temperature) {
+    double depth;
+    double Dz_w = compute_wave((t_-start_time_).seconds(), true)[0];
+
+    if(temperature_profile_temperature_.size()<2) {
+        // Linear interpolation
+        depth = max(min((1./0.25)*(18.0-temperature), 40.0), 0.0);
+    }
+    else{
+        // Find first value of temperature_profile_depth_ which is greater than z
+        size_t idx = 0;
+        for(size_t i=idx+1; i<temperature_profile_temperature_.size()-1; i++){
+            if(temperature_profile_temperature_[i]<(temperature))
+                idx = i;
+            else
+                break;
+        }
+        double z0 = temperature_profile_depth_[idx];
+        double z1 = temperature_profile_depth_[idx+1];
+        double t0 = temperature_profile_temperature_[idx];
+        double t1 = temperature_profile_temperature_[idx+1];
+        if(t1-t0 != 0.0)
+            depth = ((temperature)-t0)/(t1-t0)*(z1-z0)+z0;
+        else
+            depth = z0;
+    }
+    return depth+Dz_w;
 }
 
 double Simulator::salinity_from_depth(double z) {
@@ -212,7 +256,10 @@ double Simulator::salinity_from_depth(double z) {
 Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STATES, 1> &x, int pwm) {
     Matrix<double, SIMU_NB_STATES, 1> dx = Matrix<double, SIMU_NB_STATES, 1>::Zero();
 
+    auto wave = compute_wave((t_-start_time_).seconds(), true);
 
+    double dz_w = wave[1];
+    double ddz_w = wave[2];
 
     double temp_K = temperature_degree_+ts.gtc.gsw_t0; /// in K
     sea_pressure_ = rho_*g_*x(4); /// ts.gsw_p_from_z(-x(4), latitude_)*1e4; /// in Pa (z is negative, output dbar)
@@ -221,7 +268,7 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
     rho_ = get_density_from_depth(x(4), sea_pressure_);
 
     double coeff_A_ = g_ * rho_ / (robot_added_mass_ + robot_mass_);
-    double coeff_B_ = 0.5 * rho_ * S_ / (robot_added_mass_ + robot_mass_);
+    double coeff_B_ = 1.0 / (robot_added_mass_ + robot_mass_);
 
     double V = battery_tension_*(static_cast<double>(pwm-MOTOR_STOP))/(double)MOTOR_STOP;
 
@@ -230,13 +277,21 @@ Matrix<double, SIMU_NB_STATES, 1> Simulator::f(const Matrix<double, SIMU_NB_STAT
     dx(2) = -Ke_/L_*x(1)-R_/L_*x(2)+V/L_;
 
     piston_volume_ = (-(x(0)/(2*M_PI*maxon_Reduction_))*screw_thread_)*(M_PI*pow(piston_diameter_/2.0, 2));
-    volume_air_ = (volume_air_nR_)*(temp_K/abs_pressure_);
+    volume_air_ = (volume_air_P0_/abs_pressure_)*(temp_K/volume_air_T0_)*volume_air_V0_;
     volume_antenna_ = min(0.0, M_PI*pow(robot_diameter_/2.0, 2)*x(4)-volume_equilibrium_); /// Volume of antenna when emerged [neg]
 
-    double Fz = 119.9*pow(x(3), 5)+1.0928*pow(x(3), 4)-29.224*pow(x(3), 3)-0.0388*pow(x(3), 2)-0.4588*x(4);
+    double Veq = volume_antenna_ + volume_equilibrium_;
 
-    volume_total_ = volume_antenna_+volume_equilibrium_+piston_volume_-(chi_*x(4)+chi2_*pow(x(4), 2))+volume_air_;
-    dx(3) = -coeff_A_*(volume_total_)-coeff_B_*Fz;
+    double Vc = robot_mass_/rho_ + 0.0; // incompressible float
+
+    double rho_w = get_density_from_depth(x(4), sea_pressure_);
+    double rho_f = robot_mass_/(Vc + Veq + volume_air_ + piston_volume_);
+
+    double dz_r = x(3)-dz_w;
+    double C_d = 119.9*pow(dz_r, 5)+1.0928*pow(dz_r, 4)-29.224*pow(dz_r, 3)-0.0388*pow(dz_r, 2)-0.4588*dz_r;
+    double f_b = (robot_mass_/rho_) * (rho_w - rho_f)/rho_;
+
+    dx(3) = ddz_w -coeff_A_*(f_b)+coeff_B_*C_d;
     dx(4) = x(3);
 
     if(isnan(volume_air_) || isnan(x(3)) || isnan(piston_volume_) || isnan(abs_pressure_)){
@@ -333,6 +388,18 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_simu_debug.volume_air = volume_air_;
     msg_simu_debug.volume_antenna = volume_antenna_;
     bag_writer_->write(msg_simu_debug, "/simulation/debug", t);
+
+    seabot2_simulator::msg::SimulationThermocline msg_thermocline;
+    std::shared_ptr<WaypointTemperatureKeeping> wpt = mission_.get_current_waypoint_temperature_keeping();
+    if(wpt!= nullptr) {
+        msg_thermocline.temperature_target = wpt->temperature_;
+        std::array<double, 3> wave = compute_wave((t - start_time_).seconds(), true);
+
+        msg_thermocline.thermocline_depth = depth_from_temperature(msg_thermocline.temperature_target);
+        msg_thermocline.thermocline_velocity = wave[1];
+        msg_thermocline.thermocline_acceleration = wave[2];
+        bag_writer_->write(msg_thermocline, "/simulation/thermocline", t);
+    }
 
     seabot2_depth_filter::msg::DepthPose msg_depth;
     msg_depth.depth = fusion_depth_;    /// Todo verify
@@ -469,7 +536,7 @@ void Simulator::run_simulation() {
     dc_.set_start_time(start_time_);
 
     // Thermocline computation
-    std::cout << "Thermocline depth = " << find_index_center_thermocline() << std::endl;
+//    std::cout << "Thermocline depth = " << find_index_center_thermocline() << std::endl;
     init_wave_file();
 
     auto start = high_resolution_clock::now();
@@ -599,12 +666,17 @@ int Simulator::init_wave_file(){
                         v.second.get<double>("phase", 0.0),
                         v.second.get<double>("offset", 0.0),
                         v.second.get<bool>("is_contraction", false),
+                        v.second.get<bool>("water_velocity", true),
                         v.second.get<double>("starting_time", 0.0),
                         v.second.get<double>("duration", 0.0));
         wave_generators_.emplace_back(w);
-        cout << "Amplitude = " << w.amplitude_ << " Period = " << w.period_ << " Phase = " << w.phase_
+        cout << "Amplitude = " << w.amplitude_
+             << " Period = " << w.period_
+             << " Phase = " << w.phase_
              << " Offset = " << w.offset_
-             << " Contraction = " << w.is_contraction_ << " Starting time = " << w.starting_time_
+             << " Contraction = " << w.is_contraction_
+             << " Water velocity = " << w.water_velocity_
+             << " Starting time = " << w.starting_time_
              << " Duration = " << w.duration_ << endl;
     }
     return return_code;

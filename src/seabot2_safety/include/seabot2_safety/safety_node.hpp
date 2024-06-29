@@ -53,6 +53,7 @@ private:
     rclcpp::Time depth_last_received_ = this->now();
     std::chrono::milliseconds depth_no_data_warning_ = 2s;
     double depth_limit_max_ = 110.0;
+    double limit_depth_min_ = 2.0;
 
     double battery_volt_ = 0.0;
     rclcpp::Time battery_last_received_ = this->now();

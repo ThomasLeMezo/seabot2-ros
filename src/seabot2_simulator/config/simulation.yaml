@@ -5,9 +5,15 @@ simulation_node:
     simu_cz: 3.0
     simu_chi: 0.0
     simu_chi2: 0.0
-    simu_volume_air_init: 15e-6 #m3
-    simu_pressure_sensor_stddev: 2e-3 # bar
+    simu_volume_air_V0: 15e-6 #m3
+    simu_pressure_sensor_stddev: 1e-3 #2e-3 # bar
     seafloor_depth: 40.0 # m
+    #temperature_profile_file: "temperature_profile_guerledan_2023_10_09.profile"
+    temperature_profile_file: ""
+    temperature_sensor_coeff: 0.04
+    temperature_sensor_stddev: 0.005 #0.01
+
+    temperature_keeping_k: 0.5
 
     kalman_robot_mass: 12.0
     kalman_enable_kalman_depth: 0.5
@@ -48,8 +54,3 @@ simulation_node:
     dc_delta_position_lb: -10e-3
     dc_delta_position_ub: 10e-3
 
-    #temperature_profile_file: "temperature_profile_guerledan_2023_10_09.profile"
-    temperature_profile_file: "temperature_profile_guerledan_2024_02_05.profile"
-    temperature_sensor_coeff: 0.04
-    temperature_sensor_stddev: 0.02
-    temperature_keeping_k: 0.03

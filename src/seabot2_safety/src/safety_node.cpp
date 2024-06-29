@@ -36,6 +36,7 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<double>("robot_height_ping", robot_height_ping_);
     this->declare_parameter<double>("offset_max_depth", offset_max_depth_);
     this->declare_parameter<double>("limit_depth_default", limit_depth_default_);
+    this->declare_parameter<double>("limit_depth_min", limit_depth_min_);
     this->declare_parameter<double>("max_velocity_reset_zero", max_velocity_reset_zero_);
     this->declare_parameter<double>("piston_error_threshold_set_point", piston_error_threshold_set_point_);
     this->declare_parameter<double>("piston_error_threshold_position", piston_error_threshold_position_);
@@ -50,6 +51,7 @@ void SafetyNode::init_parameters() {
     battery_volt_limit_ = this->get_parameter_or("battery_volt_limit", battery_volt_limit_);
     depth_flash_surface_ = this->get_parameter_or("depth_flash_surface", depth_flash_surface_);
     depth_limit_max_ = this->get_parameter_or("depth_limit_max", depth_limit_max_);
+    limit_depth_min_ = this->get_parameter_or("limit_depth_min", limit_depth_min_);
     max_depth_reset_zero_ = this->get_parameter_or("max_depth_reset_zero", max_depth_reset_zero_);
     depth_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("depth_no_data_warning", depth_no_data_warning_.count()));
     battery_no_data_warning_ = std::chrono::milliseconds(this->get_parameter_or("battery_no_data_warning", battery_no_data_warning_.count()));
@@ -395,12 +397,12 @@ void SafetyNode::test_depth_max(){
             (this->now()-depth_last_received_) < depth_no_data_warning_ &&
         enable_limit_depth_){
         if (ping_confidence_ > 90) {
-            limit_depth_ = limit_depth_*limit_depth_filter_coeff +
-                    (1.0-limit_depth_filter_coeff)*min(limit_depth_default_, (bathy_ - offset_max_depth_));
+            limit_depth_ = max(limit_depth_min_, limit_depth_*limit_depth_filter_coeff +
+                    (1.0-limit_depth_filter_coeff)*min(limit_depth_default_, (bathy_ - offset_max_depth_)));
         }
         else{
-            limit_depth_ = limit_depth_*limit_depth_filter_coeff +
-                           (1.0-limit_depth_filter_coeff)*(max(0.0,limit_depth_-1.0)); // Go back to surface
+            limit_depth_ = max(limit_depth_min_, limit_depth_*limit_depth_filter_coeff +
+                           (1.0-limit_depth_filter_coeff)*(max(0.0,limit_depth_-1.0))); // Go back to surface
         }
     }
     else{

@@ -24,13 +24,19 @@ def generate_launch_description():
         # Load temperature profile
         stream = open(config_simulation, 'r')
         yaml_file = yaml.load(stream)
-        file_temp_profile = home_path + "/" + yaml_file['simulation_node']['ros__parameters']['temperature_profile_file']
+        try:
+            file_temp_profile = home_path + "/" + yaml_file['simulation_node']['ros__parameters']['temperature_profile_file']
 
-        if os.path.exists(file_temp_profile):
-            data = np.loadtxt(file_temp_profile)
-            parameters_file_list.append({'temperature_profile_depth': data[0].tolist()})
-            parameters_file_list.append({'temperature_profile_temp': data[1].tolist()})
-            #print(parameters_file_list)
+            if os.path.exists(file_temp_profile):
+                data = np.loadtxt(file_temp_profile)
+                parameters_file_list.append({'temperature_profile_depth': data[0].tolist()})
+                parameters_file_list.append({'temperature_profile_temp': data[1].tolist()})
+                #print(parameters_file_list)
+        except:
+            parameters_file_list.append({'temperature_profile_depth': [0.]})
+            parameters_file_list.append({'temperature_profile_temp': [0.]})
+            print("No temperature profile file found")
+            pass
 
     # Load alpha values
     file_alpha = home_path + "/config/default/alpha_values.txt"

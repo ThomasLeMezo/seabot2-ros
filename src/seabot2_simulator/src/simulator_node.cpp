@@ -19,7 +19,8 @@ void SimulatorNode::init_parameters() {
     this->declare_parameter<double>("simu_cz", s_.Cz_);
     this->declare_parameter<double>("simu_chi", s_.chi_);
     this->declare_parameter<double>("simu_chi2", s_.chi2_);
-    this->declare_parameter<double>("simu_volume_air_init", s_.volume_air_init_);
+    this->declare_parameter<double>("simu_volume_air_V0", s_.volume_air_V0_);
+    this->declare_parameter<double>("simu_volume_air_T0", s_.volume_air_T0_);
     this->declare_parameter<double>("simu_pressure_sensor_stddev", s_.pressure_sensor_stddev_);
     this->declare_parameter<double>("simu_seafloor_depth", s_.seafloor_depth_);
 
@@ -76,8 +77,8 @@ void SimulatorNode::init_parameters() {
     s_.Cz_ = this->get_parameter_or("simu_cz", s_.Cz_);
     s_.chi_ = this->get_parameter_or("simu_chi", s_.chi_);
     s_.chi2_ = this->get_parameter_or("simu_chi2", s_.chi2_);
-    s_.volume_air_init_ = this->get_parameter_or("simu_volume_air_init", s_.volume_air_init_);
-    s_.volume_air_nR_ = 101325.0*s_.volume_air_init_/(273.15+15.0);
+    s_.volume_air_V0_ = this->get_parameter_or("simu_volume_air_V0", s_.volume_air_V0_);
+    s_.volume_air_T0_ = this->get_parameter_or("simu_volume_air_T0", s_.volume_air_T0_);
     s_.pressure_sensor_stddev_ = this->get_parameter_or("simu_pressure_sensor_stddev", s_.pressure_sensor_stddev_);
     s_.mission_file_name_ = this->get_parameter_or("simu_mission_file_name", s_.mission_file_name_);
     s_.mission_path_ = this->get_parameter_or("simu_mission_path", s_.mission_path_);
@@ -140,6 +141,8 @@ void SimulatorNode::init_parameters() {
     s_.compute_std_generators();
     RCLCPP_INFO(this->get_logger(), "[Simulator_node] temperature_sensor_stddev = %f", s_.temperature_sensor_stddev_);
     RCLCPP_INFO(this->get_logger(), "[Simulator_node] simu_pressure_sensor_stddev = %f", s_.pressure_sensor_stddev_);
+
+    s_.volume_air_nR_ = 101325.0*s_.volume_air_V0_/(273.15+15.0);
 }
 
 int main(int argc, char *argv[]) {

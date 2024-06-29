@@ -24,6 +24,7 @@ public:
                   double period,
                   double phase,
                   double offset,
+                  bool water_velocity,
                   bool is_contraction = false,
                   double starting_time = 0.0,
                   double duration = 0.0){
@@ -31,13 +32,14 @@ public:
         period_ = period;
         phase_ = phase;
         offset_ = offset;
+        water_velocity_ = water_velocity;
         is_contraction_ = is_contraction;
         starting_time_ = starting_time;
         duration_ = duration;
     }
 
     double amplitude_{}, period_{}, phase_{}, offset_{}, starting_time_{}, duration_{};
-    bool is_contraction_{};
+    bool is_contraction_{}, water_velocity_{};
 };
 
 #define SIMU_NB_STATES 5
@@ -76,9 +78,11 @@ public:
 
     int init_wave_file();
 
-    double compute_wave(double t, double z);
+    std::array<double, 3> compute_wave(double t, bool water_velocity=true);
 
     void compute_std_generators();
+
+    double depth_from_temperature(double temperature);
 
 private:
     std::unique_ptr<rosbag2_cpp::Writer> bag_writer_;
@@ -130,10 +134,11 @@ public:
     double volume_equilibrium_ = 90e-6; /// m3
     double chi_ = 0.0;
     double chi2_ = 0.0;
-    double volume_air_init_ = 15e-6; //15e-6; /// m3
-//    const double volume_air_p0_ = ts.gtc.gsw_p0; /// Pa
-//    const double volume_air_temp0_ = ts.gtc.gsw_t0 + 15.0; /// 15°C in K
-    double volume_air_nR_ = 101325.0*volume_air_init_/(273.15+15.0); /// Pa*m3/K
+    double volume_air_V0_ = 15e-6; //15e-6; /// m3
+    double volume_air_P0_ = 101325.0; /// Pa
+    double volume_air_T0_ = (273.15+15.0);
+
+    double volume_air_nR_ = 0.0;
 
     /// ************** Maxon motor ************** ///
     double maxon_RotorInertia_ = 9.0; /// gcm2
@@ -234,6 +239,7 @@ public:
     double thermocline_depth_ = 0.0;
     std::vector<WaveGenerator> wave_generators_;
     string wave_file_name_ = "";
+
 
 };
 

@@ -47,7 +47,7 @@ driver:
 
   ping_node:
     ros__parameters:
-      ping_interval: 200 #ms
+      ping_interval: 1000 #ms
       enable_ping: true
       mode_auto: true
       speed_of_sound: 1440.0

@@ -94,7 +94,7 @@ Model
 \dot{z}\\
 \dot{V}_{p}
 \end{array}\right)=\left(\begin{array}{c}
--A\left(\delta V_{\text{eq}}+V_{p}-\left(\chi_{1}z+\chi_{2}z^{2}\right)+V_{\text{air}}\frac{T}{P}\right)-C_{z}B\left|\dot{z}\right|\dot{z}\\
+\ddot{z}_{w}-A\left(f_{b}\left(z\right)\right)-BC_{d}\left(\dot{z}_{r}\right)\\
 \dot{z}\\
 u
 \end{array}\right)\label{eq:dynamics}
@@ -110,7 +110,11 @@ u
 \end_inset
 
 ,
-\begin_inset Formula $B=\frac{\rho S}{2m_{v}}$
+\begin_inset Formula $B=\frac{\rho}{2m_{v}}$
+\end_inset
+
+,
+\begin_inset Formula $\rho=\frac{m}{V}$
 \end_inset
 
 
@@ -136,10 +140,36 @@ The unknown coefficients are :
 \end_layout
 
 \begin_layout Itemize
-\begin_inset Formula $\chi_{1},\chi_{2}$
+\begin_inset Formula $z_{r}=z-z_{w}$
 \end_inset
 
- compressiblity coefficients
+, 
+\begin_inset Formula $\ddot{z}_{w}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $f_{b}\left(z,z_{w}\right)=\frac{\rho_{w}\left(z,z_{w}\right)-\rho_{f}\left(z,T\right)}{\rho}V$
+\end_inset
+
+, 
+\begin_inset Formula $\rho_{f}\left(z,T\right)=\frac{m}{V_{c}\left(T,p\right)+V_{\text{air}}\frac{TP_{atmo}}{P_{atmo}+P\left(z\right)}+V_{p}}$
+\end_inset
+
+, 
+\begin_inset Formula $z_{w}$
+\end_inset
+
+ (=downward isopycnal/water displacement)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $V_{c}\left(T,p\right)$
+\end_inset
+
+, float volume (piston, antenna, hull, air, compressible effect, ...)
 \end_layout
 
 \begin_layout Itemize
@@ -163,10 +193,19 @@ The unknown coefficients are :
 \end_layout
 
 \begin_layout Itemize
-\begin_inset Formula $C_{z}$
+\begin_inset Formula $C_{d}$
 \end_inset
 
- : drag coefficient
+ : drag function
+\end_layout
+
+\begin_layout Standard
+Erreur sur 
+\begin_inset Formula $\rho$
+\end_inset
+
+ de l'ordre de 1%, donc incertitude sur le modèle final de l'ordre de (1+1%)*1%=
+> 10^-4
 \end_layout
 
 \begin_layout Section

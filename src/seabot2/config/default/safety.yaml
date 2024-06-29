@@ -18,3 +18,4 @@ safety:
       seabed_delay_detection: 30000 # ms
       max_depth_reset_zero: 2.0 #m
       gnss_fix_once_enable: false
+      limit_depth_min: 2.0 #m

@@ -5,17 +5,17 @@
         <start_time_utc>
             <year>2024</year>
             <month>06</month>
-            <day>25</day>
-            <hour>20</hour>
-            <min>50</min>
+            <day>27</day>
+            <hour>10</hour>
+            <min>25</min>
         </start_time_utc>
     </offset>
 
-    <description>Depth profile</description>
+    <description>Temperature Keeping</description>
 
     <paths>
         <waypoint>
-            <duration>37800</duration>
+            <duration>21600</duration>
             <depth>20.0</depth>
             <limit_velocity>0.1</limit_velocity>
         </waypoint>
