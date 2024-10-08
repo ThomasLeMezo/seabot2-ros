@@ -27,6 +27,7 @@ AudioRecorderNode::AudioRecorderNode()
     tlv_.set_adc_gain(gain_ch1_, gain_ch2_);
 
     dspic_.i2c_open();
+    dspic_.sync_pps();
     dspic_.set_duration_between_shoot(duration_between_shoot_);
     dspic_.set_shoot_offset_from_posix_zero(chirp_id_*time_slot_duration_);
     dspic_.enable_chirp(enable_chirp_);

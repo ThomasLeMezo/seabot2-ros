@@ -27,20 +27,23 @@ int DspicAcoustic::sync_pps() {
 
     while (!pps_sync){
         double t = n_->now().seconds();
-        double dt = t - ceil(t);
-        if (dt > 0.6 && dt < 0.8) {
+        double dt = t - floor(t);
+        if (dt < 0.5) {
             unsigned int posix_seconds = (int) ceil(t);
+            RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] %i", posix_seconds);
             uint8_t posix_seconds_bytes[4];
-            for (int i = 0; i < 4; i++)
-                posix_seconds_bytes[i] = (posix_seconds >> 8*i) & 0xFF;
+            for (int i = 0; i < 4; i++) {
+                posix_seconds_bytes[i] = (posix_seconds >> (8 * i)) & 0xFF;
+                RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] %i", posix_seconds_bytes[i]);
+            }
 
             if (i2c_smbus_write_i2c_block_data(file_, 0xB0, 4, posix_seconds_bytes)) {
                 RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - sync pps");
             }
             else {
                 RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Synchronized PPS");
-                break;
             }
+            pps_sync = true;
         } else {
             // Sleep for 10 ms
             usleep(10000);

@@ -5,25 +5,25 @@
         <start_time_utc>
             <year>2024</year>
             <month>10</month>
-            <day>07</day>
-            <hour>13</hour>
-            <min>00</min>
+            <day>08</day>
+            <hour>17</hour>
+            <min>10</min>
         </start_time_utc>
     </offset>
 
     <description>Depth profile</description>
 
     <paths>
-        <loop number="6" depth_increment="0.0">
+        <loop number="5" depth_increment="0.0">
             <waypoint>
                 <duration>600</duration>
-                <depth>30.0</depth>
+                <depth>5.0</depth>
                 <limit_velocity>0.1</limit_velocity>
             </waypoint>
 
             <waypoint>
                 <duration>600</duration>
-                <depth>5.0</depth>
+                <depth>30.0</depth>
                 <limit_velocity>0.1</limit_velocity>
             </waypoint>
         </loop>

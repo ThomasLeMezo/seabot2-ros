@@ -32,7 +32,7 @@ public:
 
 public:
     // --max-file-time 900
-    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 192000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
+    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 192000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav --max-file-time 600";
 
 private:
     rclcpp::TimerBase::SharedPtr timer_;
