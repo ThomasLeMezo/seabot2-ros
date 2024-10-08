@@ -19,3 +19,6 @@ cp -r -p /home/src . && colcon build
 
 rsync -r --info=progress2 install pi@192.168.0.104:~/seabot2-ros/
 ```
+
+docker run --platform linux/arm64 -v ~/seabot2/seabot2-ros:/home -v ~/seabot2/seabot2-ros/.arm64:/seabot2-ros -it arm64v8/ros:rolling-seafoil-v9
+cd /seabot2-ros && cp -r -p /home/src . && colcon build

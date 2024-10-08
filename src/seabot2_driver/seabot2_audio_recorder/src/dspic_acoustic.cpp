@@ -29,8 +29,12 @@ int DspicAcoustic::sync_pps() {
         double t = n_->now().seconds();
         double dt = t - ceil(t);
         if (dt > 0.6 && dt < 0.8) {
-            int modulo = (int) ceil(t) % 15;
-            if (i2c_smbus_write_byte_data(file_, 0x00, modulo) < 0) {
+            unsigned int posix_seconds = (int) ceil(t);
+            uint8_t posix_seconds_bytes[4];
+            for (int i = 0; i < 4; i++)
+                posix_seconds_bytes[i] = (posix_seconds >> 8*i) & 0xFF;
+
+            if (i2c_smbus_write_i2c_block_data(file_, 0xB0, 4, posix_seconds_bytes)) {
                 RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - sync pps");
             }
             else {
@@ -45,13 +49,26 @@ int DspicAcoustic::sync_pps() {
     return EXIT_SUCCESS;
 }
 
-int DspicAcoustic::set_pps_sync_chirp_id(uint8_t chirp_id) {
-    if (i2c_smbus_write_byte_data(file_, 0x02, chirp_id) < 0) {
-        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set PPS sync chirp id to %d", chirp_id);
+int DspicAcoustic::set_duration_between_shoot(uint16_t duration_seconds){
+    if (i2c_smbus_write_word_data(file_, 0xB4, duration_seconds) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set duration between shoot");
+        return EXIT_FAILURE;
     }
-    else
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set PPS sync chirp id to %d", chirp_id);
-    return 0;
+    else{
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set duration between shoot");
+        return EXIT_SUCCESS;
+    }
+}
+
+int DspicAcoustic::set_shoot_offset_from_posix_zero(uint16_t offset_seconds){
+    if (i2c_smbus_write_word_data(file_, 0xB6, offset_seconds) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        return EXIT_FAILURE;
+    }
+    else{
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+        return EXIT_SUCCESS;
+    }
 }
 
 uint8_t DspicAcoustic::get_pps_value() const{

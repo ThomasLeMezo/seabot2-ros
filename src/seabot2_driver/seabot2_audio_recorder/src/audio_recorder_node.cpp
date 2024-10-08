@@ -27,7 +27,8 @@ AudioRecorderNode::AudioRecorderNode()
     tlv_.set_adc_gain(gain_ch1_, gain_ch2_);
 
     dspic_.i2c_open();
-    dspic_.set_pps_sync_chirp_id(chirp_id_);
+    dspic_.set_duration_between_shoot(duration_between_shoot_);
+    dspic_.set_shoot_offset_from_posix_zero(chirp_id_*time_slot_duration_);
     dspic_.enable_chirp(enable_chirp_);
 
     // Find home directory and append log folder
@@ -109,11 +110,15 @@ void AudioRecorderNode::init_parameters() {
     this->declare_parameter<int>("gain_ch1", gain_ch1_);
     this->declare_parameter<int>("gain_ch2", gain_ch2_);
     this->declare_parameter<int>("chirp_id", chirp_id_);
+    this->declare_parameter<int>("duration_between_shoot", duration_between_shoot_);
+    this->declare_parameter<int>("time_slot_duration", time_slot_duration_);
     this->declare_parameter<bool>("enable_chirp", enable_chirp_);
 
     gain_ch1_ = this->get_parameter_or("gain_ch1", gain_ch1_);
     gain_ch2_ = this->get_parameter_or("gain_ch2", gain_ch2_);
     chirp_id_ = this->get_parameter_or("chirp_id", chirp_id_);
+    duration_between_shoot_ = this->get_parameter_or("duration_between_shoot", duration_between_shoot_);
+    time_slot_duration_ = this->get_parameter_or("time_slot_duration", time_slot_duration_);
 
     enable_chirp_ = this->get_parameter_or("enable_chirp", enable_chirp_);
 

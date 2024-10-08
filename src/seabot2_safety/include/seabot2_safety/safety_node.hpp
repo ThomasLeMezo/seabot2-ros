@@ -65,7 +65,7 @@ private:
     double depth_flash_surface_ = 0.5;
     bool flash_surface_enable_ = false;
 
-    double depth_chrip_enable_ = 0.5;
+    double depth_chrip_enable_ = 1.0;
     bool chirp_enable_ = true;
     bool chirp_is_enable_ = false;
 

@@ -46,9 +46,11 @@ public:
 
     int sync_pps();
 
-    int set_pps_sync_chirp_id(uint8_t chirp_id);
-
     int enable_chirp(bool enable=true);
+
+    int set_duration_between_shoot(uint16_t duration_seconds);
+
+    int set_shoot_offset_from_posix_zero(uint16_t offset_seconds);
 
     /**
      *
@@ -61,10 +63,8 @@ private:
 
     int file_ = 0; /// File to the i2c port
     std::string i2c_periph_ = "/dev/i2c-0";
-    int i2c_addr_ = 0x1E;
+    int i2c_addr_ = 0x1A;
     int code_version = 0x05;
-
-public:
 
 };
 

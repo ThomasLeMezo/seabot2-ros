@@ -70,6 +70,8 @@ class XbeeNode(Node):
         self.xbee_node_id = self.hostname
         self.time_between_communication = 5
         self.serial_baudrate = 9600
+        self.tx_power = 0
+        self.routing_node = 2
 
         self.serial_port = "/dev/ttyMAX0" if self.hostname_is_seabot else "/dev/ttyUSB0"
 
@@ -126,6 +128,7 @@ class XbeeNode(Node):
         self.xbee.read_device_info()
         self.xbee.set_node_id(self.xbee_node_id)
 
+        ## MAC/PHY
         # Set network id
         print("Set network ID")
         self.xbee.set_parameter('ID', self.xbee_network_id.to_bytes(2, 'big'))
@@ -137,6 +140,15 @@ class XbeeNode(Node):
         # Set encryption enable
         print("Enable Encryption")
         self.xbee.set_parameter('EE', b'\x01')
+
+        # TX Power Level
+        print("Set TX power level")
+        self.xbee.set_parameter('PL', self.tx_power.to_bytes(2, 'big'))
+
+        ## Set Network parameters
+        # CE Routing/Messaging Mode
+        print("Set Routing node (Non-rounting module)")
+        self.xbee.set_parameter('CE', self.routing_node.to_bytes(2, 'big'))
 
         # Apply changes.
         print("Apply changes & write")
@@ -159,6 +171,8 @@ class XbeeNode(Node):
         self.declare_parameter('time_between_communication', self.time_between_communication)  # in seconds
         self.declare_parameter('xbee_encryption_key', self.xbee_encryption_key)  # 16 bytes
         self.declare_parameter('xbee_network_id', self.xbee_network_id)  # between 0x0 and 0x7FFF
+        self.declare_parameter('tx_power', self.tx_power)
+        self.declare_parameter('routing_node', self.routing_node)
 
         self.serial_port = self.get_parameter('serial_port').get_parameter_value().string_value
         self.serial_baudrate = self.get_parameter('serial_baudrate').get_parameter_value().integer_value
@@ -167,6 +181,8 @@ class XbeeNode(Node):
         self.xbee_node_id = self.get_parameter('xbee_node_id').get_parameter_value().string_value
         self.xbee_encryption_key = self.get_parameter('xbee_encryption_key').get_parameter_value().string_value
         self.xbee_network_id = self.get_parameter('xbee_network_id').get_parameter_value().integer_value
+        self.tx_power = self.get_parameter('tx_power').get_parameter_value().integer_value
+        self.routing_node = self.get_parameter('routing_node').get_parameter_value().integer_value
 
     def init_interfaces(self):
         self.subscription_safety_data = self.create_subscription(SafetyStatus,

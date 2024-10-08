@@ -32,7 +32,7 @@ public:
 
 public:
     // --max-file-time 900
-    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 48000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
+    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 192000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav";
 
 private:
     rclcpp::TimerBase::SharedPtr timer_;
@@ -46,9 +46,12 @@ private:
     TLV320ADC tlv_;
     DspicAcoustic dspic_;
 
-    uint8_t gain_ch1_ = 58;
-    uint8_t gain_ch2_ = 58;
-    uint8_t chirp_id_ = 0;
+    uint8_t gain_ch1_ = 0;
+    uint8_t gain_ch2_ = 0;
+    uint16_t chirp_id_ = 0;
+    uint16_t duration_between_shoot_ = 30; //s
+    uint16_t time_slot_duration_ = 3; // s
+
     bool enable_chirp_ = false;
 
     bool gnss_fix_once_ = false;
