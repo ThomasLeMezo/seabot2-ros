@@ -54,6 +54,8 @@ public:
 
     int recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range);
 
+    int set_robot_code(const uint8_t &robot_code);
+
     /**
      *
      * @return
@@ -67,6 +69,7 @@ private:
     std::string i2c_periph_ = "/dev/i2c-0";
     int i2c_addr_ = 0x1A;
     int code_version = 0x05;
+
 
 };
 

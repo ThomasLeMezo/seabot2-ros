@@ -82,7 +82,7 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
         return EXIT_FAILURE;
     }
     else{
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set frequency_middle");
     }
 
     // Set frequency range
@@ -91,7 +91,7 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
         return EXIT_FAILURE;
     }
     else{
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set frequency_range");
     }
 
     // Set chirp function
@@ -100,7 +100,7 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
         return EXIT_FAILURE;
     }
     else{
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set chirp signal");
     }
 
     // recompute_signal
@@ -109,9 +109,20 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
         return EXIT_FAILURE;
     }
     else{
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Recompute chirp");
     }
 
+    return EXIT_SUCCESS;
+}
+
+int DspicAcoustic::set_robot_code(const uint8_t &robot_code){
+    if (i2c_smbus_write_byte_data(file_, 0x00, robot_code) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        return EXIT_FAILURE;
+    }
+    else{
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set robot code");
+    }
     return EXIT_SUCCESS;
 }
 
