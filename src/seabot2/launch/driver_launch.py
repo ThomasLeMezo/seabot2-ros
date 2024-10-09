@@ -174,4 +174,14 @@ def generate_launch_description():
     )
     list_node.append(icm20948_node)
 
+    audio_recorder = Node(
+        package='seabot2_audio_recorder',
+        executable='audio_recorder',
+        namespace='driver',
+        output='screen',
+        name='audio_recorder',
+        parameters=parameters_file_list
+    )
+    list_node.append(audio_recorder)
+
     return LaunchDescription(list_node)

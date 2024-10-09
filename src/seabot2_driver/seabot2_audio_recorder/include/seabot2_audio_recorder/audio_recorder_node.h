@@ -48,11 +48,12 @@ private:
 
     uint8_t gain_ch1_ = 0;
     uint8_t gain_ch2_ = 0;
-    uint16_t chirp_id_ = 0;
+    uint16_t robot_code_ = 0;
     uint16_t duration_between_shoot_ = 30; //s
     uint16_t time_slot_duration_ = 3; // s
 
     bool enable_chirp_ = false;
+    uint16_t frequency_middle_, frequency_range_;
 
     bool gnss_fix_once_ = false;
 

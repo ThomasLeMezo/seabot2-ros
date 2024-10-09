@@ -74,6 +74,47 @@ int DspicAcoustic::set_shoot_offset_from_posix_zero(uint16_t offset_seconds){
     }
 }
 
+int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range){
+
+    // Set frequency middle
+    if (i2c_smbus_write_word_data(file_, 0x01, frequency_middle) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        return EXIT_FAILURE;
+    }
+    else{
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+    }
+
+    // Set frequency range
+    if (i2c_smbus_write_word_data(file_, 0x03, frequency_range) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        return EXIT_FAILURE;
+    }
+    else{
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+    }
+
+    // Set chirp function
+    if (i2c_smbus_write_byte_data(file_, 0x0D, 0x00) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        return EXIT_FAILURE;
+    }
+    else{
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+    }
+
+    // recompute_signal
+    if (i2c_smbus_write_byte_data(file_, 0x01, 0x01) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        return EXIT_FAILURE;
+    }
+    else{
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set shoot offset from posix zero");
+    }
+
+    return EXIT_SUCCESS;
+}
+
 uint8_t DspicAcoustic::get_pps_value() const{
     return i2c_smbus_read_byte_data(file_, 0x00);
 }

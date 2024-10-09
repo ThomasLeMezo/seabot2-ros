@@ -52,6 +52,8 @@ public:
 
     int set_shoot_offset_from_posix_zero(uint16_t offset_seconds);
 
+    int recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range);
+
     /**
      *
      * @return

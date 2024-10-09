@@ -16,3 +16,9 @@ driver:
   temperature_node:
     ros__parameters:
       i2c_address: 0x77
+
+  audio_recorder_node:
+    ros__parameters:
+      frequency_middle: 20000
+      frequency_range: 5000
+      robot_code_: 5

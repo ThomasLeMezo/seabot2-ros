@@ -1,4 +1,0 @@
-observer:
-  audio_recorder:
-    ros__parameters:
-      chirp_id: 1

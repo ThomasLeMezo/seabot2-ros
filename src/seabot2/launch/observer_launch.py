@@ -80,15 +80,6 @@ def generate_launch_description():
         parameters=parameters_file_list
     )
 
-    audio_recorder = Node(
-        package='seabot2_audio_recorder',
-        executable='audio_recorder',
-        namespace='driver',
-        output='screen',
-        name='audio_recorder',
-        parameters=parameters_file_list
-    )
-
     return LaunchDescription([
         bag_recorder,
         depth_filter_node,
@@ -97,5 +88,4 @@ def generate_launch_description():
         kalman_node,
         power_filter_node,
         density_node,
-        audio_recorder
     ])
