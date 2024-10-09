@@ -121,7 +121,7 @@ int DspicAcoustic::set_robot_code(const uint8_t &robot_code){
         return EXIT_FAILURE;
     }
     else{
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set robot code");
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set robot code = %i", robot_code);
     }
     return EXIT_SUCCESS;
 }

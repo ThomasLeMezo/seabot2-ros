@@ -21,4 +21,4 @@ driver:
     ros__parameters:
       frequency_middle: 30000
       frequency_range: 5000
-      robot_code_: 3
+      robot_code: 3

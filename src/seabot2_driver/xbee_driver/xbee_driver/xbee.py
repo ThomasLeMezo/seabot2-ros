@@ -231,7 +231,7 @@ class XbeeNode(Node):
 
     def mission_callback(self, msg):
         self.current_waypoint = msg.waypoint_id
-        self.mission_mode = msg.mission_mode
+        self.mission_mode = msg.mode
 
     def timer_callback(self):
         # Send data to xbee
