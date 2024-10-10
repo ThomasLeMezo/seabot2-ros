@@ -78,8 +78,13 @@ void PistonNode::topic_position_set_point_callback(const seabot2_piston_driver::
     else{
         if(piston_.state_ == Piston::PISTON_EXIT){
             piston_.set_piston_regulation();
+            cpt_piston_error_++;
+            if(cpt_piston_error_ == cpt_piston_error_max_reset_){
+                piston_.set_piston_reset();
+            }
         }
         else if(last_cmd_ != msg.position || piston_.position_set_point_ != msg.position) {
+            cpt_piston_error_ = 0;
             if(piston_.set_position(msg.position) == EXIT_SUCCESS) {
                 last_cmd_ = msg.position;
             }

@@ -40,7 +40,17 @@ RecorderNode::RecorderNode()
 
     init_interfaces();
 
+    timer_ = this->create_wall_timer(
+            loop_dt_, std::bind(&RecorderNode::test_state, this));
+
     RCLCPP_INFO(this->get_logger(), "[recorder_node] Start Ok");
+}
+
+void RecorderNode::test_state() {
+    if(thread_currently_running_ && subprocessFuture_.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready){
+        RCLCPP_INFO(this->get_logger(), "[recorder_node] Subprocess crashed, restarting");
+        manage_subprocess_rosbag(true);
+    }
 }
 
 void RecorderNode::manage_subprocess_rosbag(bool start_new_bag) {
@@ -64,12 +74,29 @@ void RecorderNode::manage_subprocess_rosbag(bool start_new_bag) {
 }
 
 void RecorderNode::wait_kill() {
+    thread_currently_running_ = false;
+
     // Terminate the subprocess
     string command = "pkill -SIGTERM -f '"+ command_ +"'";
     std::system(command.c_str());
     // Wait for the subprocess thread to finish
-    subprocessFuture_.wait();
-    thread_currently_running_ = false;
+    int result = subprocessFuture_.get();
+
+    if (result == -1) {
+        std::cerr << "Error: System call failed to start the subprocess." << std::endl;
+    } else if (WIFEXITED(result)) {
+        int exit_status = WEXITSTATUS(result);
+        if (exit_status != 0) {
+            std::cerr << "Subprocess terminated with exit code " << exit_status << std::endl;
+        } else {
+            std::cout << "Subprocess completed successfully." << std::endl;
+        }
+    } else if (WIFSIGNALED(result)) {
+        int signal = WTERMSIG(result);
+        std::cerr << "Subprocess terminated by signal " << signal << std::endl;
+    } else {
+        std::cerr << "Subprocess terminated with unknown status." << std::endl;
+    }
 }
 
 RecorderNode::~RecorderNode() {

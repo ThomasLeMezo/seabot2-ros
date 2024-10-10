@@ -32,6 +32,11 @@ private:
     rclcpp::Time time_last_cmd_received_ = this->now();
     int last_cmd_ = -1;
 
+    int cpt_piston_error_ = 0;
+    const int cpt_piston_error_max_reset_ = 100;
+
+    std::chrono::seconds delay_reset_piston_ = 10s;
+
     /// Topics
     rclcpp::Publisher<seabot2_piston_driver::msg::PistonState>::SharedPtr publisher_piston_state_;
     rclcpp::Subscription<seabot2_piston_driver::msg::PistonSetPoint>::SharedPtr subscription_position_set_point_;

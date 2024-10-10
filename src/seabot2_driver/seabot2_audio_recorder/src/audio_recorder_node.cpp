@@ -161,8 +161,8 @@ void AudioRecorderNode::chirp_callback(const std::shared_ptr<rmw_request_id_t> r
                                      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                                      std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
     enable_chirp_ = request->data;
-    dspic_.enable_chirp(enable_chirp_);
-    response->success = true;
+    bool ret = (dspic_.enable_chirp(enable_chirp_) == EXIT_SUCCESS);
+    response->success = ret;
     response->message = "Chirp state changed";
 }
 

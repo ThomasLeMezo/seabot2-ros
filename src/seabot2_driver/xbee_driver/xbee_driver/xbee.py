@@ -2,6 +2,7 @@ import rclpy
 from rclpy.node import Node
 from digi.xbee.devices import *
 import socket
+import math
 
 from seabot2_safety.msg import SafetyStatus
 from pressure_bme280_driver.msg import Bme280Data
@@ -16,7 +17,7 @@ def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None,
     if (flag_debug):
         print("------")
         print("val init =", val)
-    if (value_min != None and value_max != None):
+    if value_min is not None and value_max is not None:
         scale = ((1 << nb_bit) - 1) / (value_max - value_min)
         val = int(round((val - value_min) * scale))
     else:
@@ -214,17 +215,17 @@ class XbeeNode(Node):
 
     def gpsd_callback(self, msg):
         self.valid_fix = msg.mode > GpsFix.MODE_NO_FIX
-        self.fix_latitude = msg.latitude
-        self.fix_longitude = msg.longitude
+        self.fix_latitude = msg.latitude if not math.isnan(msg.latitude) else 0.
+        self.fix_longitude = msg.longitude if not math.isnan(msg.longitude) else 0.
 
     def power_callback(self, msg):
         self.battery = msg.battery_volt
 
     def gnss_pose_callback(self, msg):
-        self.gnss_heading = msg.heading
-        self.gnss_speed = msg.velocity
-        self.gnss_mean_east = msg.east
-        self.gnss_mean_north = msg.north
+        self.gnss_heading = msg.heading if not math.isnan(msg.heading) else 0.
+        self.gnss_speed = msg.velocity if not math.isnan(msg.velocity) else 0.
+        self.gnss_mean_east = msg.east if not math.isnan(msg.east) else 0.
+        self.gnss_mean_north = msg.north if not math.isnan(msg.north) else 0.
 
     def depth_callback(self, msg):
         self.depth = msg.depth

@@ -5,9 +5,9 @@
         <start_time_utc>
             <year>2024</year>
             <month>10</month>
-            <day>09</day>
-            <hour>14</hour>
-            <min>00</min>
+            <day>10</day>
+            <hour>20</hour>
+            <min>30</min>
         </start_time_utc>
     </offset>
 
@@ -15,7 +15,7 @@
 
     <paths>
         <temperature_keeping>
-            <duration>7200</duration>
+            <duration>37800</duration>
             <temperature>12.0</temperature>
             <limit_velocity>0.1</limit_velocity>
         </temperature_keeping>

@@ -32,7 +32,7 @@ public:
 
 public:
     // --max-file-time 900
-    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 192000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav --max-file-time 600";
+    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 96000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav --max-file-time 600";
 
 private:
     rclcpp::TimerBase::SharedPtr timer_;
@@ -50,7 +50,7 @@ private:
     uint8_t gain_ch2_ = 0;
     uint16_t robot_code_ = 0;
     uint16_t duration_between_shoot_ = 30; //s
-    uint16_t time_slot_duration_ = 3; // s
+    uint16_t time_slot_duration_ = 5; // s
 
     bool enable_chirp_ = false;
     uint16_t frequency_middle_, frequency_range_;

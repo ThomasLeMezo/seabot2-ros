@@ -6,7 +6,7 @@ mission:
       flash_next_waypoint_time: 15.0 # s
       flash_number: 2
       limit_velocity_default: 0.1 # m/s
-      temperature_keeping_k: 0.1 # 0.03
+      temperature_keeping_k: 0.03 # 0.03
 
 iridium:
   irdium_node:

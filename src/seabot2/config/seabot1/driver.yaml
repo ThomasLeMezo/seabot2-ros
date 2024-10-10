@@ -17,7 +17,7 @@ driver:
     ros__parameters:
       i2c_address: 0x77
 
-  audio_recorder_node:
+  audio_recorder:
     ros__parameters:
       frequency_middle: 40000
       frequency_range: 5000

@@ -28,12 +28,12 @@ public:
 
 private:
 
+    rclcpp::TimerBase::SharedPtr timer_;
+    std::chrono::milliseconds loop_dt_ = 5s; /// loop 5s
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     std::string workingDirectory_ = "";
     bool thread_currently_running_ = false;
     std::future<int> subprocessFuture_;
-
-    bool ask_restart_ = false;
 
     /// Interfaces
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_rosbag_;
@@ -65,6 +65,7 @@ private:
                           const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                           std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
+    void test_state();
 };
 
 #endif //BUILD_RECORDER_NODE_H
