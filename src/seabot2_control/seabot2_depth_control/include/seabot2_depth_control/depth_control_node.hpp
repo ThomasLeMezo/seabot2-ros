@@ -48,6 +48,14 @@ private:
     bool velocity_limits_computations_ = false;
 
     bool enable_control_ = true; // Allow publish set point to piston
+    enum WAYPOINT_TYPE:unsigned int {WP_IDLE=0,
+        WP_DEPTH=1,
+        WP_SEAFLOOR_LANDING=2,
+        WP_TEMPERATURE_KEEPING=3,
+        WP_TEMPERATURE_PROFILE=4,
+        WP_GNSS_PROFILE=5,
+        WP_STOP=6};
+    WAYPOINT_TYPE wp_type_ = WP_IDLE;
 
     std::vector<double> solver_velocity_, solver_alpha_;
 
