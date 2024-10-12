@@ -37,6 +37,7 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("piston_hysteresis", dc_.piston_hysteresis_);
     this->declare_parameter<double>("piston_max_velocity", dc_.flow_max_);
     this->declare_parameter<bool>("hold_depth_enable", dc_.hold_depth_enable_);
+    this->declare_parameter<int>("hold_depth_validation_duration", static_cast<int>(dc_.hold_depth_validation_duration_.seconds()));
     this->declare_parameter<double>("hold_depth_value_enter", dc_.hold_depth_value_enter_);
     this->declare_parameter<double>("hold_depth_value_exit", dc_.hold_depth_value_exit_);
     this->declare_parameter<double>("hold_velocity_enter", dc_.hold_velocity_enter_);
@@ -68,6 +69,7 @@ void DepthControlNode::init_parameters() {
     dc_.piston_hysteresis_ = this->get_parameter_or("piston_hysteresis", dc_.piston_hysteresis_);
     dc_.flow_max_ = this->get_parameter_or("piston_max_velocity", dc_.flow_max_);
     dc_.hold_depth_enable_ = this->get_parameter_or("hold_depth_enable", dc_.hold_depth_enable_);
+    dc_.hold_depth_validation_duration_ = rclcpp::Duration(std::chrono::seconds(this->get_parameter_or("hold_depth_validation_duration", static_cast<int>(dc_.hold_depth_validation_duration_.seconds()))));
     dc_.hold_depth_value_enter_ = this->get_parameter_or("hold_depth_value_enter", dc_.hold_depth_value_enter_);
     dc_.hold_depth_value_exit_ = this->get_parameter_or("hold_depth_value_exit", dc_.hold_depth_value_exit_);
     dc_.hold_velocity_enter_ = this->get_parameter_or("hold_velocity_enter", dc_.hold_velocity_enter_);

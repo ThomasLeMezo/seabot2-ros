@@ -84,8 +84,3 @@ void WaypointTemperatureProfile::process(const rclcpp::Time &time) {
             break;
     }
 }
-
-void WaypointStop::process(const rclcpp::Time &time) {
-    mission_->get_depth_control_set_point().enable_control = false;
-    mission_->get_depth_control_set_point().header.stamp = time;
-}

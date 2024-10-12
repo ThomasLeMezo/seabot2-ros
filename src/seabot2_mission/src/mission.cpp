@@ -66,9 +66,6 @@ bool Mission::update_state(const rclcpp::Time &t_now){
                         break;
                     case WP_GNSS_PROFILE:
                         break;
-                    case WP_STOP:
-                        std::dynamic_pointer_cast<WaypointStop>(waypoints_[current_waypoint_id_].first)->process(t_now);
-                        break;
                     default:
                         break;
                 }
@@ -277,12 +274,6 @@ void Mission::decode_waypoint_temperature_profile(const std::shared_ptr<Waypoint
                 w->velocity);
 }
 
-void Mission::decode_waypoint_stop(const std::shared_ptr<WaypointStop>& w, pt::ptree::value_type &v){
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Stop Waypoint %zu (t_end=%li)",
-                waypoints_.size(),
-                (long int)w->time_end.seconds());
-}
-
 int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset){
     try{
         if(std::find(std::begin(XML_TYPE), std::end(XML_TYPE), v.first) != std::end(XML_TYPE)){
@@ -309,12 +300,6 @@ int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, con
             }
             else if(v.first == XML_GNSS_PROFILE){
                 // ToDo
-            }
-            else if(v.first == XML_STOP){
-                std::shared_ptr<WaypointStop> w = std::make_shared<WaypointStop>(this);
-                decode_waypoint(w, v, last_time);
-                decode_waypoint_stop(w, v);
-                waypoints_.emplace_back(w, WP_STOP);
             }
         }
         else if(v.first == "loop"){

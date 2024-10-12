@@ -223,8 +223,18 @@ void DepthControl::state_machine_step(const rclcpp::Duration &dt, const rclcpp::
                     /// piston_set_point = piston_position - u/(tick_to_volume*control_loop_frequency);
                     piston_set_point_ -= u*dt.seconds()/tick_to_volume_;
 
-                    if(hold_depth_enable_ && abs(depth_set_point_-kalman_depth_)<hold_depth_value_enter_ && abs(kalman_velocity_)<hold_velocity_enter_)
-                        regulation_state_ = STATE_HOLD_DEPTH;
+                    if(hold_depth_enable_
+                    && abs(depth_set_point_-kalman_depth_)<hold_depth_value_enter_
+                    && abs(kalman_velocity_)<hold_velocity_enter_) {
+                        if(!hold_depth_validation_){
+                            hold_depth_validation_ = true;
+                            hold_depth_validation_time_ = current_time;
+                        }
+                        else if((current_time-hold_depth_validation_time_)>=hold_depth_validation_duration_)
+                            regulation_state_ = STATE_HOLD_DEPTH;
+                    }
+                    else
+                        hold_depth_validation_ = false;
                 }
                 else{
                     /// Did not received state => surface

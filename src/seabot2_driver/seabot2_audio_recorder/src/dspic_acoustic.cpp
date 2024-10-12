@@ -78,7 +78,7 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
 
     // Set frequency middle
     if (i2c_smbus_write_word_data(file_, 0x01, frequency_middle) < 0){
-        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set frequency_middle");
         return EXIT_FAILURE;
     }
     else{
@@ -87,7 +87,7 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
 
     // Set frequency range
     if (i2c_smbus_write_word_data(file_, 0x03, frequency_range) < 0){
-        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set frequency_range");
         return EXIT_FAILURE;
     }
     else{
@@ -96,20 +96,20 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
 
     // Set chirp function
     if (i2c_smbus_write_byte_data(file_, 0x0D, 0x00) < 0){
-        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set signal function");
         return EXIT_FAILURE;
     }
     else{
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set chirp signal");
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set signal function");
     }
 
     // recompute_signal
-    if (i2c_smbus_write_byte_data(file_, 0x01, 0x01) < 0){
-        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - set shoot offset from posix zero");
+    if (i2c_smbus_write_byte_data(file_, 0x05, 0x01) < 0){
+        RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Recompute signal");
         return EXIT_FAILURE;
     }
     else{
-        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Recompute chirp");
+        RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Recompute signal");
     }
 
     return EXIT_SUCCESS;

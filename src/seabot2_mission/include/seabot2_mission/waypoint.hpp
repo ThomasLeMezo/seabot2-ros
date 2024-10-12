@@ -119,17 +119,5 @@ public:
     double east = 0.0;
 };
 
-class WaypointStop: public Waypoint{
-public:
-    explicit WaypointStop(Mission *mission):Waypoint(mission){}
-
-    ~WaypointStop() override = default;
-
-    /**
-     * @brief process
-     */
-    void process(const rclcpp::Time &time) override;
-};
-
 
 #endif //BUILD_WAYPOINT_HPP

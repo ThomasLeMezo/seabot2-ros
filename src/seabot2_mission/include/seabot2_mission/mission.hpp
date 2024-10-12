@@ -231,20 +231,14 @@ private:
      */
     int decode_paths(boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time, const double &depth_offset);
 
-    /**
-     * Decode Stop waypoint
-     * @param w
-     */
-    void decode_waypoint_stop(const std::shared_ptr<WaypointStop>& w, boost::property_tree::ptree::value_type &v);
-
 public:
     enum WAYPOINT_TYPE:unsigned int {WP_IDLE=0,
         WP_DEPTH=1,
         WP_SEAFLOOR_LANDING=2,
         WP_TEMPERATURE_KEEPING=3,
         WP_TEMPERATURE_PROFILE=4,
-        WP_GNSS_PROFILE=5,
-        WP_STOP=6};
+        WP_GNSS_PROFILE=5
+    };
 private:
     std::string file_name_ = "mission_empty.xml";
 
@@ -289,14 +283,13 @@ private:
     const std::string XML_TEMPERATURE_KEEPING = "temperature_keeping";
     const std::string XML_TEMPERATURE_PROFILE = "temperature_profile";
     const std::string XML_GNSS_PROFILE =   "gnss_profile";
-    const std::string XML_STOP =   "stop";
     const std::vector<std::string> XML_TYPE = {XML_DEPTH,
                                                XML_DEPTH_LEGACY,
                                                XML_SEAFLOOR_LANDING,
                                                XML_TEMPERATURE_KEEPING,
                                                XML_TEMPERATURE_PROFILE,
-                                               XML_GNSS_PROFILE,
-                                               XML_STOP};
+                                               XML_GNSS_PROFILE
+                                            };
 
     // State
     double depth_ = 0.0;

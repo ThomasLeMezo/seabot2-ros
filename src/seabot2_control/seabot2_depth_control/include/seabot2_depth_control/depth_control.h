@@ -56,6 +56,9 @@ public:
 
     /// Hold depth parameters
     bool hold_depth_enable_ = false;
+    rclcpp::Duration hold_depth_validation_duration_ = 30s;
+    rclcpp::Time hold_depth_validation_time_{};
+    bool hold_depth_validation_ = false;
     double hold_depth_value_enter_ = 0.0; /// m
     double hold_depth_value_exit_ = 0.0; /// m
     double hold_velocity_enter_ = 0.0; /// m/s
