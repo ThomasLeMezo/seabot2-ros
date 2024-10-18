@@ -49,6 +49,7 @@ class XbeeNode(Node):
         # Interfaces
         self.subscription_mission = None
         self.subscription_depth = None
+        self.subscription_mission_state = None
         self.subscription_gnss_pose = None
         self.subscription_gnss_data = None
         self.subscription_power_data = None
