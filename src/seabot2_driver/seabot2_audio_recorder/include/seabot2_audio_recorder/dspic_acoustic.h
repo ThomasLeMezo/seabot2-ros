@@ -32,6 +32,8 @@ public:
      */
     int i2c_open();
 
+    int wait_recompute_signal() const;
+
     /**
      *
      * @return
@@ -46,15 +48,15 @@ public:
 
     int sync_pps();
 
-    int enable_chirp(bool enable=true);
+    int enable_chirp(bool enable=true) const;
 
-    int set_duration_between_shoot(uint16_t duration_seconds);
+    int set_duration_between_shoot(uint16_t duration_seconds) const;
 
-    int set_shoot_offset_from_posix_zero(uint16_t offset_seconds);
+    int set_shoot_offset_from_posix_zero(uint16_t offset_seconds) const;
 
-    int recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range);
+    int recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range) const;
 
-    int set_robot_code(const uint8_t &robot_code);
+    int set_robot_code(const uint8_t &robot_code) const;
 
     /**
      *

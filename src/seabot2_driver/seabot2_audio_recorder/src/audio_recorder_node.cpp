@@ -27,6 +27,7 @@ AudioRecorderNode::AudioRecorderNode()
     tlv_.set_adc_gain(gain_ch1_, gain_ch2_);
 
     dspic_.i2c_open();
+    dspic_.wait_recompute_signal();
     dspic_.set_robot_code(robot_code_);
     dspic_.sync_pps();
     dspic_.set_duration_between_shoot(duration_between_shoot_);
