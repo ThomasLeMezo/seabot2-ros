@@ -162,7 +162,7 @@ def generate_launch_description():
         name='xbee_node',
         parameters=parameters_file_list
     )
-    list_node.append(xbee_node)
+    # list_node.append(xbee_node)
 
     icm20948_node = Node(
         package='icm20948_driver',

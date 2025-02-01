@@ -121,7 +121,7 @@ void WtfNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg
     msg_first_received_piston_data_ = true;
 }
 
-void WtfNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
+void WtfNode::safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg){
     msg_safety_ = msg;
     time_last_safety_ = this->now();
     msg_first_received_safety_ = true;
@@ -178,7 +178,7 @@ void WtfNode::log_callback(const rcl_interfaces::msg::Log &msg) {
 
 void WtfNode::init_interfaces() {
 
-    subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
+    subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus2>(
             "/safety/safety", 10, std::bind(&WtfNode::safety_callback, this, _1));
 
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(

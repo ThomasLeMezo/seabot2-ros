@@ -7,7 +7,7 @@
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
 #include "seabot2_mission/msg/mission_state.hpp"
 #include "seabot2_power_driver/msg/power_state.hpp"
-#include "seabot2_safety/msg/safety_status.hpp"
+#include "seabot2_safety/msg/safety_status2.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -47,7 +47,7 @@ private:
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_sensor_internal_;
     rclcpp::Subscription<seabot2_mission::msg::MissionState >::SharedPtr subscriber_mission_;
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_;
-    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
+    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus2>::SharedPtr subscriber_safety_;
 
     /// Functions
     void timer_callback();
@@ -95,7 +95,7 @@ private:
      *
      * @param msg
      */
-    void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
+    void safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg);
 };
 
 #endif //BUILD_SCREEN_NODE_H

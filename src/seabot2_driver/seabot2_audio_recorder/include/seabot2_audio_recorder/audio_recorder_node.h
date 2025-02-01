@@ -7,20 +7,14 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include <chrono>
-#include <functional>
 #include <memory>
-#include <cstdlib>
-#include <csignal>
-#include <iostream>
-#include <thread>
-#include <atomic>
 #include <filesystem>
 #include "std_srvs/srv/set_bool.hpp"
 #include "seabot2_audio_recorder/tlv320adc.h"
 #include "std_msgs/msg/bool.hpp"
 #include "seabot2_audio_recorder/dspic_acoustic.h"
 #include "gpsd_client/msg/gps_fix.hpp"
-#include "std_msgs/msg/byte.hpp"
+#include "seabot2_audio_recorder/msg/sync_dspic.hpp"
 
 using namespace std::chrono_literals;
 
@@ -30,13 +24,21 @@ public:
 
     ~AudioRecorderNode();
 
-public:
-    // --max-file-time 900
-    const std::string command_ = "arecord -D hw:CARD=sndrpii2scard -f S32_LE -c2 -r 96000 -t wav -v --use-strftime %Y/%m/%d/listen-%H-%M-%v.wav --max-file-time 600";
+    std::string get_arecord_command() const;
 
 private:
+
+    int audio_frequency_ = 96000;
+    int audio_max_file_time_ = 600; // s
+    int audio_nb_channels_ = 1;
+    int audio_nb_bits_ = 32;
+    std::string audio_device_ = "hw:CARD=sndrpii2scard";
+    std::string audio_command_last_ = "";
+    int audio_hdd_space_limit_stop_ = 500; // MB
+
+    /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
-    std::chrono::milliseconds  loop_dt_ = 1s; // loop dt
+    std::chrono::milliseconds  loop_safety_dt_ = 5s; // loop dt
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
     std::string workingDirectory_ = "";
@@ -53,9 +55,11 @@ private:
     uint16_t time_slot_duration_ = 5; // s
 
     bool enable_chirp_ = false;
-    uint16_t frequency_middle_, frequency_range_;
+    uint16_t frequency_middle_ = 40000;
+    uint16_t frequency_range_ = 5000;
 
     bool gnss_fix_once_ = false;
+    bool dspic_posix_fix_ = false;
 
     /// Interfaces
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_rosbag_;
@@ -64,7 +68,7 @@ private:
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_record_;
 
-    rclcpp::Publisher<std_msgs::msg::Byte>::SharedPtr publisher_pps_;
+    rclcpp::Publisher<seabot2_audio_recorder::msg::SyncDspic>::SharedPtr publisher_dspic_debug_;
 
     rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
 

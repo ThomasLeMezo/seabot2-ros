@@ -13,6 +13,14 @@ find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(gpsd_client REQUIRED)
 
+# Message
+rosidl_generate_interfaces(${PROJECT_NAME}
+        "msg/SyncDspic.msg"
+        DEPENDENCIES std_msgs
+)
+rosidl_get_typesupport_target(cpp_typesupport_target
+        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 ## Interfaces
 
 ### Executable

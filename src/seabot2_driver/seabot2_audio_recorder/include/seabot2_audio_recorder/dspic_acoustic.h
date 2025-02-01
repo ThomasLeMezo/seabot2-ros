@@ -20,7 +20,7 @@ public:
     /**
      * @brief DspicAcoustic
      */
-    DspicAcoustic(rclcpp::Node *n){
+    explicit DspicAcoustic(rclcpp::Node *n){
         n_ = n;
     }
 
@@ -32,37 +32,39 @@ public:
      */
     int i2c_open();
 
-    int wait_recompute_signal() const;
+    [[nodiscard]] int wait_recompute_signal() const;
 
     /**
      *
      * @return
      */
-    int getI2CAddr() const;
+    [[nodiscard]] int getI2CAddr() const;
 
     void setI2CAddr(int i2CAddr);
 
-    const std::string &getI2CPeriph() const;
+    [[nodiscard]] const std::string &getI2CPeriph() const;
 
     void setI2CPeriph(const std::string &i2CPeriph);
 
-    int sync_pps();
+    void sync_pps() const;
 
-    int enable_chirp(bool enable=true) const;
+    [[nodiscard]] int enable_chirp(bool enable=true) const;
 
-    int set_duration_between_shoot(uint16_t duration_seconds) const;
+    [[nodiscard]] int set_duration_between_shoot(uint16_t duration_seconds) const;
 
-    int set_shoot_offset_from_posix_zero(uint16_t offset_seconds) const;
+    [[nodiscard]] int set_shoot_offset_from_posix_zero(uint16_t offset_seconds) const;
 
-    int recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range) const;
+    [[nodiscard]] int set_robot_data(const int &data_size, const uint64_t &data) const;
 
-    int set_robot_code(const uint8_t &robot_code) const;
+    [[nodiscard]] int recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range) const;
 
-    /**
-     *
-     * @return
-     */
-    uint8_t get_pps_value() const;
+    [[nodiscard]] int set_robot_code(const uint8_t &robot_code) const;
+
+    [[nodiscard]] int get_robot_code() const;
+
+    [[nodiscard]] uint32_t get_posix_time() const;
+
+    [[nodiscard]] uint16_t get_signal_number() const;
 
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node

@@ -11,7 +11,7 @@
 #include "seabot2_power_driver/msg/power_state.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "std_srvs/srv/set_bool.hpp"
-#include "seabot2_safety/msg/safety_status.hpp"
+#include "seabot2_safety/msg/safety_status2.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "bluerobotics_ping_driver/msg/profile.hpp"
 #include "gpsd_client/msg/gps_fix.hpp"
@@ -39,6 +39,8 @@ private:
     bool safety_zero_depth_= false;
     double cpu_= 0.;
     double ram_= 0.;
+    double hdd_empty_space_ = 0.; // in GB
+    double hdd_empty_space_limit_ = 0.5; // in GB
 
     double internal_humidity_ = 100.0;
     double internal_pressure_ = 1050.;
@@ -117,7 +119,7 @@ private:
     bool enable_flash_underwater_ = false;
 
     /// Interfaces
-    rclcpp::Publisher<seabot2_safety::msg::SafetyStatus>::SharedPtr publisher_safety_;
+    rclcpp::Publisher<seabot2_safety::msg::SafetyStatus2>::SharedPtr publisher_safety_;
 
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
@@ -227,6 +229,8 @@ private:
      */
     bool test_gnss_fix();
 
+    bool test_hdd_available_space();
+
     /**
      * Detect if surface is reached
      */
@@ -261,6 +265,11 @@ private:
      *
      */
     void get_ram_cpu();
+
+    /**
+     * Get the hard drive empty space
+     */
+    void get_hard_drive_empty_space();
 
 };
 #endif //BUILD_SAFETY_NODE_HPP

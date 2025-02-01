@@ -24,6 +24,7 @@ find_package(std_msgs REQUIRED)
 ### Interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
         "msg/SafetyStatus.msg"
+        "msg/SafetyStatus2.msg"
         DEPENDENCIES std_msgs
         )
 rosidl_get_typesupport_target(cpp_typesupport_target

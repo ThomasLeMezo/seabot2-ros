@@ -89,7 +89,7 @@ void ScreenNode::init_topics() {
     subscriber_power_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
             "/driver/power", 10, std::bind(&ScreenNode::power_callback, this, _1));
 
-    subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
+    subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus2>(
             "/safety/safety", 10, std::bind(&ScreenNode::safety_callback, this, _1));
 }
 
@@ -160,7 +160,7 @@ void ScreenNode::power_callback(const seabot2_power_driver::msg::PowerState &msg
     voltage_ = msg.battery_volt;
 }
 
-void ScreenNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
+void ScreenNode::safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg){
     if(msg.global_safety_valid) {
         status_ = Screen::OK;
     }

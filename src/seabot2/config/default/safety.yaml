@@ -17,5 +17,5 @@ safety:
       offset_max_depth: 2.0 # m (0.5 default, no go zone from seafloor)
       seabed_delay_detection: 30000 # ms
       max_depth_reset_zero: 2.0 #m
-      gnss_fix_once_enable: false
+      gnss_fix_once_enable: true
       limit_depth_min: 2.0 #m

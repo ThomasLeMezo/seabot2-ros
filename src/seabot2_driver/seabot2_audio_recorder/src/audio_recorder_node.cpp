@@ -21,7 +21,7 @@ AudioRecorderNode::AudioRecorderNode()
     init_interfaces();
 
     timer_ = this->create_wall_timer(
-            loop_dt_, std::bind(&AudioRecorderNode::timer_callback, this));
+            loop_safety_dt_, std::bind(&AudioRecorderNode::timer_callback, this));
 
     tlv_.i2c_open();
     tlv_.set_adc_gain(gain_ch1_, gain_ch2_);
@@ -62,6 +62,18 @@ AudioRecorderNode::~AudioRecorderNode() {
     dspic_.enable_chirp(false);
 }
 
+std::string AudioRecorderNode::get_arecord_command() const {
+    std::string command = "arecord";
+    command += " -D " + audio_device_;
+    command += " -f S" + to_string(audio_nb_bits_) + "_LE";
+    command += " -c" + to_string(audio_nb_channels_);
+    command += " -r " + to_string(audio_frequency_);
+    command += " -t wav -v --use-strftime %Y/%m/%d/listen_%Y-%m-%d_%H-%M-%S_%v.wav";
+    command += " --max-file-time " + to_string(audio_max_file_time_);
+
+    return command;
+}
+
 void AudioRecorderNode::manage_subprocess(bool start_new_audio) {
     std_msgs::msg::Bool msg;
 
@@ -71,14 +83,15 @@ void AudioRecorderNode::manage_subprocess(bool start_new_audio) {
         msg.data = false;
         publisher_record_->publish(msg);
     }
-    usleep(1000000);
+    usleep(1000000); // 1s
 
     if(start_new_audio) {
-        string command_launch = command_;
+        audio_command_last_ = get_arecord_command();
+        string command_tmp = audio_command_last_;
         // Create a thread for the subprocess
-        subprocessFuture_ = std::async(std::launch::async, [command_launch] {
+        subprocessFuture_ = std::async(std::launch::async, [command_tmp] {
             // Call the subprocess using std::system
-            return std::system(command_launch.c_str());
+            return std::system(command_tmp.c_str());
         });
         thread_currently_running_ = true;
         RCLCPP_INFO(this->get_logger(), "[recorder_node] Start audio recording");
@@ -89,21 +102,29 @@ void AudioRecorderNode::manage_subprocess(bool start_new_audio) {
 }
 
 void AudioRecorderNode::timer_callback(){
-    if(gnss_fix_once_){
+    if(!dspic_posix_fix_ && gnss_fix_once_){
         dspic_.sync_pps();
-        gnss_fix_once_ = true;
+        dspic_posix_fix_ = true;
     }
 
     // Read pps_sync value and publish
-    uint8_t pps = dspic_.get_pps_value();
-    std_msgs::msg::Byte msg_pps;
-    msg_pps.data = pps;
-    publisher_pps_->publish(msg_pps);
+    seabot2_audio_recorder::msg::SyncDspic msg;
+    msg.posix_time = dspic_.get_posix_time();
+    msg.signal_number = dspic_.get_signal_number();
+    publisher_dspic_debug_->publish(msg);
+
+    // Check amount of free space on the hard drive
+    if(filesystem::space(workingDirectory_).available < audio_hdd_space_limit_stop_ * 1024 * 1024){
+        if(thread_currently_running_) {
+            RCLCPP_WARN(this->get_logger(), "[audio_recorder_node] Low disk space, stopping recording");
+            manage_subprocess(false);
+        }
+    }
 }
 
 void AudioRecorderNode::wait_kill() {
     // Terminate the subprocess
-    string command = "pkill -SIGTERM -f '"+ command_ +"'";
+    const string command = "pkill -SIGTERM -f '"+ audio_command_last_ +"'";
     std::system(command.c_str());
     // Wait for the subprocess thread to finish
     subprocessFuture_.wait();
@@ -121,6 +142,14 @@ void AudioRecorderNode::init_parameters() {
     this->declare_parameter<int>("frequency_middle", frequency_middle_);
     this->declare_parameter<int>("frequency_range", frequency_range_);
 
+    this->declare_parameter<long>("loop_safety_dt", loop_safety_dt_.count());
+    this->declare_parameter<std::string>("audio_device", audio_device_);
+    this->declare_parameter<int>("audio_nb_bits", audio_nb_bits_);
+    this->declare_parameter<int>("audio_nb_channels", audio_nb_channels_);
+    this->declare_parameter<int>("audio_frequency", audio_frequency_);
+    this->declare_parameter<int>("audio_max_file_time", audio_max_file_time_);
+    this->declare_parameter<int>("audio_hdd_space_limit_stop", audio_hdd_space_limit_stop_);
+
     gain_ch1_ = this->get_parameter_or("gain_ch1", gain_ch1_);
     gain_ch2_ = this->get_parameter_or("gain_ch2", gain_ch2_);
     robot_code_ = this->get_parameter_or("robot_code", robot_code_);
@@ -131,8 +160,13 @@ void AudioRecorderNode::init_parameters() {
 
     enable_chirp_ = this->get_parameter_or("enable_chirp", enable_chirp_);
 
-    this->declare_parameter<long>("loop_dt", loop_dt_.count());
-    loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
+    loop_safety_dt_ = std::chrono::milliseconds(this->get_parameter_or("loop_safety_dt", loop_safety_dt_.count()));
+    audio_device_ = this->get_parameter_or("audio_device", audio_device_);
+    audio_nb_bits_ = this->get_parameter_or("audio_nb_bits", audio_nb_bits_);
+    audio_nb_channels_ = this->get_parameter_or("audio_nb_channels", audio_nb_channels_);
+    audio_frequency_ = this->get_parameter_or("audio_frequency", audio_frequency_);
+    audio_max_file_time_ = this->get_parameter_or("audio_max_file_time", audio_max_file_time_);
+    audio_hdd_space_limit_stop_ = this->get_parameter_or("audio_hdd_space_limit_stop", audio_hdd_space_limit_stop_);
 }
 
 void AudioRecorderNode::init_interfaces() {
@@ -149,7 +183,7 @@ void AudioRecorderNode::init_interfaces() {
     subscriber_gnss_data_ = this->create_subscription<gpsd_client::msg::GpsFix>(
             "/driver/fix", 10, std::bind(&AudioRecorderNode::gpsd_callback, this, _1));
 
-    publisher_pps_ = this->create_publisher<std_msgs::msg::Byte>("audio_pps", 10);
+    publisher_dspic_debug_ = this->create_publisher<seabot2_audio_recorder::msg::SyncDspic>("dspic_debug", 10);
 }
 
 void AudioRecorderNode::gpsd_callback(const gpsd_client::msg::GpsFix &msg){
@@ -162,7 +196,7 @@ void AudioRecorderNode::chirp_callback(const std::shared_ptr<rmw_request_id_t> r
                                      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                                      std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
     enable_chirp_ = request->data;
-    bool ret = (dspic_.enable_chirp(enable_chirp_) == EXIT_SUCCESS);
+    const bool ret = (dspic_.enable_chirp(enable_chirp_) == EXIT_SUCCESS);
     response->success = ret;
     response->message = "Chirp state changed";
 }

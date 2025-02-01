@@ -1,0 +1,2 @@
+uint32 posix_time
+uint16 signal_number

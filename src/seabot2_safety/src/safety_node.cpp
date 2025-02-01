@@ -1,5 +1,7 @@
 #include "seabot2_safety/safety_node.hpp"
 #include "sys/sysinfo.h"
+#include <iostream>
+#include <filesystem>
 
 using namespace placeholders;
 
@@ -45,6 +47,7 @@ void SafetyNode::init_parameters() {
     this->declare_parameter<bool>("gnss_fix_once_enable", gnss_fix_once_enable_);
     this->declare_parameter<bool>("enable_limit_depth", enable_limit_depth_);
     this->declare_parameter<bool>("enable_flash_underwater", enable_flash_underwater_);
+    this->declare_parameter<double>("hdd_empty_space_limit", hdd_empty_space_limit_);
 
     internal_humidity_limit_ = this->get_parameter_or("internal_humidity_limit", internal_humidity_limit_);
     internal_pressure_limit_ = this->get_parameter_or("internal_pressure_limit", internal_pressure_limit_);
@@ -66,6 +69,7 @@ void SafetyNode::init_parameters() {
     gnss_fix_once_enable_ = this->get_parameter_or("gnss_fix_once_enable", gnss_fix_once_enable_);
     enable_limit_depth_ = this->get_parameter_or("enable_limit_depth", enable_limit_depth_);
     enable_flash_underwater_ = this->get_parameter_or("enable_flash_underwater", enable_flash_underwater_);
+    hdd_empty_space_limit_ = this->get_parameter_or("hdd_empty_space_limit", hdd_empty_space_limit_);
 
     piston_error_threshold_set_point_ = this->get_parameter_or("piston_error_threshold_set_point", piston_error_threshold_set_point_);
     piston_error_threshold_position_ = this->get_parameter_or("piston_error_threshold_position", piston_error_threshold_position_);
@@ -111,7 +115,7 @@ void SafetyNode::profile_callback(const bluerobotics_ping_driver::msg::Profile &
 }
 
 void SafetyNode::init_interfaces() {
-    publisher_safety_ =  this->create_publisher<seabot2_safety::msg::SafetyStatus>("safety", 1);
+    publisher_safety_ =  this->create_publisher<seabot2_safety::msg::SafetyStatus2>("safety", 1);
 
     subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&SafetyNode::depth_callback, this, _1));
@@ -267,6 +271,15 @@ bool SafetyNode::test_gnss_fix(){
     return gnss_fix_once_;
 }
 
+bool SafetyNode::test_hdd_available_space() {
+    get_hard_drive_empty_space();
+    if(hdd_empty_space_ < hdd_empty_space_limit_){
+        RCLCPP_WARN(this->get_logger(), "[Safety_node] HDD space limit reached");
+        return false;
+    }
+    return true;
+}
+
 int SafetyNode::call_service_zero_depth(){
     client_zero_pressure_->wait_for_service(500ms);
     if (!client_zero_pressure_->service_is_ready()) {
@@ -343,7 +356,6 @@ void SafetyNode::enable_chirp(){
         if(call_service_chirp_enable(true)==EXIT_SUCCESS)
             chirp_is_enable_ = true;
     }
-    // if enable_flash_underwater then deactivate the 'else if'
     else if(chirp_is_enable_ && depth_ < depth_flash_surface_){
         if(call_service_chirp_enable(false)==EXIT_SUCCESS)
             chirp_is_enable_ = false;
@@ -388,6 +400,25 @@ void SafetyNode::get_ram_cpu(){
     physMemUsed /= 1000000;
     ram_ = physMemUsed;
 }
+
+void SafetyNode::get_hard_drive_empty_space() {
+    try {
+        // Specify the path of the filesystem
+        std::filesystem::path path_to_check = "/"; // Root directory for Raspberry Pi Ubuntu
+
+        // Get space information
+        std::filesystem::space_info space = std::filesystem::space(path_to_check);
+
+        // Display space information
+        // std::cout << "Total space: " << space.capacity / (1024 * 1024) << " MB\n";
+        // std::cout << "Free space: " << space.free / (1024 * 1024) << " MB\n";
+        hdd_empty_space_ = space.available / (1024 * 1024 * 1024); // in GB
+
+    } catch (const std::filesystem::filesystem_error& e) {
+        RCLCPP_ERROR(this->get_logger(), "[Safety_node] Error getting hard drive empty space (%s)", e.what());
+    }
+}
+
 
 void SafetyNode::test_depth_max(){
     /// Todo : add a filter and ping_confidence condition !
@@ -459,13 +490,14 @@ void SafetyNode::timer_callback() {
     global_safety_ok_ &= test_zero_pressure();
     global_safety_ok_ &= test_battery();
     global_safety_ok_ &= test_gnss_fix();
+    global_safety_ok_ &= test_hdd_available_space();
     flash_surface();
     enable_chirp();
     get_ram_cpu();
     test_depth_max();
     global_safety_ok_ &= test_seabed_reached();
 
-    seabot2_safety::msg::SafetyStatus msg;
+    seabot2_safety::msg::SafetyStatus2 msg;
     msg.global_safety_valid = global_safety_ok_;
     msg.published_frequency = safety_published_frequency_;
     msg.depth_limit = safety_depth_limit_;
@@ -474,8 +506,11 @@ void SafetyNode::timer_callback() {
     msg.seafloor = safety_seafloor_;
     msg.piston = safety_piston_;
     msg.zero_depth = safety_zero_depth_;
+    msg.flash_enable = flash_surface_enable_;
+    msg.chirp_enable = chirp_is_enable_;
     msg.cpu = cpu_;
     msg.ram = ram_;
+    msg.hdd = hdd_empty_space_;
     msg.limit_depth = limit_depth_;
     msg.bathy = bathy_;
     msg.gnss_fix_once = gnss_fix_once_;

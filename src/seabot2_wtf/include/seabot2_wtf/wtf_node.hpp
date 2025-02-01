@@ -5,9 +5,7 @@
 #include "seabot2_depth_filter/msg/depth_pose.hpp"
 #include "pressure_bme280_driver/msg/bme280_data.hpp"
 #include "seabot2_power_driver/msg/power_state.hpp"
-#include "std_srvs/srv/trigger.hpp"
-#include "std_srvs/srv/set_bool.hpp"
-#include "seabot2_safety/msg/safety_status.hpp"
+#include "seabot2_safety/msg/safety_status2.hpp"
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 
 #include "seabot2_mission/msg/mission_state.hpp"
@@ -85,6 +83,8 @@ private:
     WINDOW *windows_gnss_;
     WINDOW *windows_sensors_;
     WINDOW *windows_log_;
+    WINDOW *windows_audio_;
+    WINDOW *windows_com_;
 
     int windows_max_y_{}, windows_max_x_{};
     int windows_default_y_=4;
@@ -93,7 +93,7 @@ private:
 
     /// Variable
 
-    seabot2_safety::msg::SafetyStatus msg_safety_;
+    seabot2_safety::msg::SafetyStatus2 msg_safety_;
     seabot2_depth_filter::msg::DepthPose msg_depth_data_;
     pressure_bme280_driver::msg::Bme280Data msg_internal_sensor_filter_;
     seabot2_power_driver::msg::PowerState msg_power_data_;
@@ -135,7 +135,7 @@ private:
     size_t msg_queue_log_size_ = 5;
 
     /// Interfaces
-    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
+    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus2>::SharedPtr subscriber_safety_;
     rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
     rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
@@ -192,7 +192,7 @@ private:
      *  Safety callback
      * @param msg
      */
-    void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
+    void safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg);
 
     /**
      *  Mission state callback
