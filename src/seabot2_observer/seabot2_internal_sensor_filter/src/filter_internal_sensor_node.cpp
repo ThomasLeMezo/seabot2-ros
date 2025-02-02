@@ -26,14 +26,12 @@ double InternalSensorFilterNode::compute_filter(deque<double> queue) const {
     /// Remove side values
     deque<double> queue_median(queue.begin()+filter_median_remove_side_samples_, queue.end()-filter_median_remove_side_samples_);
     /// Sum elements
-    double data_sum = std::accumulate(queue_median.begin(), queue_median.end(), 0.0);
+    const double data_sum = std::accumulate(queue_median.begin(), queue_median.end(), 0.0);
     /// Compute mean value
-    return data_sum / (double)queue_median.size();
+    return data_sum / static_cast<double>(queue_median.size());
 }
 
-void InternalSensorFilterNode::pressure_callback(const pressure_bme280_driver::msg::Bme280Data &msg) {
-    pressure_bme280_driver::msg::Bme280Data msg_filter;
-
+void InternalSensorFilterNode::pressure_callback(const seabot2_msgs::msg::Bme280Data &msg) {
     /// Add new data to deque for pressure
     pressure_memory_.push_front(msg.pressure);
     temperature_memory_.push_front(msg.temperature);
@@ -46,6 +44,7 @@ void InternalSensorFilterNode::pressure_callback(const pressure_bme280_driver::m
     }
 
     if(pressure_memory_.size()==filter_window_size_){
+        seabot2_msgs::msg::Bme280Data msg_filter;
         msg_filter.pressure = compute_filter(pressure_memory_);
         msg_filter.temperature = compute_filter(temperature_memory_);
         msg_filter.humidity = compute_filter(humidity_memory_);
@@ -54,14 +53,14 @@ void InternalSensorFilterNode::pressure_callback(const pressure_bme280_driver::m
 }
 
 void InternalSensorFilterNode::init_interfaces() {
-    publisher_pressure_data_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("pressure_internal", 1);
+    publisher_pressure_data_ = this->create_publisher<seabot2_msgs::msg::Bme280Data>("pressure_internal", 1);
 
-    subscriber_pressure_data_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
+    subscriber_pressure_data_ = this->create_subscription<seabot2_msgs::msg::Bme280Data>(
             "/driver/pressure_internal", 10, std::bind(&InternalSensorFilterNode::pressure_callback, this, _1));
 
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<InternalSensorFilterNode>());
     rclcpp::shutdown();

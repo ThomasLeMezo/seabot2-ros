@@ -47,7 +47,7 @@ void DepthPoseNode::service_zero_pressure_callback(const std::shared_ptr<rmw_req
                                        std::shared_ptr<std_srvs::srv::Trigger::Response> response){
     if(!pressure_zero_depth_deque_.empty()){
         zero_depth_ = std::accumulate(pressure_zero_depth_deque_.begin(), pressure_zero_depth_deque_.end(), 0.0);
-        zero_depth_ /= (double)pressure_zero_depth_deque_.size();
+        zero_depth_ /= static_cast<double>(pressure_zero_depth_deque_.size());
 //        RCLCPP_INFO(this->get_logger(),"[Depth_pose_node] Zero_depth = %f", zero_depth_);
         response->success = true;
     }
@@ -55,8 +55,8 @@ void DepthPoseNode::service_zero_pressure_callback(const std::shared_ptr<rmw_req
         response->success = false;
 }
 
-void DepthPoseNode::pressure_callback(const seabot2_depth_filter::msg::PressureSensorData &msg) {
-    seabot2_depth_filter::msg::DepthPose msg_pose;
+void DepthPoseNode::pressure_callback(const seabot2_msgs::msg::PressureSensorData &msg) {
+    seabot2_msgs::msg::DepthPose msg_pose;
     msg_pose.header.stamp = msg.header.stamp;
     msg_pose.zero_depth_pressure = zero_depth_;
 
@@ -71,7 +71,7 @@ void DepthPoseNode::pressure_callback(const seabot2_depth_filter::msg::PressureS
         pressure_zero_depth_deque_.pop_back();
 
     if(pressure_deque_.size()==filter_window_size_){
-        seabot2_depth_filter::msg::DepthPose msg_depth;
+        seabot2_msgs::msg::DepthPose msg_depth;
         /// ************** Compute depth ************** //
         /// MEDIAN + MEAN FILTER
         /// Make a copy
@@ -81,9 +81,9 @@ void DepthPoseNode::pressure_callback(const seabot2_depth_filter::msg::PressureS
         /// Remove side values
         deque<double> pressure_deque_median(pressure_deque_sort.begin()+filter_median_remove_side_samples_, pressure_deque_sort.end()-filter_median_remove_side_samples_);
         /// Sum elements
-        double pressure_sum = std::accumulate(pressure_deque_median.begin(), pressure_deque_median.end(), 0.0);
+        const double pressure_sum = std::accumulate(pressure_deque_median.begin(), pressure_deque_median.end(), 0.0);
         /// Compute mean value
-        double pressure_mean = pressure_sum / (double)pressure_deque_median.size();
+        const double pressure_mean = pressure_sum / static_cast<double>(pressure_deque_median.size());
 
         double pressure = (pressure_mean - zero_depth_);
         double depth_filtered = pressure / (g_*rho_/1e5); /// 1e5 for Pa to Bar
@@ -131,16 +131,16 @@ void DepthPoseNode::pressure_callback(const seabot2_depth_filter::msg::PressureS
 }
 
 void DepthPoseNode::init_interfaces() {
-    publisher_depth_data_ = this->create_publisher<seabot2_depth_filter::msg::DepthPose>("depth", 1);
+    publisher_depth_data_ = this->create_publisher<seabot2_msgs::msg::DepthPose>("depth", 1);
 
-    subscriber_pressure_data_ = this->create_subscription<seabot2_depth_filter::msg::PressureSensorData>(
+    subscriber_pressure_data_ = this->create_subscription<seabot2_msgs::msg::PressureSensorData>(
             "/driver/pressure_external", 10, std::bind(&DepthPoseNode::pressure_callback, this, _1));
 
     service_zero_depth_ = this->create_service<std_srvs::srv::Trigger>("zero_pressure",
                                                                             std::bind(&DepthPoseNode::service_zero_pressure_callback, this, _1, _2, _3));
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<DepthPoseNode>());
     rclcpp::shutdown();

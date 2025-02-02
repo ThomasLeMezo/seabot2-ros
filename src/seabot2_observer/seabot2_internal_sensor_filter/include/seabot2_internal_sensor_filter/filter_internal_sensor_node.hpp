@@ -1,13 +1,8 @@
-//
-// Created by lemezoth on 05/09/22.
-//
-
 #ifndef BUILD_INTERNAL_SENSOR_FILTER_NODE_HPP
 #define BUILD_INTERNAL_SENSOR_FILTER_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include <memory>
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/bme280_data.hpp"
 #include <deque>
 
 using namespace std::chrono_literals;
@@ -27,8 +22,8 @@ private:
     deque<double> humidity_memory_;
 
     /// Interfaces
-    rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_pressure_data_;
-    rclcpp::Publisher<pressure_bme280_driver::msg::Bme280Data>::SharedPtr publisher_pressure_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::Bme280Data>::SharedPtr subscriber_pressure_data_;
+    rclcpp::Publisher<seabot2_msgs::msg::Bme280Data>::SharedPtr publisher_pressure_data_;
 
     /// Functions
 
@@ -46,7 +41,7 @@ private:
      * Callback of the external pressure
      * @param msg
      */
-    void pressure_callback(const pressure_bme280_driver::msg::Bme280Data &msg);
+    void pressure_callback(const seabot2_msgs::msg::Bme280Data &msg);
 
     /**
      * Compute the median and mean filter

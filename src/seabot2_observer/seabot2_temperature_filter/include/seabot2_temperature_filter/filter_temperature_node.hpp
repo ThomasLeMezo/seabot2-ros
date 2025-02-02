@@ -1,19 +1,15 @@
-//
-// Created by lemezoth on 05/09/22.
-//
-
 #ifndef BUILD_TEMPERATURE_FILTER_NODE_HPP
 #define BUILD_TEMPERATURE_FILTER_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
-#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+#include "seabot2_msgs/msg/temperature_sensor_data.hpp"
 #include <deque>
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class TemperatureFilterNode : public rclcpp::Node {
+class TemperatureFilterNode final : public rclcpp::Node {
 public:
     TemperatureFilterNode();
 
@@ -25,8 +21,8 @@ private:
     deque<double> temperature_memory_;
 
     /// Interfaces
-    rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
-    rclcpp::Publisher<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr publisher_temperature_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
+    rclcpp::Publisher<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr publisher_temperature_data_;
 
     /// Functions
 
@@ -44,7 +40,7 @@ private:
      * Callback of the external pressure
      * @param msg
      */
-    void temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg);
+    void temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg);
 
     /**
      * Compute the median and mean filter

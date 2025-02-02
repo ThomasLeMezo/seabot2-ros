@@ -20,14 +20,14 @@ using namespace Eigen;
 
 class WaveGenerator{
 public:
-    WaveGenerator(double amplitude,
-                  double period,
-                  double phase,
-                  double offset,
-                  bool water_velocity,
-                  bool is_contraction = false,
-                  double starting_time = 0.0,
-                  double duration = 0.0){
+    WaveGenerator(const double amplitude,
+                  const double period,
+                  const double phase,
+                  const double offset,
+                  const bool water_velocity,
+                  const bool is_contraction = false,
+                  const double starting_time = 0.0,
+                  const double duration = 0.0){
         amplitude_ = amplitude;
         period_ = period;
         phase_ = phase;

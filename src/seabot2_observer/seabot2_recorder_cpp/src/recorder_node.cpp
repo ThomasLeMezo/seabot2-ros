@@ -1,7 +1,3 @@
-//
-// Created by lemezoth on 06/06/23.
-//
-
 #include "seabot2_recorder_cpp/recorder_node.h"
 #include <iostream>
 #include <fstream>
@@ -17,10 +13,8 @@ RecorderNode::RecorderNode()
 
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
-    init_parameters();
-
     // Find home directory and append log folder
-    struct passwd *pw = getpwuid(getuid());
+    const struct passwd *pw = getpwuid(getuid());
     const char *homedir = pw->pw_dir;
     workingDirectory_.append(homedir);
     workingDirectory_.append("/log/");
@@ -101,10 +95,6 @@ void RecorderNode::wait_kill() {
 
 RecorderNode::~RecorderNode() {
     wait_kill();
-}
-
-void RecorderNode::init_parameters() {
-
 }
 
 void RecorderNode::init_interfaces() {

@@ -22,20 +22,20 @@ void DensityNode::init_parameters() {
     salinity_ = this->get_parameter_or("physics_salinity", salinity_);
 }
 //
-void DensityNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
+void DensityNode::temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg){
     temperature_ = msg.temperature;
 }
 
-void DensityNode::pressure_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+void DensityNode::pressure_callback(const seabot2_msgs::msg::DepthPose &msg){
     sea_pressure_ = msg.pressure;
 }
 
 void DensityNode::init_interfaces() {
-    publisher_density_ = this->create_publisher<seabot2_density::msg::Density>("density", 1);
+    publisher_density_ = this->create_publisher<seabot2_msgs::msg::Density>("density", 1);
 
-    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+    subscriber_depth_data_ = this->create_subscription<seabot2_msgs::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&DensityNode::pressure_callback, this, _1));
-    subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+    subscriber_temperature_data_ = this->create_subscription<seabot2_msgs::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&DensityNode::temperature_callback, this, _1));
 }
 
@@ -47,7 +47,7 @@ void DensityNode::timer_callback() {
 
     water_density_ = ts.gsw_rho_t_exact(salinity_, temperature_, sea_pressure_*10.0);
     water_sound_speed_ = ts.gsw_sound_speed_t_exact(salinity_, temperature_, sea_pressure_*10.0);
-    seabot2_density::msg::Density msg;
+    seabot2_msgs::msg::Density msg;
     msg.density = water_density_;
     msg.sound_speed = water_sound_speed_;
     msg.header.stamp = this->now();
@@ -55,7 +55,7 @@ void DensityNode::timer_callback() {
     publisher_density_->publish(msg);
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<DensityNode>());
     rclcpp::shutdown();

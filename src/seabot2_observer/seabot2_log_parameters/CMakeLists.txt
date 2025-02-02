@@ -8,42 +8,28 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(rcl_interfaces REQUIRED)
+find_package(seabot2_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 
-### Interfaces
-### Interfaces
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/LogParameter.msg"
-        DEPENDENCIES rcl_interfaces
-        )
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
 ### Executable
-add_executable(log_parameter_node src/log_parameter_node.cpp)
+add_executable(log_parameter_node
+        src/log_parameter_node.cpp
+)
+
 ament_target_dependencies(log_parameter_node
         rclcpp
-        rosidl_default_generators
-        rcl_interfaces
+        seabot2_msgs
         std_srvs
         )
-target_link_libraries(log_parameter_node "${cpp_typesupport_target}" proj)
+
+target_link_libraries(log_parameter_node
+        "${cpp_typesupport_target}"
+)
 
 ### Includes
 target_include_directories(log_parameter_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
-
-### Test
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-endif()
-
 
 ### Install
 install(TARGETS log_parameter_node

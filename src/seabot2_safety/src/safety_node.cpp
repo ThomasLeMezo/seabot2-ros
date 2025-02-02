@@ -1,6 +1,5 @@
 #include "seabot2_safety/safety_node.hpp"
 #include "sys/sysinfo.h"
-#include <iostream>
 #include <filesystem>
 
 using namespace placeholders;
@@ -76,30 +75,30 @@ void SafetyNode::init_parameters() {
     piston_error_velocity_delay_ = std::chrono::milliseconds(this->get_parameter_or("piston_error_velocity_delay", piston_error_velocity_delay_.count()));
 }
 
-void SafetyNode::gpsd_callback(const gpsd_client::msg::GpsFix &msg){
+void SafetyNode::gpsd_callback(const seabot2_msgs::msg::GpsFix &msg){
     gnss_mode_ = msg.mode;
 }
 
-void SafetyNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+void SafetyNode::depth_callback(const seabot2_msgs::msg::DepthPose &msg){
     depth_ = msg.depth;
     velocity_ = msg.velocity;
     depth_last_received_ = msg.header.stamp;
 }
 
-void SafetyNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg){
+void SafetyNode::internal_sensor_callback(const seabot2_msgs::msg::Bme280Data &msg){
     internal_humidity_ = msg.humidity;
     internal_pressure_ = msg.pressure;
     internal_temperature_ = msg.temperature;
     internal_last_received_ = this->now();
 }
 
-void SafetyNode::power_callback(const seabot2_power_driver::msg::PowerState &msg){
+void SafetyNode::power_callback(const seabot2_msgs::msg::PowerState &msg){
     battery_volt_ = msg.battery_volt;
     power_state_ = msg.power_state;
     battery_last_received_ = msg.header.stamp;
 }
 
-void SafetyNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
+void SafetyNode::piston_callback(const seabot2_msgs::msg::PistonState &msg){
     piston_position_ = msg.position;
     piston_set_point_ = msg.position_set_point;
     piston_last_received_ = msg.header.stamp;
@@ -108,31 +107,31 @@ void SafetyNode::piston_callback(const seabot2_piston_driver::msg::PistonState &
     piston_motor_speed_ = msg.motor_speed;
 }
 
-void SafetyNode::profile_callback(const bluerobotics_ping_driver::msg::Profile &msg){
+void SafetyNode::profile_callback(const seabot2_msgs::msg::Profile &msg){
     ping_altitude_ = msg.distance/1e3;
     ping_confidence_ = msg.confidence;
     ping_last_time_received_ = msg.header.stamp;
 }
 
 void SafetyNode::init_interfaces() {
-    publisher_safety_ =  this->create_publisher<seabot2_safety::msg::SafetyStatus2>("safety", 1);
+    publisher_safety_ =  this->create_publisher<seabot2_msgs::msg::SafetyStatus2>("safety", 1);
 
-    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+    subscriber_depth_data_ = this->create_subscription<seabot2_msgs::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&SafetyNode::depth_callback, this, _1));
 
-    subscriber_internal_sensor_filter_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
+    subscriber_internal_sensor_filter_ = this->create_subscription<seabot2_msgs::msg::Bme280Data>(
             "/observer/pressure_internal", 10, std::bind(&SafetyNode::internal_sensor_callback, this, _1));
 
-    subscriber_power_data_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
+    subscriber_power_data_ = this->create_subscription<seabot2_msgs::msg::PowerState>(
             "/observer/power", 10, std::bind(&SafetyNode::power_callback, this, _1));
 
-    subscriber_piston_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
+    subscriber_piston_data_ = this->create_subscription<seabot2_msgs::msg::PistonState>(
             "/driver/piston", 10, std::bind(&SafetyNode::piston_callback, this, _1));
 
-    subscriber_profile_data_ = this->create_subscription<bluerobotics_ping_driver::msg::Profile>(
+    subscriber_profile_data_ = this->create_subscription<seabot2_msgs::msg::Profile>(
             "/driver/profile", 10, std::bind(&SafetyNode::profile_callback, this, _1));
 
-    subscriber_gnss_data_ = this->create_subscription<gpsd_client::msg::GpsFix>(
+    subscriber_gnss_data_ = this->create_subscription<seabot2_msgs::msg::GpsFix>(
             "/driver/fix", 10, std::bind(&SafetyNode::gpsd_callback, this, _1));
 
     client_zero_pressure_ = this->create_client<std_srvs::srv::Trigger>("/observer/zero_pressure");
@@ -267,7 +266,7 @@ bool SafetyNode::test_piston(){
 }
 
 bool SafetyNode::test_gnss_fix(){
-    gnss_fix_once_ |= (gnss_mode_ > gpsd_client::msg::GpsFix::MODE_NO_FIX) || !gnss_fix_once_enable_;
+    gnss_fix_once_ |= (gnss_mode_ > seabot2_msgs::msg::GpsFix::MODE_NO_FIX) || !gnss_fix_once_enable_;
     return gnss_fix_once_;
 }
 
@@ -280,7 +279,7 @@ bool SafetyNode::test_hdd_available_space() {
     return true;
 }
 
-int SafetyNode::call_service_zero_depth(){
+int SafetyNode::call_service_zero_depth() const {
     client_zero_pressure_->wait_for_service(500ms);
     if (!client_zero_pressure_->service_is_ready()) {
         RCLCPP_ERROR(this->get_logger(), "[Safety_node] Zero depth service not available");
@@ -299,7 +298,7 @@ int SafetyNode::call_service_zero_depth(){
     return EXIT_SUCCESS;
 }
 
-int SafetyNode::call_service_flash_surface(const bool &is_surface){
+int SafetyNode::call_service_flash_surface(const bool &is_surface) const {
     client_flash_surface_->wait_for_service(500ms);
     if (!client_flash_surface_->service_is_ready()) {
         RCLCPP_ERROR(this->get_logger(), "[Safety_node] Flash surface service not available");
@@ -319,7 +318,7 @@ int SafetyNode::call_service_flash_surface(const bool &is_surface){
     return EXIT_SUCCESS;
 }
 
-int SafetyNode::call_service_chirp_enable(const bool &enable){
+int SafetyNode::call_service_chirp_enable(const bool &enable) const {
     client_chirp_enable_->wait_for_service(500ms);
     if (!client_chirp_enable_->service_is_ready()) {
         RCLCPP_ERROR(this->get_logger(), "[Safety_node] Chirp enable service not available");
@@ -366,10 +365,9 @@ void SafetyNode::get_ram_cpu(){
     /// CPU Usage (https://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process)
     static unsigned long long lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle;
     double percent;
-    FILE* file;
-    unsigned long long totalUser, totalUserLow, totalSys, totalIdle, total;
+    unsigned long long totalUser, totalUserLow, totalSys, totalIdle;
 
-    file = fopen("/proc/stat", "r");
+    FILE *file = fopen("/proc/stat", "r");
     fscanf(file, "cpu %llu %llu %llu %llu", &totalUser, &totalUserLow, &totalSys, &totalIdle);
     fclose(file);
 
@@ -379,7 +377,8 @@ void SafetyNode::get_ram_cpu(){
         percent = -1.0;
     }
     else{
-        total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) + (totalSys - lastTotalSys);
+        unsigned long long total = (totalUser - lastTotalUser) + (totalUserLow - lastTotalUserLow) + (
+                                       totalSys - lastTotalSys);
         percent = total;
         total += (totalIdle - lastTotalIdle);
         percent /= total;
@@ -404,10 +403,10 @@ void SafetyNode::get_ram_cpu(){
 void SafetyNode::get_hard_drive_empty_space() {
     try {
         // Specify the path of the filesystem
-        std::filesystem::path path_to_check = "/"; // Root directory for Raspberry Pi Ubuntu
+        const std::filesystem::path path_to_check = "/"; // Root directory for Raspberry Pi Ubuntu
 
         // Get space information
-        std::filesystem::space_info space = std::filesystem::space(path_to_check);
+        const std::filesystem::space_info space = std::filesystem::space(path_to_check);
 
         // Display space information
         // std::cout << "Total space: " << space.capacity / (1024 * 1024) << " MB\n";
@@ -497,7 +496,7 @@ void SafetyNode::timer_callback() {
     test_depth_max();
     global_safety_ok_ &= test_seabed_reached();
 
-    seabot2_safety::msg::SafetyStatus2 msg;
+    seabot2_msgs::msg::SafetyStatus2 msg;
     msg.global_safety_valid = global_safety_ok_;
     msg.published_frequency = safety_published_frequency_;
     msg.depth_limit = safety_depth_limit_;
@@ -517,7 +516,7 @@ void SafetyNode::timer_callback() {
     publisher_safety_->publish(msg);
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<SafetyNode>());
     rclcpp::shutdown();

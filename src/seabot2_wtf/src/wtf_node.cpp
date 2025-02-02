@@ -97,73 +97,73 @@ void WtfNode::init_parameters() {
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 }
 
-void WtfNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+void WtfNode::depth_callback(const seabot2_msgs::msg::DepthPose &msg){
     msg_depth_data_ = msg;
     time_last_depth_data_ = this->now();
     msg_first_received_depth_data_ = true;
 }
 
-void WtfNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg){
+void WtfNode::internal_sensor_callback(const seabot2_msgs::msg::Bme280Data &msg){
     msg_internal_sensor_filter_ = msg;
     time_last_internal_sensor_filter_ = this->now();
     msg_first_received_internal_sensor_filter_ = true;
 }
 
-void WtfNode::power_callback(const seabot2_power_driver::msg::PowerState &msg){
+void WtfNode::power_callback(const seabot2_msgs::msg::PowerState &msg){
     msg_power_data_ = msg;
     time_last_power_data_ = this->now();
     msg_first_received_power_data_ = true;
 }
 
-void WtfNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
+void WtfNode::piston_callback(const seabot2_msgs::msg::PistonState &msg){
     msg_piston_data_ = msg;
     time_last_piston_data_ = this->now();
     msg_first_received_piston_data_ = true;
 }
 
-void WtfNode::safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg){
+void WtfNode::safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg){
     msg_safety_ = msg;
     time_last_safety_ = this->now();
     msg_first_received_safety_ = true;
 }
 
-void WtfNode::mission_state_callback(const seabot2_mission::msg::MissionState &msg){
+void WtfNode::mission_state_callback(const seabot2_msgs::msg::MissionState &msg){
     msg_mission_state_ = msg;
     time_last_mission_state_ = this->now();
     msg_first_received_mission_state_ = true;
 }
 
-void WtfNode::depth_control_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg){
+void WtfNode::depth_control_set_point_callback(const seabot2_msgs::msg::DepthControlSetPoint &msg){
     msg_depth_control_set_point_ = msg;
     time_last_depth_control_set_point_ = this->now();
     msg_first_received_depth_control_set_point = true;
 }
 
-void WtfNode::depth_control_callback(const seabot2_depth_control::msg::DepthControlDebug &msg){
+void WtfNode::depth_control_callback(const seabot2_msgs::msg::DepthControlDebug &msg){
     msg_depth_control_ = msg;
     time_last_depth_control_ = this->now();
     msg_first_received_depth_control_ = true;
 }
 
-void WtfNode::gnss_callback(const gpsd_client::msg::GpsFix &msg){
+void WtfNode::gnss_callback(const seabot2_msgs::msg::GpsFix &msg){
     msg_gnss_ = msg;
     time_last_gnss_ = this->now();
     msg_first_received_gnss_ = true;
 }
 
-void WtfNode::profile_callback(const bluerobotics_ping_driver::msg::Profile &msg) {
+void WtfNode::profile_callback(const seabot2_msgs::msg::Profile &msg) {
     msg_profile_ = msg;
     time_last_profile_ = this->now();
     msg_first_received_profile_ = true;
 }
 
-void WtfNode::density_callback(const seabot2_density::msg::Density &msg) {
+void WtfNode::density_callback(const seabot2_msgs::msg::Density &msg) {
     msg_density_ = msg;
     time_last_density_ = this->now();
     msg_first_received_density_ = true;
 }
 
-void WtfNode::temperature_sensor_data_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg) {
+void WtfNode::temperature_sensor_data_callback(const seabot2_msgs::msg::TemperatureSensorData &msg) {
     msg_temperature_sensor_data_ = msg;
     time_last_temperature_sensor_data_ = this->now();
     msg_first_received_temperature_sensor_data_ = true;
@@ -178,40 +178,40 @@ void WtfNode::log_callback(const rcl_interfaces::msg::Log &msg) {
 
 void WtfNode::init_interfaces() {
 
-    subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus2>(
+    subscriber_safety_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus2>(
             "/safety/safety", 10, std::bind(&WtfNode::safety_callback, this, _1));
 
-    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+    subscriber_depth_data_ = this->create_subscription<seabot2_msgs::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&WtfNode::depth_callback, this, _1));
 
-    subscriber_internal_sensor_filter_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
+    subscriber_internal_sensor_filter_ = this->create_subscription<seabot2_msgs::msg::Bme280Data>(
             "/observer/pressure_internal", 10, std::bind(&WtfNode::internal_sensor_callback, this, _1));
 
-    subscriber_power_data_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
+    subscriber_power_data_ = this->create_subscription<seabot2_msgs::msg::PowerState>(
             "/observer/power", 10, std::bind(&WtfNode::power_callback, this, _1));
 
-    subscriber_piston_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
+    subscriber_piston_data_ = this->create_subscription<seabot2_msgs::msg::PistonState>(
             "/driver/piston", 10, std::bind(&WtfNode::piston_callback, this, _1));
 
-    subscriber_mission_state_ = this->create_subscription<seabot2_mission::msg::MissionState>(
+    subscriber_mission_state_ = this->create_subscription<seabot2_msgs::msg::MissionState>(
             "/mission/mission_state", 10, std::bind(&WtfNode::mission_state_callback, this, _1));
 
-    subscriber_depth_control_set_point_ = this->create_subscription<seabot2_mission::msg::DepthControlSetPoint>(
+    subscriber_depth_control_set_point_ = this->create_subscription<seabot2_msgs::msg::DepthControlSetPoint>(
             "/mission/depth_control_set_point", 10, std::bind(&WtfNode::depth_control_set_point_callback, this, _1));
 
-    subscriber_control_debug_ = this->create_subscription<seabot2_depth_control::msg::DepthControlDebug>(
+    subscriber_control_debug_ = this->create_subscription<seabot2_msgs::msg::DepthControlDebug>(
             "/control/depth_control_debug", 10, std::bind(&WtfNode::depth_control_callback, this, _1));
 
-    subscriber_gnss_ = this->create_subscription<gpsd_client::msg::GpsFix>(
+    subscriber_gnss_ = this->create_subscription<seabot2_msgs::msg::GpsFix>(
             "/driver/fix", 10, std::bind(&WtfNode::gnss_callback, this, _1));
 
-    subscriber_profile_ = this->create_subscription<bluerobotics_ping_driver::msg::Profile>(
+    subscriber_profile_ = this->create_subscription<seabot2_msgs::msg::Profile>(
             "/driver/profile", 10, std::bind(&WtfNode::profile_callback, this, _1));
 
-    subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
+    subscriber_density_ = this->create_subscription<seabot2_msgs::msg::Density>(
             "/observer/density", 10, std::bind(&WtfNode::density_callback, this, _1));
 
-    subscriber_temperature_sensor_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+    subscriber_temperature_sensor_data_ = this->create_subscription<seabot2_msgs::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&WtfNode::temperature_sensor_data_callback, this, _1));
 
     subscriber_log_ = this->create_subscription<rcl_interfaces::msg::Log>(
@@ -327,7 +327,7 @@ void WtfNode::update_safety_windows(){
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 11, 1, "gnss");
-        mvwprintw(windows_safety_, 11, 25, "%5s", set_color_valid(windows_safety_, (msg_gnss_.mode > gpsd_client::msg::GpsFix::MODE_NO_FIX)).c_str());
+        mvwprintw(windows_safety_, 11, 25, "%5s", set_color_valid(windows_safety_, (msg_gnss_.mode > seabot2_msgs::msg::GpsFix::MODE_NO_FIX)).c_str());
         wattron(windows_safety_, COLOR_PAIR(COLOR_DEFAULT));
 
         mvwprintw(windows_safety_, 12, 1, "cpu");
@@ -524,12 +524,12 @@ void WtfNode::update_sensors(){
     wrefresh(windows_sensors_);
 }
 
-void WtfNode::update_log(){
+void WtfNode::update_log() const {
     size_t i = 0;
     for(auto &msg:msg_queue_log_){
         string msg_string = msg.name + ": " + msg.msg;
-        size_t space_numbers = max(0, (windows_max_x_-2) - (int)msg_string.length());
-        string spaces(space_numbers, ' ');
+        const size_t space_numbers = max(0, (windows_max_x_-2) - static_cast<int>(msg_string.length()));
+        const string spaces(space_numbers, ' ');
         msg_string += spaces;
         mvwprintw(windows_log_, 2+i, 1, "%s", msg_string.c_str());
         i++;

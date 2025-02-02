@@ -1,5 +1,4 @@
 #include "seabot2_kalman/kalman_node.hpp"
-#include <algorithm>    // std::sort
 
 using namespace std::placeholders;
 
@@ -63,7 +62,7 @@ void KalmanNode::init_parameters() {
     k_.piston_volume_eq_init_ = this->get_parameter_or("piston_volume_eq_init", k_.piston_volume_eq_init_);
     k_.init_chi_ = this->get_parameter_or("init_chi", k_.init_chi_);
     k_.init_chi2_ = this->get_parameter_or("init_chi2", k_.init_chi2_);
-    double volume_air = this->get_parameter_or("init_volume_air", k_.init_volume_air_);
+    const double volume_air = this->get_parameter_or("init_volume_air", k_.init_volume_air_);
     k_.init_volume_air_ = volume_air*k_.pressure_/k_.temperature_;
     k_.init_cz_ = this->get_parameter_or("init_cz", k_.init_cz_);
 
@@ -82,7 +81,7 @@ void KalmanNode::init_parameters() {
     k_.gamma_init_chi_ = this->get_parameter_or("gamma_init_chi", k_.gamma_init_chi_);
     k_.gamma_init_chi2_ = this->get_parameter_or("gamma_init_chi2", k_.gamma_init_chi2_);
     k_.gamma_init_cz_ = this->get_parameter_or("gamma_init_cz", k_.gamma_init_cz_);
-    double gamma_init_volume_air = this->get_parameter_or("gamma_init_volume_air", k_.gamma_init_volume_air_);
+    const double gamma_init_volume_air = this->get_parameter_or("gamma_init_volume_air", k_.gamma_init_volume_air_);
     k_.gamma_init_volume_air_ = gamma_init_volume_air*k_.pressure_/k_.temperature_;
 
     k_.gamma_beta_depth_ = this->get_parameter_or("gamma_beta_depth", k_.gamma_beta_depth_);
@@ -90,42 +89,42 @@ void KalmanNode::init_parameters() {
     k_.init_parameters(this->now());
 }
 
-void KalmanNode::state_callback(const seabot2_piston_driver::msg::PistonState &msg){
+void KalmanNode::state_callback(const seabot2_msgs::msg::PistonState &msg){
     k_.set_new_piston_data(msg.position, msg.position_set_point, msg.header.stamp);
 }
 
-void KalmanNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+void KalmanNode::depth_callback(const seabot2_msgs::msg::DepthPose &msg){
     k_.update_pressure(msg.pressure + msg.zero_depth_pressure);
     k_.set_new_depth_data(msg.depth, msg.velocity, msg.header.stamp);
     publish_data();
 }
 
-void KalmanNode::density_callback(const seabot2_density::msg::Density &msg){
+void KalmanNode::density_callback(const seabot2_msgs::msg::Density &msg){
     k_.update_density(msg.density);
 }
 
-void KalmanNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
+void KalmanNode::temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg){
     k_.update_temperature(msg.temperature);
 }
 
 void KalmanNode::init_interfaces() {
-    publisher_kalman_ = this->create_publisher<seabot2_kalman::msg::KalmanState>("kalman", 10);
+    publisher_kalman_ = this->create_publisher<seabot2_msgs::msg::KalmanState>("kalman", 10);
 
-    subscriber_state_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
+    subscriber_state_data_ = this->create_subscription<seabot2_msgs::msg::PistonState>(
             "/driver/piston", 10, std::bind(&KalmanNode::state_callback, this, _1));
-    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+    subscriber_depth_data_ = this->create_subscription<seabot2_msgs::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&KalmanNode::depth_callback, this, _1));
 
-    subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
+    subscriber_density_ = this->create_subscription<seabot2_msgs::msg::Density>(
             "/observer/density", 10, std::bind(&KalmanNode::density_callback, this, _1));
 
-    subscriber_temperature_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+    subscriber_temperature_ = this->create_subscription<seabot2_msgs::msg::TemperatureSensorData>(
             "/driver/temperature", 10, std::bind(&KalmanNode::temperature_callback, this, _1));
 }
 
 
 void KalmanNode::publish_data() {
-    seabot2_kalman::msg::KalmanState msg;
+    seabot2_msgs::msg::KalmanState msg;
 
     const Matrix<double,Kalman::NB_STATES, 1> x = k_.x_forcast_;
     msg.velocity = x(0);
@@ -151,7 +150,7 @@ void KalmanNode::publish_data() {
     publisher_kalman_->publish(msg);
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<KalmanNode>());
     rclcpp::shutdown();

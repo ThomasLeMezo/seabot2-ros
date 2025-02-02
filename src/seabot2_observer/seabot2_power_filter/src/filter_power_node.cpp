@@ -26,13 +26,13 @@ double FilterPowerNode::compute_filter(deque<double> queue) const {
     /// Remove side values
     deque<double> queue_median(queue.begin()+filter_median_remove_side_samples_, queue.end()-filter_median_remove_side_samples_);
     /// Sum elements
-    double data_sum = std::accumulate(queue_median.begin(), queue_median.end(), 0.0);
+    const double data_sum = std::accumulate(queue_median.begin(), queue_median.end(), 0.0);
     /// Compute mean value
-    return data_sum / (double)queue_median.size();
+    return data_sum / static_cast<double>(queue_median.size());
 }
 
-void FilterPowerNode::power_callback(const seabot2_power_driver::msg::PowerState &msg) {
-    seabot2_power_driver::msg::PowerState msg_filter;
+void FilterPowerNode::power_callback(const seabot2_msgs::msg::PowerState &msg) {
+    seabot2_msgs::msg::PowerState msg_filter;
     msg_filter.header.stamp = msg.header.stamp;
     msg_filter.power_state = msg.power_state;
 
@@ -66,14 +66,14 @@ void FilterPowerNode::power_callback(const seabot2_power_driver::msg::PowerState
 }
 
 void FilterPowerNode::init_interfaces() {
-    publisher_power_data_ = this->create_publisher<seabot2_power_driver::msg::PowerState>("power", 1);
+    publisher_power_data_ = this->create_publisher<seabot2_msgs::msg::PowerState>("power", 1);
 
-    subscriber_power_data_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
+    subscriber_power_data_ = this->create_subscription<seabot2_msgs::msg::PowerState>(
             "/driver/power", 10, std::bind(&FilterPowerNode::power_callback, this, _1));
 
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<FilterPowerNode>());
     rclcpp::shutdown();

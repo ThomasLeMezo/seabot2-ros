@@ -1,9 +1,0 @@
-float64 z
-float64 theta
-float64 dtheta
-float64 i
-float64 dz
-float64 piston_volume
-float64 volume_total
-float64 volume_air
-float64 volume_antenna

@@ -26,14 +26,12 @@ double TemperatureFilterNode::compute_filter(deque<double> queue) const {
     /// Remove side values
     deque<double> queue_median(queue.begin()+filter_median_remove_side_samples_, queue.end()-filter_median_remove_side_samples_);
     /// Sum elements
-    double data_sum = std::accumulate(queue_median.begin(), queue_median.end(), 0.0);
+    const double data_sum = std::accumulate(queue_median.begin(), queue_median.end(), 0.0);
     /// Compute mean value
-    return data_sum / (double)queue_median.size();
+    return data_sum / static_cast<double>(queue_median.size());
 }
 
-void TemperatureFilterNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg) {
-    temperature_tsys01_driver::msg::TemperatureSensorData msg_filter;
-
+void TemperatureFilterNode::temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg) {
     /// Add new data to deque for pressure
     temperature_memory_.push_front(msg.temperature);
 
@@ -42,15 +40,16 @@ void TemperatureFilterNode::temperature_callback(const temperature_tsys01_driver
     }
 
     if(temperature_memory_.size()==filter_window_size_){
+        seabot2_msgs::msg::TemperatureSensorData msg_filter;
         msg_filter.temperature = compute_filter(temperature_memory_);
         publisher_temperature_data_->publish(msg_filter);
     }
 }
 
 void TemperatureFilterNode::init_interfaces() {
-    publisher_temperature_data_ = this->create_publisher<temperature_tsys01_driver::msg::TemperatureSensorData>("temperature", 1);
+    publisher_temperature_data_ = this->create_publisher<seabot2_msgs::msg::TemperatureSensorData>("temperature", 1);
 
-    subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+    subscriber_temperature_data_ = this->create_subscription<seabot2_msgs::msg::TemperatureSensorData>(
             "/driver/temperature", 10, std::bind(&TemperatureFilterNode::temperature_callback, this, _1));
 }
 

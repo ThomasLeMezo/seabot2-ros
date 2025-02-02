@@ -143,7 +143,7 @@ private:
                         Matrix<double,NB_STATES, NB_STATES> &gamma,
                         const Matrix<double,NB_COMMAND, 1> &u,
                         const Matrix<double,NB_STATES, NB_STATES> &gamma_alpha,
-                        const double &dt);
+                        const double &dt) const;
 
     /**
      *
@@ -161,7 +161,6 @@ private:
 
     /**
      *
-     * @param xhat
      */
     void init_kalman();
 

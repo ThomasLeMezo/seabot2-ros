@@ -11,7 +11,7 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
+find_package(seabot2_msgs REQUIRED)
 find_package(seabot2_density REQUIRED)
 find_package(seabot2_kalman REQUIRED)
 find_package(seabot2_depth_control REQUIRED)
@@ -19,78 +19,40 @@ find_package(seabot2_mission REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
 find_package(seabot2_piston_driver REQUIRED)
 
-find_package(gpsd_client REQUIRED)
-find_package(bluerobotics_ping_driver REQUIRED)
-find_package(seabot2_depth_filter REQUIRED)
-find_package(seabot2_log_parameters REQUIRED)
-find_package(seabot2_power_driver REQUIRED)
-find_package(pressure_bme280_driver REQUIRED)
-find_package(temperature_tsys01_driver REQUIRED)
-find_package(seabot2_safety REQUIRED)
-find_package(seabot2_temperature_profile REQUIRED)
-
 find_library(LIBTEOS teos REQUIRED)
 find_library(LIBKALMAN kalman REQUIRED)
 find_library(LIBDEPTHCONTROL depth_control REQUIRED)
 find_library(LIBMISSION mission REQUIRED)
 find_library(LIBTEMPERATUREPROFILE temperature_profile REQUIRED)
-find_package(Ibex REQUIRED)
-
-find_package(rosidl_default_generators REQUIRED)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/SimulationDebug.msg"
-        "msg/SimulationThermocline.msg"
-        )
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
 ### Executable
-add_executable(simulator_node src/simulator_node.cpp src/simulator.cpp)
+add_executable(simulator_node
+        src/simulator_node.cpp
+        src/simulator.cpp
+)
+
 ament_target_dependencies(simulator_node
         rclcpp
-        rosidl_default_generators
         seabot2_density
+        seabot2_msgs
         seabot2_kalman
         seabot2_depth_control
         seabot2_mission
-        rosbag2_cpp
-        seabot2_piston_driver
-        gpsd_client
-        bluerobotics_ping_driver
-        seabot2_depth_filter
-        seabot2_log_parameters
-        seabot2_power_driver
-        pressure_bme280_driver
-        temperature_tsys01_driver
-        seabot2_safety
-        seabot2_temperature_profile
 )
 target_link_libraries(simulator_node
-        "${cpp_typesupport_target}"
+        ${cpp_typesupport_target}
         ${LIBTEOS}
         ${LIBKALMAN}
         ${LIBDEPTHCONTROL}
         ${LIBMISSION}
         ${LIBTEMPERATUREPROFILE}
-        Ibex::ibex
         )
 
 ### Includes
 target_include_directories(simulator_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
-        Ibex::ibex
         )
-
-### Test
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-endif()
-
 
 ### Install
 install(TARGETS simulator_node

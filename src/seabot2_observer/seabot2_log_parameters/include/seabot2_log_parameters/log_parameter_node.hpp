@@ -2,31 +2,25 @@
 #define BUILD_LOG_PARAMETER_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include "rcl_interfaces/msg/parameter_value.hpp"
-#include "seabot2_log_parameters/msg/log_parameter.hpp"
+#include "seabot2_msgs/msg/log_parameter.hpp"
 #include "std_srvs/srv/trigger.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class LogParameterNode : public rclcpp::Node {
+class LogParameterNode final : public rclcpp::Node {
 public:
     LogParameterNode();
 
 private:
 
     /// Interfaces
-    rclcpp::Publisher<seabot2_log_parameters::msg::LogParameter>::SharedPtr publisher_parameters_;
+    rclcpp::Publisher<seabot2_msgs::msg::LogParameter>::SharedPtr publisher_parameters_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_log_parameters_;
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
 
     /// Functions
-
-    /**
-     *  Init and get parameters of the Node
-     */
-    void init_parameters();
 
     /**
      * Init interfaces of this node

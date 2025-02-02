@@ -2,15 +2,16 @@
 #define BUILD_KALMANN_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include "seabot2_piston_driver/msg/piston_state.hpp"
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "seabot2_kalman/msg/kalman_state.hpp"
-#include "seabot2_density/msg/density.hpp"
-#include "std_msgs/msg/int32.hpp"
-#include <eigen3/Eigen/Dense>
 #include "seabot2_kalman/kalman.h"
-#include "seabot2_depth_filter/msg/pressure_sensor_data.hpp"
-#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+
+#include "seabot2_msgs/msg/piston_state.hpp"
+#include "seabot2_msgs/msg/depth_pose.hpp"
+#include "seabot2_msgs/msg/kalman_state.hpp"
+#include "seabot2_msgs/msg/density.hpp"
+#include "seabot2_msgs/msg/pressure_sensor_data.hpp"
+#include "seabot2_msgs/msg/temperature_sensor_data.hpp"
+
+#include "std_msgs/msg/int32.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -18,7 +19,7 @@ using namespace Eigen;
 
 class Kalman;
 
-class KalmanNode : public rclcpp::Node {
+class KalmanNode final : public rclcpp::Node {
 public:
     KalmanNode();
 
@@ -33,12 +34,12 @@ private:
 
     /// Interfaces
 
-    rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
-    rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_state_data_;
-    rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
-    rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthPose>::SharedPtr subscriber_depth_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::PistonState>::SharedPtr subscriber_state_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::Density>::SharedPtr subscriber_density_;
+    rclcpp::Subscription<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_;
 
-    rclcpp::Publisher<seabot2_kalman::msg::KalmanState>::SharedPtr publisher_kalman_;
+    rclcpp::Publisher<seabot2_msgs::msg::KalmanState>::SharedPtr publisher_kalman_;
 
     /// Functions
 
@@ -56,31 +57,31 @@ private:
  *
  * @param msg
  */
-    void state_callback(const seabot2_piston_driver::msg::PistonState &msg);
+    void state_callback(const seabot2_msgs::msg::PistonState &msg);
 
     /**
      *
      * @param msg
      */
-    void depth_callback(const seabot2_depth_filter::msg::DepthPose &msg);
+    void depth_callback(const seabot2_msgs::msg::DepthPose &msg);
 
     /**
      *
      * @param msg
      */
-    void density_callback(const seabot2_density::msg::Density &msg);
+    void density_callback(const seabot2_msgs::msg::Density &msg);
 
     /**
      *
      * @param msg
      */
-    void pressure_callback(const seabot2_depth_filter::msg::PressureSensorData &msg);
+    void pressure_callback(const seabot2_msgs::msg::PressureSensorData &msg);
 
     /**
      *
      * @param msg
      */
-    void temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg);
+    void temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg);
 
 
     /**

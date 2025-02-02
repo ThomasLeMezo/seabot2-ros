@@ -7,7 +7,7 @@
 using namespace std::chrono_literals;
 using namespace std;
 
-class SimulatorNode : public rclcpp::Node {
+class SimulatorNode final : public rclcpp::Node {
 public:
     SimulatorNode();
 

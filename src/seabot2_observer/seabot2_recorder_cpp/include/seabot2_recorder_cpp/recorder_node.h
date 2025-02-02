@@ -1,27 +1,17 @@
-//
-// Created by lemezoth on 06/06/23.
-//
-
 #ifndef BUILD_RECORDER_NODE_H
 #define BUILD_RECORDER_NODE_H
 
 #include "rclcpp/rclcpp.hpp"
-#include <memory>
-#include <cstdlib>
-#include <csignal>
-#include <iostream>
-#include <thread>
-#include <atomic>
 #include <filesystem>
 #include "std_srvs/srv/set_bool.hpp"
 
 using namespace std::chrono_literals;
 
-class RecorderNode : public rclcpp::Node {
+class RecorderNode final : public rclcpp::Node {
 public:
     RecorderNode();
 
-    ~RecorderNode();
+    ~RecorderNode() override;
 
 public:
     const std::string command_ = "ros2 bag record --all --storage mcap";
@@ -42,14 +32,9 @@ private:
 
     /// Functions
 
-    void manage_subprocess_rosbag(bool start_new_bag=true);
+    void manage_subprocess_rosbag(bool start_new_bag);
 
     void wait_kill();
-
-    /**
-     *  Init and get parameters of the Node
-     */
-    void init_parameters();
 
     /**
      * Init interfaces to this node (publishers & subscribers)

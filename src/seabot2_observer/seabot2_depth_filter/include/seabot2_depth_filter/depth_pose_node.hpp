@@ -7,8 +7,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "seabot2_depth_filter/msg/pressure_sensor_data.hpp"
+#include "seabot2_msgs/msg/depth_pose.hpp"
+#include "seabot2_msgs/msg/pressure_sensor_data.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include <deque>
 
@@ -48,8 +48,8 @@ private:
     bool new_data_ = false;
 
     /// Interfaces
-    rclcpp::Subscription<seabot2_depth_filter::msg::PressureSensorData>::SharedPtr subscriber_pressure_data_;
-    rclcpp::Publisher<seabot2_depth_filter::msg::DepthPose>::SharedPtr publisher_depth_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::PressureSensorData>::SharedPtr subscriber_pressure_data_;
+    rclcpp::Publisher<seabot2_msgs::msg::DepthPose>::SharedPtr publisher_depth_data_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_zero_depth_ ;
 
     /// Functions
@@ -68,7 +68,7 @@ private:
      * Callback of the external pressure
      * @param msg
      */
-    void pressure_callback(const seabot2_depth_filter::msg::PressureSensorData &msg);
+    void pressure_callback(const seabot2_msgs::msg::PressureSensorData &msg);
 
     /**
      * Service callback

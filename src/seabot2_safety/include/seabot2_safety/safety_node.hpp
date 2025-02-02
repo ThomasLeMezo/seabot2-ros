@@ -1,25 +1,22 @@
-//
-// Created by lemezoth on 05/09/22.
-//
-
 #ifndef BUILD_SAFETY_NODE_HPP
 #define BUILD_SAFETY_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
-#include "seabot2_power_driver/msg/power_state.hpp"
+#include "seabot2_msgs/msg/depth_pose.hpp"
+#include "seabot2_msgs/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/power_state.hpp"
+#include "seabot2_msgs/msg/safety_status2.hpp"
+#include "seabot2_msgs/msg/piston_state.hpp"
+#include "seabot2_msgs/msg/profile.hpp"
+#include "seabot2_msgs/msg/gps_fix.hpp"
+
 #include "std_srvs/srv/trigger.hpp"
 #include "std_srvs/srv/set_bool.hpp"
-#include "seabot2_safety/msg/safety_status2.hpp"
-#include "seabot2_piston_driver/msg/piston_state.hpp"
-#include "bluerobotics_ping_driver/msg/profile.hpp"
-#include "gpsd_client/msg/gps_fix.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class SafetyNode : public rclcpp::Node {
+class SafetyNode final : public rclcpp::Node {
 public:
     SafetyNode();
 
@@ -111,7 +108,7 @@ private:
     std::chrono::milliseconds seabed_delay_detection_ = 30s;
 
     bool gnss_fix_once_ = false;
-    int gnss_mode_ = gpsd_client::msg::GpsFix::MODE_NOT_SEEN;
+    int gnss_mode_ = seabot2_msgs::msg::GpsFix::MODE_NOT_SEEN;
 
     bool gnss_fix_once_enable_ = true;
 
@@ -119,14 +116,14 @@ private:
     bool enable_flash_underwater_ = false;
 
     /// Interfaces
-    rclcpp::Publisher<seabot2_safety::msg::SafetyStatus2>::SharedPtr publisher_safety_;
+    rclcpp::Publisher<seabot2_msgs::msg::SafetyStatus2>::SharedPtr publisher_safety_;
 
-    rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
-    rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
-    rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
-    rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_piston_data_;
-    rclcpp::Subscription<bluerobotics_ping_driver::msg::Profile>::SharedPtr subscriber_profile_data_;
-    rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthPose>::SharedPtr subscriber_depth_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
+    rclcpp::Subscription<seabot2_msgs::msg::PowerState>::SharedPtr subscriber_power_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::PistonState>::SharedPtr subscriber_piston_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::Profile>::SharedPtr subscriber_profile_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
 
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr client_zero_pressure_;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_flash_surface_;
@@ -151,37 +148,37 @@ private:
      * Depth Callback
      * @param msg
      */
-    void depth_callback(const seabot2_depth_filter::msg::DepthPose &msg);
+    void depth_callback(const seabot2_msgs::msg::DepthPose &msg);
 
     /**
      * Internal sensor callback
      * @param msg
      */
-    void internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg);
+    void internal_sensor_callback(const seabot2_msgs::msg::Bme280Data &msg);
 
     /**
      * Power callback
      * @param msg
      */
-    void power_callback(const seabot2_power_driver::msg::PowerState &msg);
+    void power_callback(const seabot2_msgs::msg::PowerState &msg);
 
     /**
      *
      * @param msg
      */
-    void piston_callback(const seabot2_piston_driver::msg::PistonState &msg);
+    void piston_callback(const seabot2_msgs::msg::PistonState &msg);
 
     /**
      * Profile callback
      * @param msg
      */
-    void profile_callback(const bluerobotics_ping_driver::msg::Profile &msg);
+    void profile_callback(const seabot2_msgs::msg::Profile &msg);
 
     /**
      * Gnss callback
      * @param msg
      */
-    void gpsd_callback(const gpsd_client::msg::GpsFix &msg);
+    void gpsd_callback(const seabot2_msgs::msg::GpsFix &msg);
 
     /**
      *
@@ -246,20 +243,20 @@ private:
      * @param is_surface
      * @return
      */
-    int call_service_flash_surface(const bool &is_surface);
+    int call_service_flash_surface(const bool &is_surface) const;
 
     /**
      * call_service_chirp_enable
      * @param enable
      * @return
      */
-    int call_service_chirp_enable(const bool &enable);
+    int call_service_chirp_enable(const bool &enable) const;
 
     /**
      *
      * @return
      */
-    int call_service_zero_depth();
+    int call_service_zero_depth() const;
 
     /**
      *

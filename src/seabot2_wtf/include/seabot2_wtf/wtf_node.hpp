@@ -2,21 +2,20 @@
 #define BUILD_WTF_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
-#include "seabot2_power_driver/msg/power_state.hpp"
-#include "seabot2_safety/msg/safety_status2.hpp"
-#include "seabot2_piston_driver/msg/piston_state.hpp"
-
-#include "seabot2_mission/msg/mission_state.hpp"
-#include "seabot2_mission/msg/depth_control_set_point.hpp"
-
-#include "seabot2_depth_control/msg/depth_control_debug.hpp"
-#include "gpsd_client/msg/gps_fix.hpp"
 #include <ncurses.h>
-#include "bluerobotics_ping_driver/msg/profile.hpp"
-#include "seabot2_density/msg/density.hpp"
-#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+
+#include "seabot2_msgs/msg/depth_pose.hpp"
+#include "seabot2_msgs/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/power_state.hpp"
+#include "seabot2_msgs/msg/safety_status2.hpp"
+#include "seabot2_msgs/msg/piston_state.hpp"
+#include "seabot2_msgs/msg/mission_state.hpp"
+#include "seabot2_msgs/msg/depth_control_set_point.hpp"
+#include "seabot2_msgs/msg/depth_control_debug.hpp"
+#include "seabot2_msgs/msg/gps_fix.hpp"
+#include "seabot2_msgs/msg/profile.hpp"
+#include "seabot2_msgs/msg/density.hpp"
+#include "seabot2_msgs/msg/temperature_sensor_data.hpp"
 
 #include "rcl_interfaces/msg/log.hpp"
 #include <deque>
@@ -93,18 +92,18 @@ private:
 
     /// Variable
 
-    seabot2_safety::msg::SafetyStatus2 msg_safety_;
-    seabot2_depth_filter::msg::DepthPose msg_depth_data_;
-    pressure_bme280_driver::msg::Bme280Data msg_internal_sensor_filter_;
-    seabot2_power_driver::msg::PowerState msg_power_data_;
-    seabot2_piston_driver::msg::PistonState msg_piston_data_;
-    seabot2_mission::msg::DepthControlSetPoint msg_depth_control_set_point_;
-    seabot2_mission::msg::MissionState msg_mission_state_;
-    seabot2_depth_control::msg::DepthControlDebug msg_depth_control_;
-    gpsd_client::msg::GpsFix msg_gnss_;
-    bluerobotics_ping_driver::msg::Profile msg_profile_;
-    seabot2_density::msg::Density msg_density_;
-    temperature_tsys01_driver::msg::TemperatureSensorData msg_temperature_sensor_data_;
+    seabot2_msgs::msg::SafetyStatus2 msg_safety_;
+    seabot2_msgs::msg::DepthPose msg_depth_data_;
+    seabot2_msgs::msg::Bme280Data msg_internal_sensor_filter_;
+    seabot2_msgs::msg::PowerState msg_power_data_;
+    seabot2_msgs::msg::PistonState msg_piston_data_;
+    seabot2_msgs::msg::DepthControlSetPoint msg_depth_control_set_point_;
+    seabot2_msgs::msg::MissionState msg_mission_state_;
+    seabot2_msgs::msg::DepthControlDebug msg_depth_control_;
+    seabot2_msgs::msg::GpsFix msg_gnss_;
+    seabot2_msgs::msg::Profile msg_profile_;
+    seabot2_msgs::msg::Density msg_density_;
+    seabot2_msgs::msg::TemperatureSensorData msg_temperature_sensor_data_;
     deque<rcl_interfaces::msg::Log> msg_queue_log_;
 
     rclcpp::Time time_last_safety_ = this->now();
@@ -135,18 +134,18 @@ private:
     size_t msg_queue_log_size_ = 5;
 
     /// Interfaces
-    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus2>::SharedPtr subscriber_safety_;
-    rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
-    rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
-    rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
-    rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_piston_data_;
-    rclcpp::Subscription<seabot2_mission::msg::MissionState >::SharedPtr subscriber_mission_state_;
-    rclcpp::Subscription<seabot2_mission::msg::DepthControlSetPoint>::SharedPtr subscriber_depth_control_set_point_;
-    rclcpp::Subscription<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr subscriber_control_debug_;
-    rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_;
-    rclcpp::Subscription<bluerobotics_ping_driver::msg::Profile>::SharedPtr subscriber_profile_;
-    rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
-    rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_sensor_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus2>::SharedPtr subscriber_safety_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthPose>::SharedPtr subscriber_depth_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
+    rclcpp::Subscription<seabot2_msgs::msg::PowerState>::SharedPtr subscriber_power_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::PistonState>::SharedPtr subscriber_piston_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::MissionState >::SharedPtr subscriber_mission_state_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthControlSetPoint>::SharedPtr subscriber_depth_control_set_point_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthControlDebug>::SharedPtr subscriber_control_debug_;
+    rclcpp::Subscription<seabot2_msgs::msg::GpsFix>::SharedPtr subscriber_gnss_;
+    rclcpp::Subscription<seabot2_msgs::msg::Profile>::SharedPtr subscriber_profile_;
+    rclcpp::Subscription<seabot2_msgs::msg::Density>::SharedPtr subscriber_density_;
+    rclcpp::Subscription<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_sensor_data_;
     rclcpp::Subscription<rcl_interfaces::msg::Log>::SharedPtr subscriber_log_;
 
     /**
@@ -168,73 +167,73 @@ private:
      * Depth Callback
      * @param msg
      */
-    void depth_callback(const seabot2_depth_filter::msg::DepthPose &msg);
+    void depth_callback(const seabot2_msgs::msg::DepthPose &msg);
 
     /**
      * Internal sensor callback
      * @param msg
      */
-    void internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg);
+    void internal_sensor_callback(const seabot2_msgs::msg::Bme280Data &msg);
 
     /**
      * Power callback
      * @param msg
      */
-    void power_callback(const seabot2_power_driver::msg::PowerState &msg);
+    void power_callback(const seabot2_msgs::msg::PowerState &msg);
 
     /**
      *  Piston callback
      * @param msg
      */
-    void piston_callback(const seabot2_piston_driver::msg::PistonState &msg);
+    void piston_callback(const seabot2_msgs::msg::PistonState &msg);
 
     /**
      *  Safety callback
      * @param msg
      */
-    void safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg);
+    void safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg);
 
     /**
      *  Mission state callback
      * @param msg
      */
-    void mission_state_callback(const seabot2_mission::msg::MissionState &msg);
+    void mission_state_callback(const seabot2_msgs::msg::MissionState &msg);
 
     /**
      * Depth control set point callback
      * @param msg
      */
-    void depth_control_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg);
+    void depth_control_set_point_callback(const seabot2_msgs::msg::DepthControlSetPoint &msg);
 
     /**
      *  Control debug callback
      * @param msg
      */
-    void depth_control_callback(const seabot2_depth_control::msg::DepthControlDebug &msg);
+    void depth_control_callback(const seabot2_msgs::msg::DepthControlDebug &msg);
 
     /**
      * Gps callback
      * @param msg
      */
-    void gnss_callback(const gpsd_client::msg::GpsFix &msg);
+    void gnss_callback(const seabot2_msgs::msg::GpsFix &msg);
 
     /**
      * Profile callback
      * @param msg
      */
-    void profile_callback(const bluerobotics_ping_driver::msg::Profile &msg);
+    void profile_callback(const seabot2_msgs::msg::Profile &msg);
 
     /**
      * Density callback
      * @param msg
      */
-    void density_callback(const seabot2_density::msg::Density &msg);
+    void density_callback(const seabot2_msgs::msg::Density &msg);
 
     /**
      * Temperature sensor data callback
      * @param msg
      */
-    void temperature_sensor_data_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg);
+    void temperature_sensor_data_callback(const seabot2_msgs::msg::TemperatureSensorData &msg);
 
     /**
      * Log callback
@@ -295,7 +294,7 @@ private:
     /**
      * Update log windows
      */
-    void update_log();
+    void update_log() const;
 
     /**
      *  Update all windows

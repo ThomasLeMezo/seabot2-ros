@@ -8,60 +8,34 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(seabot2_depth_filter REQUIRED)
-find_package(seabot2_light_driver REQUIRED)
-find_package(pressure_bme280_driver REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(seabot2_power_driver REQUIRED)
-find_package(seabot2_piston_driver REQUIRED)
-find_package(seabot2_mission REQUIRED)
-find_package(seabot2_depth_control REQUIRED)
-find_package(seabot2_safety REQUIRED)
-find_package(gpsd_client REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(Curses REQUIRED)
-find_package(bluerobotics_ping_driver REQUIRED)
-find_package(seabot2_density REQUIRED)
-find_package(temperature_tsys01_driver REQUIRED)
+find_package(seabot2_msgs REQUIRED)
 find_package(rcl_interfaces REQUIRED)
+find_package(Curses REQUIRED)
 
 ### Executable
 
-add_executable(wtf_node src/wtf_node.cpp)
+add_executable(wtf_node
+        src/wtf_node.cpp
+)
+
 include_directories(${CURSES_INCLUDE_DIR})
+
 ament_target_dependencies(wtf_node
         rclcpp
-        seabot2_depth_filter
-        pressure_bme280_driver
-        seabot2_power_driver
-        seabot2_piston_driver
-        seabot2_mission
-        seabot2_depth_control
-        seabot2_safety
-        gpsd_client
-        std_srvs
-        bluerobotics_ping_driver
-        seabot2_density
-        temperature_tsys01_driver
+        seabot2_msgs
         rcl_interfaces
         )
-target_link_libraries(wtf_node "${cpp_typesupport_target}" ${CURSES_LIBRARIES})
+
+target_link_libraries(wtf_node
+        "${cpp_typesupport_target}"
+        ${CURSES_LIBRARIES}
+)
 
 ### Includes
 
 target_include_directories(wtf_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
-
-### Test
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-endif()
-
 
 ### Install
 

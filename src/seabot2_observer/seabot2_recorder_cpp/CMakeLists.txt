@@ -8,7 +8,6 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
 
 ## Interfaces
@@ -20,7 +19,6 @@ add_executable(recorder
 
 ament_target_dependencies(recorder
         rclcpp
-        rosidl_default_generators
         std_srvs
 )
 

@@ -1,4 +1,0 @@
-float64 temperature_target
-float64 thermocline_depth
-float64 thermocline_velocity
-float64 thermocline_acceleration

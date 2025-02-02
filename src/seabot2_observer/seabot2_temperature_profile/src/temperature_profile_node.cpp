@@ -1,5 +1,4 @@
 #include "seabot2_temperature_profile/temperature_profile_node.hpp"
-#include <algorithm>    // std::sort
 
 using namespace std::placeholders;
 
@@ -17,14 +16,14 @@ void TemperatureProfileNode::init_parameters() {
     loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
 }
 
-void TemperatureProfileNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+void TemperatureProfileNode::depth_callback(const seabot2_msgs::msg::DepthPose &msg){
     depth_ = msg.depth;
 }
-void TemperatureProfileNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
+void TemperatureProfileNode::temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg){
     t_.update_temperature(msg.temperature, depth_);
     t_.compute_profile();
 
-    seabot2_temperature_profile::msg::TemperatureProfile temperature_profile_msg;
+    seabot2_msgs::msg::TemperatureProfile temperature_profile_msg;
     temperature_profile_msg.header.stamp = this->now();
     temperature_profile_msg.profile_slope = t_.profile_slope_;
     temperature_profile_msg.profile_intercept = t_.profile_intercept_;
@@ -32,16 +31,16 @@ void TemperatureProfileNode::temperature_callback(const temperature_tsys01_drive
 }
 
 void TemperatureProfileNode::init_interfaces() {
-    publisher_temperature_profile_ = this->create_publisher<seabot2_temperature_profile::msg::TemperatureProfile>("temperature_profile", 10);
+    publisher_temperature_profile_ = this->create_publisher<seabot2_msgs::msg::TemperatureProfile>("temperature_profile", 10);
 
-    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+    subscriber_depth_data_ = this->create_subscription<seabot2_msgs::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&TemperatureProfileNode::depth_callback, this, _1));
 
-    subscriber_temperature_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+    subscriber_temperature_ = this->create_subscription<seabot2_msgs::msg::TemperatureSensorData>(
             "/driver/temperature", 10, std::bind(&TemperatureProfileNode::temperature_callback, this, _1));
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
 
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<TemperatureProfileNode>());

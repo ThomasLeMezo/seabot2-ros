@@ -1,46 +1,33 @@
 cmake_minimum_required(VERSION 3.8)
 project(seabot2_internal_sensor_filter)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif ()
 
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(pressure_bme280_driver REQUIRED)
-
-### Interfaces
-#rosidl_generate_interfaces(${PROJECT_NAME}
-#        "msg/.msg"
-#        DEPENDENCIES std_msgs
-#        )
-#rosidl_get_typesupport_target(cpp_typesupport_target
-#        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+find_package(seabot2_msgs REQUIRED)
 
 ### Executable
-add_executable(filter_internal_sensor_node src/filter_internal_sensor_node.cpp)
+add_executable(filter_internal_sensor_node
+        src/filter_internal_sensor_node.cpp
+)
+
 ament_target_dependencies(filter_internal_sensor_node
         rclcpp
-        rosidl_default_generators
-        pressure_bme280_driver
-        )
-target_link_libraries(filter_internal_sensor_node "${cpp_typesupport_target}")
+        seabot2_msgs
+)
+
+target_link_libraries(filter_internal_sensor_node
+        "${cpp_typesupport_target}"
+)
 
 ### Includes
 target_include_directories(filter_internal_sensor_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
-
-### Test
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_lint_auto_find_test_dependencies()
-
-endif()
-
 
 ### Install
 install(TARGETS filter_internal_sensor_node

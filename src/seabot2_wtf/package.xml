@@ -10,25 +10,8 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>std_srvs</depend>
-  <depend>seabot2_light_driver</depend>
-  <depend>seabot2_depth_filter</depend>
-  <depend>pressure_bme280_driver</depend>
-  <depend>seabot2_power_driver</depend>
-  <depend>seabot2_piston_driver</depend>
-  <depend>seabot2_mission</depend>
-  <depend>seabot2_depth_control</depend>
-  <depend>seabot2_safety</depend>
-  <depend>gpsd_client</depend>
-  <depend>bluerobotics_ping_driver</depend>
-  <depend>seabot2_density</depend>
-  <depend>temperature_tsys01_driver</depend>
+  <depend>seabot2_msgs</depend>
   <depend>rcl_interfaces</depend>
-
-  <member_of_group>rosidl_interface_packages</member_of_group>
-
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

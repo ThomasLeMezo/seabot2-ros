@@ -2,9 +2,8 @@
 #define BUILD_LAMBERT_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include <memory>
-#include "gpsd_client/msg/gps_fix.hpp"
-#include "seabot2_lambert/msg/gnss_pose.hpp"
+#include "seabot2_msgs/msg/gps_fix.hpp"
+#include "seabot2_msgs/msg/gnss_pose.hpp"
 #include <deque>
 
 #include <proj.h>
@@ -12,7 +11,7 @@
 using namespace std::chrono_literals;
 using namespace std;
 
-class LambertNode : public rclcpp::Node {
+class LambertNode final : public rclcpp::Node {
 public:
     LambertNode();
 
@@ -34,9 +33,9 @@ private:
     std::chrono::seconds filter_dt_heading_computation_ = 15s;
 
     /// Interfaces
-    rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
-    rclcpp::Publisher<seabot2_lambert::msg::GnssPose>::SharedPtr publisher_lambert_data_;
-    rclcpp::Publisher<seabot2_lambert::msg::GnssPose>::SharedPtr publisher_lambert_mean_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
+    rclcpp::Publisher<seabot2_msgs::msg::GnssPose>::SharedPtr publisher_lambert_data_;
+    rclcpp::Publisher<seabot2_msgs::msg::GnssPose>::SharedPtr publisher_lambert_mean_data_;
 
     /// Functions
 
@@ -54,7 +53,7 @@ private:
      * Callback of the external pressure
      * @param msg
      */
-    void gnss_callback(const gpsd_client::msg::GpsFix &msg);
+    void gnss_callback(const seabot2_msgs::msg::GpsFix &msg);
 
     /**
      * Compute mean position and heading

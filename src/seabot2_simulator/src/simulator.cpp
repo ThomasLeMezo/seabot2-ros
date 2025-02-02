@@ -1,7 +1,3 @@
-//
-// Created by lemezoth on 06/11/22.
-//
-
 #include "seabot2_simulator/simulator.h"
 #include <cmath>
 #include <iostream>
@@ -11,31 +7,31 @@
 #include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "rosbag2_storage/storage_options.hpp"
 
-#include "seabot2_depth_control/msg/alpha_debug.hpp"
-#include "seabot2_depth_control/msg/depth_control_debug.hpp"
-#include "gpsd_client/msg/gps_fix.hpp"
-#include "seabot2_piston_driver/msg/piston_state.hpp"
-#include "seabot2_piston_driver/msg/piston_set_point.hpp"
-#include "seabot2_power_driver/msg/power_state.hpp"
-#include "seabot2_depth_filter/msg/pressure_sensor_data.hpp"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
-#include "bluerobotics_ping_driver/msg/profile.hpp"
-#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
-#include "seabot2_mission/msg/depth_control_set_point.hpp"
-#include "seabot2_mission/msg/mission_state.hpp"
-#include "seabot2_density/msg/density.hpp"
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "seabot2_kalman/msg/kalman_state.hpp"
-#include "seabot2_log_parameters/msg/log_parameter.hpp"
-#include "seabot2_power_driver/msg/power_state.hpp"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
-#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
-#include "seabot2_safety/msg/safety_status.hpp"
 #include "seabot2_temperature_profile/temperature_profile.h"
-#include "seabot2_temperature_profile/msg/temperature_profile.hpp"
 
-#include "seabot2_simulator/msg/simulation_debug.hpp"
-#include "seabot2_simulator/msg/simulation_thermocline.hpp"
+#include "seabot2_msgs/msg/alpha_debug.hpp"
+#include "seabot2_msgs/msg/depth_control_debug.hpp"
+#include "seabot2_msgs/msg/gps_fix.hpp"
+#include "seabot2_msgs/msg/piston_state.hpp"
+#include "seabot2_msgs/msg/piston_set_point.hpp"
+#include "seabot2_msgs/msg/power_state.hpp"
+#include "seabot2_msgs/msg/pressure_sensor_data.hpp"
+#include "seabot2_msgs/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/profile.hpp"
+#include "seabot2_msgs/msg/temperature_sensor_data.hpp"
+#include "seabot2_msgs/msg/depth_control_set_point.hpp"
+#include "seabot2_msgs/msg/mission_state.hpp"
+#include "seabot2_msgs/msg/density.hpp"
+#include "seabot2_msgs/msg/depth_pose.hpp"
+#include "seabot2_msgs/msg/kalman_state.hpp"
+#include "seabot2_msgs/msg/log_parameter.hpp"
+#include "seabot2_msgs/msg/power_state.hpp"
+#include "seabot2_msgs/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/temperature_sensor_data.hpp"
+#include "seabot2_msgs/msg/safety_status.hpp"
+#include "seabot2_msgs/msg/temperature_profile.hpp"
+#include "seabot2_msgs/msg/simulation_debug.hpp"
+#include "seabot2_msgs/msg/simulation_thermocline.hpp"
 
 using namespace std::chrono;
 
