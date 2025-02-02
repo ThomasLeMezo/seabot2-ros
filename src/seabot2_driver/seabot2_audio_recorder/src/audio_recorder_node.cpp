@@ -208,7 +208,7 @@ void AudioRecorderNode::init_interfaces() {
     subscriber_gnss_data_ = this->create_subscription<seabot2_msgs::msg::GpsFix>(
             "/driver/fix", 10, std::bind(&AudioRecorderNode::gpsd_callback, this, _1));
 
-    publisher_dspic_debug_ = this->create_publisher<seabot2_msgs::msg::SyncDspic>("dspic_debug", 10);
+    publisher_dspic_debug_ = this->create_publisher<seabot2_msgs::msg::SyncDspic>("audio_dspic", 10);
 }
 
 void AudioRecorderNode::gpsd_callback(const seabot2_msgs::msg::GpsFix &msg){

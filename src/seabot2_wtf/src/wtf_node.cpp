@@ -61,6 +61,7 @@ void WtfNode::create_windows(){
     windows_gnss_               = create_new_sub_window(8, 40, "GNSS");
 
     windows_sensors_            = create_new_sub_window(8, 40, "SENSORS");
+    windows_audio_              = create_new_sub_window(8, 40, "AUDIO");
 
     refresh();
 }
@@ -176,6 +177,12 @@ void WtfNode::log_callback(const rcl_interfaces::msg::Log &msg) {
     }
 }
 
+void WtfNode::audio_dspic_callback(const seabot2_msgs::msg::SyncDspic &msg) {
+    msg_audio_dspic_ = msg;
+    time_last_audio_dspic_ = this->now();
+    msg_first_received_audio_dspic_ = true;
+}
+
 void WtfNode::init_interfaces() {
 
     subscriber_safety_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus2>(
@@ -216,6 +223,9 @@ void WtfNode::init_interfaces() {
 
     subscriber_log_ = this->create_subscription<rcl_interfaces::msg::Log>(
             "/rosout", 10, std::bind(&WtfNode::log_callback, this, _1));
+
+    subscriber_audio_dspic_ = this->create_subscription<seabot2_msgs::msg::SyncDspic>(
+            "/driver/audio_dspic", 10, std::bind(&WtfNode::audio_dspic_callback, this, _1));
 }
 
 void WtfNode::update_internal_pressure_windows(){
@@ -336,8 +346,11 @@ void WtfNode::update_safety_windows(){
         mvwprintw(windows_safety_, 13, 1, "ram");
         mvwprintw(windows_safety_, 13, 25, "%6d", static_cast<int>(msg_safety_.ram));
 
-        mvwprintw(windows_safety_, 14, 1, "limit_depth");
-        mvwprintw(windows_safety_, 14, 25, "%3.2f", msg_safety_.limit_depth);
+        mvwprintw(windows_safety_, 14, 1, "hdd");
+        mvwprintw(windows_safety_, 14, 25, "%.1f", msg_safety_.hdd/1024);
+
+        mvwprintw(windows_safety_, 15, 1, "limit_depth");
+        mvwprintw(windows_safety_, 15, 25, "%3.2f", msg_safety_.limit_depth);
 
         wrefresh(windows_safety_);
     }
@@ -524,6 +537,16 @@ void WtfNode::update_sensors(){
     wrefresh(windows_sensors_);
 }
 
+void WtfNode::update_audio() {
+    if(msg_first_received_audio_dspic_) {
+        mvwprintw(windows_audio_, 3, 1, "time dspic");
+        mvwprintw(windows_audio_, 3, 25, "%u", msg_audio_dspic_.posix_time);
+
+        mvwprintw(windows_audio_, 4, 1, "emission number");
+        mvwprintw(windows_audio_, 4, 25, "%u", msg_audio_dspic_.signal_number);
+    }
+}
+
 void WtfNode::update_log() const {
     size_t i = 0;
     for(auto &msg:msg_queue_log_){
@@ -549,9 +572,10 @@ void WtfNode::timer_callback() {
     update_gnss();
     update_sensors();
     update_log();
+    update_audio();
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<WtfNode>());
     rclcpp::shutdown();

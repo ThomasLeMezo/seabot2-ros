@@ -16,6 +16,7 @@
 #include "seabot2_msgs/msg/profile.hpp"
 #include "seabot2_msgs/msg/density.hpp"
 #include "seabot2_msgs/msg/temperature_sensor_data.hpp"
+#include "seabot2_msgs/msg/sync_dspic.hpp"
 
 #include "rcl_interfaces/msg/log.hpp"
 #include <deque>
@@ -104,6 +105,7 @@ private:
     seabot2_msgs::msg::Profile msg_profile_;
     seabot2_msgs::msg::Density msg_density_;
     seabot2_msgs::msg::TemperatureSensorData msg_temperature_sensor_data_;
+    seabot2_msgs::msg::SyncDspic msg_audio_dspic_;
     deque<rcl_interfaces::msg::Log> msg_queue_log_;
 
     rclcpp::Time time_last_safety_ = this->now();
@@ -118,6 +120,7 @@ private:
     rclcpp::Time time_last_profile_ = this->now();
     rclcpp::Time time_last_density_ = this->now();
     rclcpp::Time time_last_temperature_sensor_data_ = this->now();
+    rclcpp::Time time_last_audio_dspic_ = this->now();
 
     bool msg_first_received_safety_ = false;
     bool msg_first_received_depth_data_ = false;
@@ -131,6 +134,7 @@ private:
     bool msg_first_received_profile_ = false;
     bool msg_first_received_density_ = false;
     bool msg_first_received_temperature_sensor_data_ = false;
+    bool msg_first_received_audio_dspic_ = false;
     size_t msg_queue_log_size_ = 5;
 
     /// Interfaces
@@ -147,6 +151,7 @@ private:
     rclcpp::Subscription<seabot2_msgs::msg::Density>::SharedPtr subscriber_density_;
     rclcpp::Subscription<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_sensor_data_;
     rclcpp::Subscription<rcl_interfaces::msg::Log>::SharedPtr subscriber_log_;
+    rclcpp::Subscription<seabot2_msgs::msg::SyncDspic>::SharedPtr subscriber_audio_dspic_;
 
     /**
      *  Init and get parameters of the Node
@@ -242,6 +247,12 @@ private:
     void log_callback(const rcl_interfaces::msg::Log &msg);
 
     /**
+     * Audio dspic callback
+     * @param msg
+     */
+    void audio_dspic_callback(const seabot2_msgs::msg::SyncDspic &msg);
+
+    /**
      *  Update safety windows
      */
     void update_safety_windows();
@@ -290,6 +301,11 @@ private:
      * Update sensor windows
      */
     void update_sensors();
+
+    /**
+     * Update audio windows
+     */
+    void update_audio();
 
     /**
      * Update log windows

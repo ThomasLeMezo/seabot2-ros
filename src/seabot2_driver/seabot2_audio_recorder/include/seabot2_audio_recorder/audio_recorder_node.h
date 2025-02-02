@@ -30,7 +30,7 @@ public:
 
 private:
 
-    int audio_frequency_ = 96000;
+    int audio_frequency_ = 192000;
     int audio_max_file_time_ = 600; // s
     int audio_nb_channels_ = 1;
     int audio_nb_bits_ = 32;
