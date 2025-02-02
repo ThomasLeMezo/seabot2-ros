@@ -2,12 +2,8 @@
 #define PISTON_H
 
 #include <rclcpp/rclcpp.hpp>
-
 #include <sys/types.h>
-#include <iostream>
 #include <fstream>
-#include <unistd.h>
-#include <fcntl.h>
 
 extern "C" {
 #include <linux/i2c-dev.h>
@@ -30,7 +26,7 @@ public:
     /**
      * @brief Piston
      */
-    Piston(rclcpp::Node *n){
+    explicit Piston(rclcpp::Node *n){
         n_ = n;
     }
 

@@ -8,30 +8,29 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
-
-### Interfaces
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/PistonState.msg"
-        "msg/PistonSetPoint.msg"
-        DEPENDENCIES std_msgs
-        )
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+find_package(seabot2_msgs REQUIRED)
 
 ### Executable
-add_executable(piston_node src/piston_node.cpp src/piston.cpp)
-ament_target_dependencies(piston_node
-        "rclcpp"
-        "rosidl_default_generators"
+add_executable(piston_node
+        src/piston_node.cpp
+        src/piston.cpp
 )
-target_link_libraries(piston_node "${cpp_typesupport_target}" i2c)
+
+ament_target_dependencies(piston_node
+        rclcpp
+        seabot2_msgs
+)
+
+target_link_libraries(piston_node
+        "${cpp_typesupport_target}"
+        i2c
+)
 
 ### Includes
 target_include_directories(piston_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+)
 
 target_compile_features(piston_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 

@@ -3,15 +3,15 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
-#include "seabot2_thruster_driver/msg/engine.hpp"
-#include "seabot2_thruster_driver/msg/velocity.hpp"
 #include "seabot2_thruster_driver/thruster.h"
+#include "seabot2_msgs/msg/engine.hpp"
+#include "seabot2_msgs/msg/velocity.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class ThrusterNode : public rclcpp::Node {
+class ThrusterNode final : public rclcpp::Node {
 public:
     ThrusterNode();
 
@@ -51,14 +51,14 @@ private:
     Thruster thruster_;
 
     /// Topics
-    rclcpp::Publisher<seabot2_thruster_driver::msg::Engine>::SharedPtr publisher_engine_;
-    rclcpp::Subscription<seabot2_thruster_driver::msg::Velocity>::SharedPtr subscription_velocity_;
+    rclcpp::Publisher<seabot2_msgs::msg::Engine>::SharedPtr publisher_engine_;
+    rclcpp::Subscription<seabot2_msgs::msg::Velocity>::SharedPtr subscription_velocity_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscription_manual_velocity_;
 
     /// Functions
     void timer_callback();
 
-    void topic_velocity_callback(const seabot2_thruster_driver::msg::Velocity &msg);
+    void topic_velocity_callback(const seabot2_msgs::msg::Velocity &msg);
     void topic_manual_velocity_callback(const geometry_msgs::msg::Twist &msg);
 
     uint8_t convert_to_pwm(const double &u) const;
@@ -79,8 +79,8 @@ private:
      * @return
      */
     inline uint8_t invert_cmd(const uint8_t &cmd){
-        int tmp = -(static_cast<int>(cmd) - (int)Thruster::MOTOR_PWM_STOP);
-        return static_cast<uint8_t>((uint8_t)Thruster::MOTOR_PWM_STOP + tmp);
+        const int tmp = -(static_cast<int>(cmd) - static_cast<int>(Thruster::MOTOR_PWM_STOP));
+        return static_cast<uint8_t>(static_cast<uint8_t>(Thruster::MOTOR_PWM_STOP) + tmp);
     }
 };
 

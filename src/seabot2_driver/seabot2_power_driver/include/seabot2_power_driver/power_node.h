@@ -4,12 +4,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
 #include "seabot2_power_driver/power.h"
-#include "seabot2_power_driver/msg/power_state.hpp"
+#include "seabot2_msgs/msg/power_state.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class PowerNode : public rclcpp::Node {
+class PowerNode final : public rclcpp::Node {
 public:
     PowerNode();
 
@@ -23,7 +23,7 @@ private:
     Power power_;
 
     /// Topics / Services
-    rclcpp::Publisher<seabot2_power_driver::msg::PowerState>::SharedPtr publisher_power_state_;
+    rclcpp::Publisher<seabot2_msgs::msg::PowerState>::SharedPtr publisher_power_state_;
 
     /// Variables
     rclcpp::Time time_turn_off_light_ = this->now();
@@ -41,12 +41,6 @@ private:
      * Init interface to this node
      */
     void init_interfaces();
-
-    /**
-     * Init services od this node
-     */
-    void init_services();
-
 };
 
 #endif //BUILD_POWER_NODE_H

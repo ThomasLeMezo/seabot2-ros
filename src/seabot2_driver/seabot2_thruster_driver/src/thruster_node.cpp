@@ -22,18 +22,18 @@ ThrusterNode::ThrusterNode()
 
 void ThrusterNode::timer_callback() {
     /// Measure difference of time
-    rclcpp::Time new_regulation_time = this->now();
-    double dt = (new_regulation_time - last_regulation_time_).seconds();
+    const rclcpp::Time new_regulation_time = this->now();
+    const double dt = (new_regulation_time - last_regulation_time_).seconds();
     last_regulation_time_ = new_regulation_time;
 
-    double max_pwm_dt_change = max_velocity_pwm_ * dt;
+    const double max_pwm_dt_change = max_velocity_pwm_ * dt;
     /// Choose input source
     double linear, angular;
-    if((new_regulation_time - manual_velocity_time_last_)<delay_stop_){ /// Case manual cmd send in the last delay_stop_
+    if(new_regulation_time - manual_velocity_time_last_<delay_stop_){ /// Case manual cmd send in the last delay_stop_
         linear = manual_velocity_linear_;
         angular = manual_velocity_angular_;
     }
-    else if((new_regulation_time - velocity_time_last)<delay_stop_){
+    else if(new_regulation_time - velocity_time_last<delay_stop_){
         linear = velocity_linear_;
         angular = velocity_angular_;
     }
@@ -47,9 +47,8 @@ void ThrusterNode::timer_callback() {
         angular = -angular;
 
     /// Thrusters allocation
-    double left, right;
-    left = linear + angular;
-    right = linear - angular;
+    double left = linear + angular;
+    double right = linear - angular;
 
     if(!allow_backward_){ /// Remove backward propulsion if defined
         left = std::max(0., left);
@@ -83,7 +82,7 @@ void ThrusterNode::timer_callback() {
             cmd_right_last_ = cmd_right;
 
             /// Publish cmd for log
-            seabot2_thruster_driver::msg::Engine msg;
+            seabot2_msgs::msg::Engine msg;
             msg.left = cmd_left;
             msg.right = cmd_right;
             publisher_engine_->publish(msg);
@@ -92,7 +91,7 @@ void ThrusterNode::timer_callback() {
 }
 
 uint8_t ThrusterNode::convert_to_pwm(const double &u) const{
-    uint8_t cmd = static_cast<uint8_t>(round(u*coeff_cmd_to_pwm_ + (uint8_t)Thruster::MOTOR_PWM_STOP));
+    uint8_t cmd = static_cast<uint8_t>(round(u*coeff_cmd_to_pwm_ + static_cast<uint8_t>(Thruster::MOTOR_PWM_STOP)));
     return std::clamp(cmd, (uint8_t)Thruster::MIN_PWM, (uint8_t)Thruster::MAX_PWM);
 }
 
@@ -128,15 +127,15 @@ void ThrusterNode::init_parameters() {
 }
 
 void ThrusterNode::init_topics() {
-    publisher_engine_ = this->create_publisher<seabot2_thruster_driver::msg::Engine>("engine", 1);
+    publisher_engine_ = this->create_publisher<seabot2_msgs::msg::Engine>("engine", 1);
 
-    subscription_velocity_ = this->create_subscription<seabot2_thruster_driver::msg::Velocity>(
+    subscription_velocity_ = this->create_subscription<seabot2_msgs::msg::Velocity>(
             "cmd_engine", 10, std::bind(&ThrusterNode::topic_velocity_callback, this, _1));
     subscription_manual_velocity_ = this->create_subscription<geometry_msgs::msg::Twist>(
             "/cmd_vel", 10, std::bind(&ThrusterNode::topic_manual_velocity_callback, this, _1));
 }
 
-void ThrusterNode::topic_velocity_callback(const seabot2_thruster_driver::msg::Velocity &msg) {
+void ThrusterNode::topic_velocity_callback(const seabot2_msgs::msg::Velocity &msg) {
     velocity_linear_ = std::clamp(static_cast<double>(msg.linear), -max_linear_velocity_, max_linear_velocity_);
     velocity_angular_ = std::clamp(static_cast<double>(msg.angular), -max_linear_velocity_, max_linear_velocity_);
     velocity_time_last = this->get_clock()->now();
@@ -148,7 +147,7 @@ void ThrusterNode::topic_manual_velocity_callback(const geometry_msgs::msg::Twis
     manual_velocity_time_last_ = this->get_clock()->now();
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<ThrusterNode>());
     rclcpp::shutdown();

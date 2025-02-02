@@ -1,31 +1,35 @@
 #include "seabot2_piston_driver/piston.h"
 #include "sys/ioctl.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-Piston::~Piston(){
+Piston::~Piston() {
     close(file_);
 }
 
-int Piston::i2c_open(){
+int Piston::i2c_open() {
     file_ = open(i2c_periph_.c_str(), O_RDWR);
     if (file_ < 0) {
-        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Failed to open the I2C bus (%s) - %s", i2c_periph_.c_str(), strerror(file_));
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Failed to open the I2C bus (%s) - %s", i2c_periph_.c_str(),
+                    strerror(file_));
         exit(1);
     }
 
-    int result = ioctl(file_, I2C_SLAVE, i2c_addr_);
-    if (result < 0) {
-        RCLCPP_WARN(n_->get_logger(),"[Piston_driver] Failed to acquire bus access and/or talk to slave (0x%X) - %s", I2C_SLAVE, strerror(result));
+    if (int result = ioctl(file_, I2C_SLAVE, i2c_addr_); result < 0) {
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Failed to acquire bus access and/or talk to slave (0x%X) - %s",
+                    I2C_SLAVE, strerror(result));
         exit(1);
     }
 
-    if(get_version()!=code_version_)
+    if (get_version() != code_version_)
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Wrong PIC code version");
 
     usleep(100000);
     return 0;
 }
 
-int Piston::set_piston_reset() const{
+int Piston::set_piston_reset() const {
     RCLCPP_INFO(n_->get_logger(), "[Piston_driver] Start resting piston");
     if (i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_SEARCH_SWITCH_BOTTOM) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston Reset");
@@ -42,77 +46,74 @@ int Piston::set_piston_exit() const {
     } else {
         return set_position(0);
     }
-
 }
 
-int Piston::set_piston_regulation() const{
-    RCLCPP_DEBUG(n_->get_logger(),"[Piston_driver] Set regulation");
-    if(i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_REGULATION) < 0) {
+int Piston::set_piston_regulation() const {
+    RCLCPP_DEBUG(n_->get_logger(), "[Piston_driver] Set regulation");
+    if (i2c_smbus_write_byte_data(file_, REGISTER_STATE, PISTON_REGULATION) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Piston exit");
         return EXIT_FAILURE;
-    }
-    else
+    } else
         return EXIT_SUCCESS;
 }
 
-void Piston::set_regulation_dead_zone(const __u16 &val) const{
-    if(i2c_smbus_write_word_data(file_, REGISTER_REGULATION_DEAD_ZONE, val)<0)
-        RCLCPP_WARN(n_->get_logger(),"[Piston_driver] I2C bus Failure - Set dead zone");
+void Piston::set_regulation_dead_zone(const __u16 &val) const {
+    if (i2c_smbus_write_word_data(file_, REGISTER_REGULATION_DEAD_ZONE, val) < 0)
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Set dead zone");
 }
 
-void Piston::set_regulation_proportional(const __u16 &val) const{
-    if(i2c_smbus_write_word_data(file_, REGISTER_REGULATION_PROPORTIONAL, val)<0)
-        RCLCPP_WARN(n_->get_logger(),"[Piston_driver] I2C bus Failure - Set proportional");
+void Piston::set_regulation_proportional(const __u16 &val) const {
+    if (i2c_smbus_write_word_data(file_, REGISTER_REGULATION_PROPORTIONAL, val) < 0)
+        RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Set proportional");
 }
 
-int Piston::set_position(const int32_t &val) const{
+int Piston::set_position(const int32_t &val) const {
     __u8 data[4];
-    for(int i=0; i<4; i++){
-        data[i] = val>>(8*i); /// ToDo : check LSB/MSB ?
+    for (int i = 0; i < 4; i++) {
+        data[i] = val >> (8 * i); /// ToDo : check LSB/MSB ?
     }
-    if(i2c_smbus_write_i2c_block_data(file_, REGISTER_SET_POINT, 4, data)<0) {
+    if (i2c_smbus_write_i2c_block_data(file_, REGISTER_SET_POINT, 4, data) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] I2C bus Failure - Set position");
         return EXIT_FAILURE;
-    }
-    else
+    } else
         return EXIT_SUCCESS;
 }
 
-int Piston::get_all_data(){
-    __u8 buff[REGISTER_DATA_SIZE];
-    if (i2c_smbus_read_i2c_block_data(file_, REGISTER_DATA_READ, REGISTER_DATA_SIZE, buff) != REGISTER_DATA_SIZE) {
+int Piston::get_all_data() {
+    if (__u8 buff[REGISTER_DATA_SIZE];
+        i2c_smbus_read_i2c_block_data(file_, REGISTER_DATA_READ, REGISTER_DATA_SIZE, buff)
+        != REGISTER_DATA_SIZE) {
         RCLCPP_WARN(n_->get_logger(), "[Piston_driver] Error Reading data");
         return EXIT_FAILURE;
-    }
-    else{
-        unsigned int u_position=0, u_position_set_point = 0;
-        for(int i=0; i<=3; i++)
-            u_position |= buff[i]<<(i*8);
+    } else {
+        unsigned int u_position = 0, u_position_set_point = 0;
+        for (int i = 0; i <= 3; i++)
+            u_position |= buff[i] << (i * 8);
         position_last_ = position_;
         position_ = static_cast<int32_t>(u_position);
 
         switch_top_ = buff[4] & 0b1;
-        switch_bottom_ = (buff[4]>>1) & 0b1;
-        enable_ = (buff[4]>>2) & 0b1;
-        motor_sens_ = (buff[4]>>3) & 0b1;
+        switch_bottom_ = (buff[4] >> 1) & 0b1;
+        enable_ = (buff[4] >> 2) & 0b1;
+        motor_sens_ = (buff[4] >> 3) & 0b1;
         state_ = buff[5];
 
-        for(int i=6; i<=9; i++)
-            u_position_set_point |= buff[i]<<((i-6)*8);
+        for (int i = 6; i <= 9; i++)
+            u_position_set_point |= buff[i] << ((i - 6) * 8);
         position_set_point_ = static_cast<int32_t>(u_position_set_point);
 
-        __u16 measured_battery_voltage = (__u16)buff[0x0A] + ((__u16)buff[0x0B]<<8);
-        __u16 measured_motor_current = (__u16)buff[0x0C] + ((__u16)buff[0x0D] << 8);
+        const __u16 measured_battery_voltage = static_cast<__u16>(buff[0x0A]) + (static_cast<__u16>(buff[0x0B]) << 8);
+        const __u16 measured_motor_current = static_cast<__u16>(buff[0x0C]) + (static_cast<__u16>(buff[0x0D]) << 8);
 
-        battery_voltage_ = (double)measured_battery_voltage * CONVERSION_BRIDGE * ((R2_+R1_)/R1_);
-        motor_current_ = (double)(measured_motor_current-2048) * CONVERSION_CURRENT;
-        motor_set_point_ = (__u16)buff[0x0E] + ((__u16)buff[0x0F] << 8);
-        motor_cmd_ = (__u16)buff[0x10] + ((__u16)buff[0x11] << 8);
+        battery_voltage_ = static_cast<double>(measured_battery_voltage) * CONVERSION_BRIDGE * ((R2_ + R1_) / R1_);
+        motor_current_ = static_cast<double>(measured_motor_current - 2048) * CONVERSION_CURRENT;
+        motor_set_point_ = static_cast<__u16>(buff[0x0E]) + (static_cast<__u16>(buff[0x0F]) << 8);
+        motor_cmd_ = static_cast<__u16>(buff[0x10]) + (static_cast<__u16>(buff[0x11]) << 8);
         return EXIT_SUCCESS;
     }
 }
 
-uint8_t& Piston::get_version(){
+uint8_t &Piston::get_version() {
     pic_code_version_ = i2c_smbus_read_byte_data(file_, 0xC0);
     return pic_code_version_;
 }

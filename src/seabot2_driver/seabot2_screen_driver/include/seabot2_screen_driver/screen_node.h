@@ -2,21 +2,21 @@
 #define BUILD_SCREEN_NODE_H
 
 #include "rclcpp/rclcpp.hpp"
-#include <memory>
 #include "seabot2_screen_driver/screen.h"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
-#include "seabot2_mission/msg/mission_state.hpp"
-#include "seabot2_power_driver/msg/power_state.hpp"
-#include "seabot2_safety/msg/safety_status2.hpp"
+#include <memory>
+#include "seabot2_msgs/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/mission_state.hpp"
+#include "seabot2_msgs/msg/power_state.hpp"
+#include "seabot2_msgs/msg/safety_status2.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class ScreenNode : public rclcpp::Node {
+class ScreenNode final : public rclcpp::Node {
 public:
     ScreenNode();
 
-    ~ScreenNode();
+    ~ScreenNode() override;
 
 private:
 
@@ -44,10 +44,10 @@ private:
     double depth_no_update_ = 1.0;
 
     /// Topics
-    rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_sensor_internal_;
-    rclcpp::Subscription<seabot2_mission::msg::MissionState >::SharedPtr subscriber_mission_;
-    rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_;
-    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus2>::SharedPtr subscriber_safety_;
+    rclcpp::Subscription<seabot2_msgs::msg::Bme280Data>::SharedPtr subscriber_sensor_internal_;
+    rclcpp::Subscription<seabot2_msgs::msg::MissionState >::SharedPtr subscriber_mission_;
+    rclcpp::Subscription<seabot2_msgs::msg::PowerState>::SharedPtr subscriber_power_;
+    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus2>::SharedPtr subscriber_safety_;
 
     /// Functions
     void timer_callback();
@@ -77,25 +77,25 @@ private:
      * Callback for internal pressure messages
      * @param msg
      */
-    void topic_internal_pressure_callback(const pressure_bme280_driver::msg::Bme280Data &msg);
+    void topic_internal_pressure_callback(const seabot2_msgs::msg::Bme280Data &msg);
 
     /**
      * Callback for waypoints
      * @param msg
      */
-    void waypoint_callback(const seabot2_mission::msg::MissionState &msg);
+    void waypoint_callback(const seabot2_msgs::msg::MissionState &msg);
 
     /**
      * Callback for voltage
      * @param msg
      */
-    void power_callback(const seabot2_power_driver::msg::PowerState &msg);
+    void power_callback(const seabot2_msgs::msg::PowerState &msg);
 
     /**
      *
      * @param msg
      */
-    void safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg);
+    void safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg);
 };
 
 #endif //BUILD_SCREEN_NODE_H

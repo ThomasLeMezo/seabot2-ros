@@ -26,7 +26,7 @@ public:
     /**
      * @brief Power
      */
-    Power(rclcpp::Node *n){
+    explicit Power(rclcpp::Node *n) {
         n_ = n;
     }
 
@@ -71,7 +71,7 @@ private:
 public:
     /// Variables
     std::array<float, 2> cell_volt_{};
-    double battery_volt_;
+    double battery_volt_ = 0.;
     std::array<float, 2> esc_current_{};
     float motor_current_ = 0.0;
     int power_state_=0;

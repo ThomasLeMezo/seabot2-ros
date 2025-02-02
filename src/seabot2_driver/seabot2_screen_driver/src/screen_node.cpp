@@ -42,8 +42,7 @@ void ScreenNode::timer_callback() {
         screen_.write_current_waypoint(wp_id_);
         screen_.write_number_waypoints(wp_max_);
 
-        int t_remain = (time_next_wp_ - this->now()).seconds();
-        if(t_remain > 99*60)
+        if(const int t_remain = (time_next_wp_ - this->now()).seconds(); t_remain > 99*60)
             screen_.write_remaining_time(99,59);
         else if(t_remain <0)
             screen_.write_remaining_time(0, 0);
@@ -52,8 +51,8 @@ void ScreenNode::timer_callback() {
 
         screen_.write_robot_status(status_);
 
-        std::time_t t = std::time(0);   // get time now
-        std::tm *now = std::localtime(&t);
+        const std::time_t t = std::time(0);   // get time now
+        const std::tm *now = std::localtime(&t);
         screen_.write_time(now->tm_hour, now->tm_min);
 
         screen_.write_hygro(round(hygro_)); /// bug in hardware : should be placed before mission name
@@ -80,16 +79,16 @@ void ScreenNode::init_parameters() {
 
 void ScreenNode::init_topics() {
 
-    subscriber_sensor_internal_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
+    subscriber_sensor_internal_ = this->create_subscription<seabot2_msgs::msg::Bme280Data>(
             "/driver/pressure_internal", 10, std::bind(&ScreenNode::topic_internal_pressure_callback, this, _1));
 
-    subscriber_mission_ = this->create_subscription<seabot2_mission::msg::MissionState >(
+    subscriber_mission_ = this->create_subscription<seabot2_msgs::msg::MissionState >(
             "/mission/mission_state", 10, std::bind(&ScreenNode::waypoint_callback, this, _1));
 
-    subscriber_power_ = this->create_subscription<seabot2_power_driver::msg::PowerState>(
+    subscriber_power_ = this->create_subscription<seabot2_msgs::msg::PowerState>(
             "/driver/power", 10, std::bind(&ScreenNode::power_callback, this, _1));
 
-    subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus2>(
+    subscriber_safety_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus2>(
             "/safety/safety", 10, std::bind(&ScreenNode::safety_callback, this, _1));
 }
 
@@ -109,17 +108,22 @@ void ScreenNode::get_ip() {
     }
 
     /// https://stackoverflow.com/questions/2283494/get-ip-address-of-an-interface-on-linux
-    struct ifaddrs *ifaddr, *ifa;
-    int s;
-    char host[NI_MAXHOST];
+    ifaddrs *ifaddr;
 
     if (getifaddrs(&ifaddr) == -1)
         return;
 
-    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
+    for (const ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next){
+        char host[NI_MAXHOST];
         if (ifa->ifa_addr == nullptr)
             continue;
-        s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in),host, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
+        const int s = getnameinfo(ifa->ifa_addr,
+            sizeof(struct sockaddr_in),
+            host,
+            NI_MAXHOST,
+            nullptr,
+            0,
+            NI_NUMERICHOST);
         if((strcmp(ifa->ifa_name,"wlan0")==0)&&(ifa->ifa_addr->sa_family==AF_INET)){
             if (s != 0) {
                 return;
@@ -137,30 +141,30 @@ void ScreenNode::get_ip() {
     freeifaddrs(ifaddr);
 }
 
-void ScreenNode::topic_internal_pressure_callback(const pressure_bme280_driver::msg::Bme280Data &msg) {
+void ScreenNode::topic_internal_pressure_callback(const seabot2_msgs::msg::Bme280Data &msg) {
     pressure_ = msg.pressure;
     temperature_ = msg.temperature;
     hygro_ = msg.humidity;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<ScreenNode>());
+    spin(std::make_shared<ScreenNode>());
     rclcpp::shutdown();
     return 0;
 }
 
-void ScreenNode::waypoint_callback(const seabot2_mission::msg::MissionState &msg){
+void ScreenNode::waypoint_callback(const seabot2_msgs::msg::MissionState &msg){
     wp_id_ = msg.waypoint_id;
     wp_max_ = msg.waypoint_length;
     time_next_wp_ = this->now() + rclcpp::Duration::from_seconds(msg.time_to_next_waypoint);
 }
 
-void ScreenNode::power_callback(const seabot2_power_driver::msg::PowerState &msg){
+void ScreenNode::power_callback(const seabot2_msgs::msg::PowerState &msg){
     voltage_ = msg.battery_volt;
 }
 
-void ScreenNode::safety_callback(const seabot2_safety::msg::SafetyStatus2 &msg){
+void ScreenNode::safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg){
     if(msg.global_safety_valid) {
         status_ = Screen::OK;
     }

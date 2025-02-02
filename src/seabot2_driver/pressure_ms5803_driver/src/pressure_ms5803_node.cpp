@@ -5,7 +5,7 @@
 using namespace std::chrono_literals;
 using namespace std;
 
-class PressureMS5803Node : public rclcpp::Node {
+class PressureMS5803Node final : public rclcpp::Node {
 public:
     PressureMS5803Node()
             : Node("pressure_ms5803_node"), pressure_sensor_(this){

@@ -1,20 +1,14 @@
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H
 
+#include "rclcpp/rclcpp.hpp"
 #include <sys/types.h>
-#include <iostream>
 #include <fstream>
 
 extern "C" {
 #include <linux/i2c-dev.h>
 #include <i2c/smbus.h>
 }
-
-#include <sys/types.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include "rclcpp/rclcpp.hpp"
 
 #define CMD_RESET 0x1E // reset command
 #define CMD_ADC_READ 0x00 // ADC read command
@@ -30,7 +24,7 @@ public:
      * Constructor of the object
      * @param n
      */
-    Temperature_TSYS01(rclcpp::Node *n){
+    Temperature_TSYS01(rclcpp::Node *n): k_{} {
         n_ = n;
     }
 
@@ -38,11 +32,11 @@ public:
 
     int i2c_open();
     int init_sensor();
-    int reset();
+    int reset() const;
 
     bool measure();
 
-    double get_temperature();
+    double get_temperature() const;
 
     /**
  *
@@ -79,11 +73,11 @@ private:
     u_int16_t k_[5];
     bool valid_data_ = false;
 
-    double temperature_;
+    double temperature_ = 0.;
 
 };
 
-inline double Temperature_TSYS01::get_temperature(){
+inline double Temperature_TSYS01::get_temperature() const {
     return temperature_;
 }
 

@@ -26,7 +26,7 @@
 using namespace std::chrono_literals;
 using namespace std;
 
-class IridiumNode : public rclcpp::Node {
+class IridiumNode final : public rclcpp::Node {
 public:
     IridiumNode();
 

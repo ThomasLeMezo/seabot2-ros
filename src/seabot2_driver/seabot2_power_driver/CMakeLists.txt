@@ -8,26 +8,23 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(std_srvs REQUIRED)
-find_package(std_msgs REQUIRED)
-
-### Interfaces
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/PowerState.msg"
-        DEPENDENCIES std_msgs
-        )
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+find_package(seabot2_msgs REQUIRED)
 
 ### Executable
-add_executable(power_node src/power_node.cpp src/power.cpp)
+add_executable(power_node
+        src/power_node.cpp
+        src/power.cpp
+)
+
 ament_target_dependencies(power_node
-        "rclcpp"
-        "rosidl_default_generators"
-        "std_srvs"
-        )
-target_link_libraries(power_node "${cpp_typesupport_target}" i2c)
+        rclcpp
+        seabot2_msgs
+)
+
+target_link_libraries(power_node
+        "${cpp_typesupport_target}"
+        i2c
+)
 
 ### Includes
 target_include_directories(power_node PUBLIC

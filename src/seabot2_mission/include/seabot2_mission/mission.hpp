@@ -1,20 +1,16 @@
 #ifndef MISSION_H
 #define MISSION_H
 
-#include <string>
-#include <vector>
-#include <array>
-#include <fstream>
 #include <rclcpp/rclcpp.hpp>
+#include "seabot2_mission/waypoint.hpp"
+#include "seabot2_msgs/msg/depth_control_set_point.hpp"
+#include "seabot2_msgs/msg/mission_state.hpp"
 
 #include <boost/property_tree/ptree.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include "seabot2_mission/msg/depth_control_set_point.hpp"
-#include "seabot2_mission/msg/mission_state.hpp"
-
-#include "seabot2_mission/waypoint.hpp"
-
+#include <string>
+#include <vector>
 #include <filesystem>
+
 namespace fs = std::filesystem;
 
 class Waypoint;
@@ -156,12 +152,12 @@ public:
      * @brief get_depth_control_set_point
      * @return
      */
-    seabot2_mission::msg::DepthControlSetPoint& get_depth_control_set_point(){
+    seabot2_msgs::msg::DepthControlSetPoint& get_depth_control_set_point(){
         return dc_msg_;
     }
 
     /**
-     * Set set point parameters to idle state
+     * Set point parameters to idle state
      */
     void idle_state_configuration(const rclcpp::Time &t_now);
 
@@ -201,8 +197,8 @@ private:
 
     /**
      * Decode a depth waypoint
+     * @param w
      * @param v
-     * @param last_time
      * @param depth_offset
      * @return
      */
@@ -264,7 +260,7 @@ private:
     double temperature_intercept_ = 5.0;
 
     // Mission mode
-    unsigned int mission_mode_ = seabot2_mission::msg::MissionState::MODE_IDLE;
+    unsigned int mission_mode_ = seabot2_msgs::msg::MissionState::MODE_IDLE;
 
     // Mission state
     enum MISSION_STATE:unsigned int {NOT_STARTED=0,
@@ -274,7 +270,7 @@ private:
     MISSION_STATE mission_state_ = NOT_STARTED;
 
     // Control messages
-    seabot2_mission::msg::DepthControlSetPoint dc_msg_;
+    seabot2_msgs::msg::DepthControlSetPoint dc_msg_;
 
     // Waypoint type
     const std::string XML_DEPTH = "waypoint_depth";
@@ -316,7 +312,7 @@ public:
      *
      * @return
      */
-    double get_depth(){return depth_;}
+    double get_depth() const {return depth_;}
 
 };
 

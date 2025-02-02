@@ -4,17 +4,16 @@ from digi.xbee.devices import *
 import socket
 import math
 
-from seabot2_safety.msg import SafetyStatus
-from pressure_bme280_driver.msg import Bme280Data
-from seabot2_power_driver.msg import PowerState
-from gpsd_client.msg import GpsFix
-from seabot2_lambert.msg import GnssPose
-from seabot2_depth_filter.msg import DepthPose
-from seabot2_mission.msg import MissionState
-
+from seabot2_msgs.msg import SafetyStatus
+from seabot2_msgs.msg import Bme280Data
+from seabot2_msgs.msg import PowerState
+from seabot2_msgs.msg import GpsFix
+from seabot2_msgs.msg import GnssPose
+from seabot2_msgs.msg import DepthPose
+from seabot2_msgs.msg import MissionState
 
 def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None, flag_debug=False):
-    if (flag_debug):
+    if flag_debug:
         print("------")
         print("val init =", val)
     if value_min is not None and value_max is not None:
@@ -26,7 +25,7 @@ def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None,
     mask = ((1 << nb_bit) - 1) << start_bit
     data = data | (mask & (val << start_bit))
 
-    if (flag_debug):
+    if flag_debug:
         print("val_min =", value_min)
         print("scale = ", scale)
         print("val = ", val)
@@ -35,7 +34,7 @@ def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None,
 def deserialize_data(data, nb_bit, start_bit, value_min=None, value_max=None):
     mask = ((1 << nb_bit) - 1) << start_bit
     v = (data & mask) >> start_bit
-    if (value_min != None and value_max != None):
+    if value_min is not None and value_max is not None:
         scale = ((1 << nb_bit) - 1) / (value_max - value_min)
         v = v / scale + value_min
     return v, start_bit + nb_bit

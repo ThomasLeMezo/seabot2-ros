@@ -23,7 +23,7 @@ PistonNode::PistonNode()
 
 void PistonNode::timer_callback() {
     if(piston_.get_all_data()==EXIT_SUCCESS){
-        seabot2_piston_driver::msg::PistonState state_msg;
+        seabot2_msgs::msg::PistonState state_msg;
         state_msg.header.stamp = this->now();
 
         state_msg.position = piston_.position_;
@@ -41,7 +41,9 @@ void PistonNode::timer_callback() {
         publisher_piston_state_->publish(state_msg);
     }
     if((this->now()-time_last_cmd_received_)>delay_no_data_ && piston_.state_ != Piston::PISTON_EXIT){
-        piston_.set_piston_exit();
+        if (piston_.set_piston_exit() == EXIT_FAILURE) {
+            RCLCPP_WARN(this->get_logger(), "[Piston_node] Error setting piston exit");
+        }
     }
 }
 
@@ -67,12 +69,14 @@ void PistonNode::init_parameters() {
     piston_.R2_ = this->get_parameter_or("bridge_R2", piston_.R2_);
 }
 
-void PistonNode::topic_position_set_point_callback(const seabot2_piston_driver::msg::PistonSetPoint &msg){
+void PistonNode::topic_position_set_point_callback(const seabot2_msgs::msg::PistonSetPoint &msg){
     time_last_cmd_received_ = this->now();
 
     if(msg.exit){
         if(piston_.state_ != Piston::PISTON_EXIT) {
-            piston_.set_piston_exit();
+            if (piston_.set_piston_exit() == EXIT_FAILURE) {
+                RCLCPP_WARN(this->get_logger(), "[Piston_node] Error setting piston exit");
+            }
         }
     }
     else{
@@ -93,9 +97,9 @@ void PistonNode::topic_position_set_point_callback(const seabot2_piston_driver::
 }
 
 void PistonNode::init_interfaces() {
-    publisher_piston_state_ = this->create_publisher<seabot2_piston_driver::msg::PistonState>("piston", 1);
+    publisher_piston_state_ = this->create_publisher<seabot2_msgs::msg::PistonState>("piston", 1);
 
-    subscription_position_set_point_ = this->create_subscription<seabot2_piston_driver::msg::PistonSetPoint>(
+    subscription_position_set_point_ = this->create_subscription<seabot2_msgs::msg::PistonSetPoint>(
             "piston_set_point", 10, std::bind(&PistonNode::topic_position_set_point_callback, this, _1));
 }
 

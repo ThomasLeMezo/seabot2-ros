@@ -10,7 +10,7 @@
 using namespace std::chrono_literals;
 using namespace std;
 
-class LightNode : public rclcpp::Node {
+class LightNode final : public rclcpp::Node {
 public:
     LightNode();
     ~LightNode() override;

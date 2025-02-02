@@ -7,7 +7,6 @@ PowerNode::PowerNode()
 
     init_parameters();
     init_interfaces();
-    init_services();
 
     power_.i2c_open();
 
@@ -19,7 +18,7 @@ PowerNode::PowerNode()
 
 void PowerNode::timer_callback() {
     if(power_.get_all_data()==EXIT_SUCCESS){
-        seabot2_power_driver::msg::PowerState state_msg;
+        seabot2_msgs::msg::PowerState state_msg;
         state_msg.header.stamp = this->now();
         state_msg.battery_volt = power_.battery_volt_;
         state_msg.cell_volt = power_.cell_volt_;
@@ -44,11 +43,7 @@ void PowerNode::init_parameters() {
 }
 
 void PowerNode::init_interfaces() {
-    publisher_power_state_ = this->create_publisher<seabot2_power_driver::msg::PowerState>("power", 1);
-}
-
-void PowerNode::init_services(){
-
+    publisher_power_state_ = this->create_publisher<seabot2_msgs::msg::PowerState>("power", 1);
 }
 
 int main(int argc, char *argv[]) {

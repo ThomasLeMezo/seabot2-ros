@@ -17,9 +17,9 @@ extern "C" {
 using namespace std::chrono_literals;
 using namespace std;
 
-int file;
+inline int file;
 
-class Bme280Node : public rclcpp::Node {
+class Bme280Node final : public rclcpp::Node {
 public:
     Bme280Node()
             : Node("bme280_node") {

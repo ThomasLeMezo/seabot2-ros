@@ -1,11 +1,11 @@
-#include "rclcpp/rclcpp.hpp"
-#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
 #include "temperature_tsys01_driver/temperature_tsys01.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "seabot2_msgs/msg/temperature_sensor_data.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
 
-class TemperatureTSYS01Node : public rclcpp::Node {
+class TemperatureTSYS01Node final : public rclcpp::Node {
 public:
     TemperatureTSYS01Node()
             : Node("temperature_tsys01_node"), temperature_sensor_(this){
@@ -24,33 +24,23 @@ private:
 
     /// Variables
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr publisher_sensor_;
+    rclcpp::Publisher<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr publisher_sensor_;
 
     Temperature_TSYS01 temperature_sensor_;
 
     std::chrono::milliseconds  loop_dt_ = 200ms;
 
     /// Functions
-
-    /**
-     *
-     */
     void timer_callback();
 
-    /**
-     *
-     */
     void init_parameters();
 
-    /**
-     *
-     */
     void init_interfaces();
 };
 
 void TemperatureTSYS01Node::timer_callback() {
     if(temperature_sensor_.measure()){ /// Process the measurement
-        temperature_tsys01_driver::msg::TemperatureSensorData msg;
+        seabot2_msgs::msg::TemperatureSensorData msg;
         msg.temperature = temperature_sensor_.get_temperature();
         msg.header.stamp = this->get_clock()->now();
 
@@ -69,7 +59,7 @@ void TemperatureTSYS01Node::init_parameters() {
 }
 
 void TemperatureTSYS01Node::init_interfaces() {
-    publisher_sensor_ = this->create_publisher<temperature_tsys01_driver::msg::TemperatureSensorData>("temperature", 10);
+    publisher_sensor_ = this->create_publisher<seabot2_msgs::msg::TemperatureSensorData>("temperature", 10);
 }
 
 

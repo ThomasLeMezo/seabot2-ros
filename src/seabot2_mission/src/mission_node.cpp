@@ -1,5 +1,4 @@
 #include "seabot2_mission/mission_node.hpp"
-#include <algorithm>    // std::sort
 
 using namespace placeholders;
 
@@ -50,37 +49,35 @@ void MissionNode::init_interfaces() {
                                                                            std::bind(&MissionNode::service_mission_enable_callback, this, _1, _2, _3),
                                                                            rmw_qos_profile_services_default,callback_group_);
 
-    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
+    subscriber_depth_data_ = this->create_subscription<seabot2_msgs::msg::DepthPose>(
             "/observer/depth", 10, std::bind(&MissionNode::depth_callback, this, _1));
 
-    subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
+    subscriber_temperature_data_ = this->create_subscription<seabot2_msgs::msg::TemperatureSensorData>(
             "/observer/temperature", 10, std::bind(&MissionNode::temperature_callback, this, _1));
 
-    publisher_mission_state_ = this->create_publisher<seabot2_mission::msg::MissionState>("mission_state", 10);
+    publisher_mission_state_ = this->create_publisher<seabot2_msgs::msg::MissionState>("mission_state", 10);
 
-    publisher_depth_control_set_point_ = this->create_publisher<seabot2_mission::msg::DepthControlSetPoint>("depth_control_set_point", 10);
+    publisher_depth_control_set_point_ = this->create_publisher<seabot2_msgs::msg::DepthControlSetPoint>("depth_control_set_point", 10);
 
-    publisher_temperature_keeping_debug_ = this->create_publisher<seabot2_mission::msg::TemperatureKeepingDebug>("temperature_keeping_debug", 10);
+    publisher_temperature_keeping_debug_ = this->create_publisher<seabot2_msgs::msg::TemperatureKeepingDebug>("temperature_keeping_debug", 10);
 
-    client_light_ = this->create_client<seabot2_light_driver::srv::Light>("/driver/light", rmw_qos_profile_services_default,callback_group_);
+    client_light_ = this->create_client<seabot2_srvs::srv::Light>("/driver/light", rmw_qos_profile_services_default,callback_group_);
 
     client_log_parameters_ = this->create_client<std_srvs::srv::Trigger>("/observer/log_parameters", rmw_qos_profile_services_default,callback_group_);
-
-//    client_alpha_mission_ =  this->create_client<seabot2_mission::srv::AlphaMission>("/control/alpha_mission", rmw_qos_profile_services_default,callback_group_);
 
     client_bag_recorder_ = this->create_client<std_srvs::srv::Trigger>("/observer/restart_bag", rmw_qos_profile_services_default,callback_group_);
 }
 
-void MissionNode::depth_callback(const seabot2_depth_filter::msg::DepthPose::SharedPtr msg) {
+void MissionNode::depth_callback(const seabot2_msgs::msg::DepthPose::SharedPtr msg) {
     mission_.update_depth(msg->depth);
 }
 
-void MissionNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData::SharedPtr msg) {
+void MissionNode::temperature_callback(const seabot2_msgs::msg::TemperatureSensorData::SharedPtr msg) {
     mission_.update_temperature(msg->temperature);
 }
 
 void MissionNode::call_light(){
-    auto request = std::make_shared<seabot2_light_driver::srv::Light::Request>();
+    auto request = std::make_shared<seabot2_srvs::srv::Light::Request>();
     request->duration = flash_next_waypoint_time_;
     request->number_of_flash = flash_number_;
 
@@ -91,14 +88,7 @@ void MissionNode::call_light(){
     else {
         if(rclcpp::ok()) {
             auto result = client_light_->async_send_request(request);
-            // Wait for the result.
-//            if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result) !=
-//                rclcpp::FutureReturnCode::SUCCESS) {
-//                RCLCPP_INFO(this->get_logger(), "[Mission_node] Fail calling Light service");
-//            }
-//            else{
-//                RCLCPP_INFO(this->get_logger(), "[Mission_node] Call light to flash");
-//            }
+            // Do not wait for the result.
         }
         else{
             RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");
@@ -106,8 +96,8 @@ void MissionNode::call_light(){
     }
 }
 
-void MissionNode::call_log_params(){
-    auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+void MissionNode::call_log_params() const {
+    const auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
     client_log_parameters_->wait_for_service(500ms);
     if (!client_log_parameters_->service_is_ready()) {
         RCLCPP_ERROR(this->get_logger(), "[Mission_node] Log Parameters service not available");
@@ -124,8 +114,8 @@ void MissionNode::call_log_params(){
     }
 }
 
-void MissionNode::call_restart_bag(){
-    auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+void MissionNode::call_restart_bag() const {
+    const auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
     client_bag_recorder_->wait_for_service(500ms);
     if (!client_bag_recorder_->service_is_ready()) {
         RCLCPP_ERROR(this->get_logger(), "[Mission_node] Bag recorder service not available");
@@ -141,42 +131,13 @@ void MissionNode::call_restart_bag(){
     }
 }
 
-//void MissionNode::call_velocity_computation(std::vector<float> &velocity_list){
-//    auto request = std::make_shared<seabot2_mission::srv::AlphaMission::Request>();
-//    request->velocity_limits = velocity_list;
-//    client_alpha_mission_->wait_for_service(500ms);
-//    if (!client_alpha_mission_->service_is_ready()) {
-//        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Alpha Mission service not available");
-//    }
-//    else {
-//        if(rclcpp::ok()) {
-//            auto future = client_alpha_mission_->async_send_request(request);
-//            rclcpp::sleep_for(2s);
-//            // Do not wait to the result because cannont handle async call (deadlock with this node)
-//        }
-//        else{
-//            RCLCPP_ERROR(this->get_logger(), "[Mission_node] rclcpp not ok");
-//        }
-//    }
-//}
-
 int MissionNode::load_mission(){
     // Call for a new ros2 bag
     call_restart_bag();
     rclcpp::sleep_for(3s); // Wait for the change of bag
 
     // Reload mission
-    int ret =  mission_.load_mission(mission_file_name_, mission_path_, this->now());
-
-//    if(ret==EXIT_SUCCESS){
-//        vector<float> velocity_list = mission_.get_velocity_list();
-//        for(auto &v: velocity_list)
-//            RCLCPP_INFO(this->get_logger(), "[Mission_node] Velocity to compute : %f", v);
-//        call_velocity_computation(velocity_list);
-//    }
-//    else{
-//        RCLCPP_ERROR(this->get_logger(), "[Mission_node] Error in mission file !");
-//    }
+    const int ret =  mission_.load_mission(mission_file_name_, mission_path_, this->now());
 
     // Call for log of parameters
     call_log_params();
@@ -190,7 +151,7 @@ void MissionNode::timer_callback() {
     }
 
     // Update the state of the mission
-    bool is_new_waypoint = mission_.update_state(this->now());
+    const bool is_new_waypoint = mission_.update_state(this->now());
 
     // Publish depth control set point
     publisher_depth_control_set_point_->publish(mission_.get_depth_control_set_point());
@@ -199,7 +160,7 @@ void MissionNode::timer_callback() {
     if(mission_.is_current_waypoint_of_type(Mission::WP_TEMPERATURE_KEEPING)) {
         shared_ptr<WaypointTemperatureKeeping> wtk = mission_.get_current_waypoint_temperature_keeping();
         if (wtk != nullptr) {
-            seabot2_mission::msg::TemperatureKeepingDebug msg_debug;
+            seabot2_msgs::msg::TemperatureKeepingDebug msg_debug;
             msg_debug.temperature = wtk->temperature_;
             msg_debug.error = wtk->error_temperature_;
             msg_debug.header.stamp = this->now();
@@ -208,7 +169,7 @@ void MissionNode::timer_callback() {
     }
 
     // Publish mission state
-    seabot2_mission::msg::MissionState state_msg;
+    seabot2_msgs::msg::MissionState state_msg;
     state_msg.mode = mission_.get_mission_mode();
     state_msg.state = mission_.get_mission_state();
     state_msg.waypoint_id = mission_.get_current_waypoint_id();
@@ -224,8 +185,7 @@ void MissionNode::timer_callback() {
 void MissionNode::service_mission_reload_callback(const std::shared_ptr<rmw_request_id_t> request_header,
                                        const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
                                        std::shared_ptr<std_srvs::srv::Trigger::Response> response){
-    int error_code = load_mission();
-    if(error_code==EXIT_SUCCESS)
+    if(const int error_code = load_mission(); error_code==EXIT_SUCCESS)
         response->success = true;
     else
         response->success = false;
@@ -237,7 +197,7 @@ void MissionNode::service_mission_enable_callback(const std::shared_ptr<rmw_requ
     mission_enable_ = request->data;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<MissionNode>();
 
