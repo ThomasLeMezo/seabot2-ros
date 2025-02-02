@@ -7,21 +7,24 @@ endif()
 
 #### find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-
-### Interfaces
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/Bme280Data.msg"
-        )
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+find_package(seabot2_msgs REQUIRED)
 
 ### Excutable
-add_executable(bme280_node src/bme280_node.cpp src/bme280.c)
-ament_target_dependencies(bme280_node rclcpp std_msgs)
-target_link_libraries(bme280_node "${cpp_typesupport_target}" i2c)
+add_executable(bme280_node
+        src/bme280_node.cpp
+        src/bme280.c
+)
+
+ament_target_dependencies(bme280_node
+        rclcpp
+        seabot2_msgs
+)
+
+target_link_libraries(bme280_node
+        "${cpp_typesupport_target}"
+        i2c
+)
 
 ### Includes
 

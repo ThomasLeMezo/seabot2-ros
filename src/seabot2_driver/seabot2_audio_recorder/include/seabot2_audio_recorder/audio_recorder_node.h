@@ -6,23 +6,25 @@
 #define BUILD_RECORDER_NODE_H
 
 #include "rclcpp/rclcpp.hpp"
+#include "seabot2_audio_recorder/tlv320adc.h"
+#include "seabot2_audio_recorder/dspic_acoustic.h"
+
 #include <chrono>
 #include <memory>
 #include <filesystem>
+
 #include "std_srvs/srv/set_bool.hpp"
-#include "seabot2_audio_recorder/tlv320adc.h"
 #include "std_msgs/msg/bool.hpp"
-#include "seabot2_audio_recorder/dspic_acoustic.h"
-#include "gpsd_client/msg/gps_fix.hpp"
-#include "seabot2_audio_recorder/msg/sync_dspic.hpp"
+#include "seabot2_msgs/msg/gps_fix.hpp"
+#include "seabot2_msgs/msg/sync_dspic.hpp"
 
 using namespace std::chrono_literals;
 
-class AudioRecorderNode : public rclcpp::Node {
+class AudioRecorderNode final : public rclcpp::Node {
 public:
     AudioRecorderNode();
 
-    ~AudioRecorderNode();
+    ~AudioRecorderNode() override;
 
     std::string get_arecord_command() const;
 
@@ -35,6 +37,8 @@ private:
     std::string audio_device_ = "hw:CARD=sndrpii2scard";
     std::string audio_command_last_ = "";
     int audio_hdd_space_limit_stop_ = 500; // MB
+
+    std::string audio_save_directory_ = "/audio/";
 
     /// Rclcpp
     rclcpp::TimerBase::SharedPtr timer_;
@@ -57,6 +61,7 @@ private:
     bool enable_chirp_ = false;
     uint16_t frequency_middle_ = 40000;
     uint16_t frequency_range_ = 5000;
+    uint8_t signal_function_ = 0;
 
     bool gnss_fix_once_ = false;
     bool dspic_posix_fix_ = false;
@@ -68,15 +73,15 @@ private:
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_record_;
 
-    rclcpp::Publisher<seabot2_audio_recorder::msg::SyncDspic>::SharedPtr publisher_dspic_debug_;
+    rclcpp::Publisher<seabot2_msgs::msg::SyncDspic>::SharedPtr publisher_dspic_debug_;
 
-    rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
 
     /// Parameters
 
     /// Functions
 
-    void manage_subprocess(bool start_new_bag=true);
+    void manage_subprocess(bool start_new_audio);
 
     void wait_kill();
 
@@ -92,6 +97,7 @@ private:
 
     /**
      * Callback for the service trigger
+     * @param request_header
      * @param request
      * @param response
      */
@@ -103,7 +109,7 @@ private:
      *
      * @param msg
      */
-    void gpsd_callback(const gpsd_client::msg::GpsFix &msg);
+    void gpsd_callback(const seabot2_msgs::msg::GpsFix &msg);
 
     /**
      *

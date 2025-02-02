@@ -8,20 +8,23 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(seabot2_depth_filter REQUIRED)
-
-### Interfaces
-
+find_package(seabot2_msgs REQUIRED)
 
 ### Executable
-add_executable(pressure_ms5803_node src/pressure_ms5803_node.cpp src/pressure_ms5803.cpp)
+add_executable(pressure_ms5803_node
+        src/pressure_ms5803_node.cpp
+        src/pressure_ms5803.cpp
+)
+
 ament_target_dependencies(pressure_ms5803_node
   rclcpp
-  rosidl_default_generators
-  seabot2_depth_filter
+  seabot2_msgs
 )
-target_link_libraries(pressure_ms5803_node "${cpp_typesupport_target}" i2c)
+
+target_link_libraries(pressure_ms5803_node
+        "${cpp_typesupport_target}"
+        i2c
+)
 
 ### Includes
 target_include_directories(pressure_ms5803_node PUBLIC
@@ -42,7 +45,6 @@ if(BUILD_TESTING)
           $<INSTALL_INTERFACE:include>)
 
 endif()
-
 
 ### Install
 install(TARGETS pressure_ms5803_node

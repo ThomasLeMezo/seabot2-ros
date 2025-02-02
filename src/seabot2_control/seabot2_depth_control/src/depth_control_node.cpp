@@ -1,19 +1,19 @@
 #include "seabot2_depth_control/depth_control_node.hpp"
-#include <algorithm>    // std::sort
 #include <cmath>
+#include <iostream>
+#include <fstream>
 
 using namespace std::placeholders;
 
 DepthControlNode::DepthControlNode()
-        : Node("depth_control_node"), dc_(this->now()){
-
+    : Node("depth_control_node"), dc_(this->now()) {
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
 
     init_parameters();
     init_interfaces();
 
     timer_ = this->create_wall_timer(
-            loop_dt_, std::bind(&DepthControlNode::timer_callback, this), callback_group_);
+        loop_dt_, std::bind(&DepthControlNode::timer_callback, this), callback_group_);
 
     RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Start Ok");
 }
@@ -37,7 +37,8 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("piston_hysteresis", dc_.piston_hysteresis_);
     this->declare_parameter<double>("piston_max_velocity", dc_.flow_max_);
     this->declare_parameter<bool>("hold_depth_enable", dc_.hold_depth_enable_);
-    this->declare_parameter<int>("hold_depth_validation_duration", static_cast<int>(dc_.hold_depth_validation_duration_.seconds()));
+    this->declare_parameter<int>("hold_depth_validation_duration",
+                                 static_cast<int>(dc_.hold_depth_validation_duration_.seconds()));
     this->declare_parameter<double>("hold_depth_value_enter", dc_.hold_depth_value_enter_);
     this->declare_parameter<double>("hold_depth_value_exit", dc_.hold_depth_value_exit_);
     this->declare_parameter<double>("hold_velocity_enter", dc_.hold_velocity_enter_);
@@ -51,8 +52,8 @@ void DepthControlNode::init_parameters() {
     this->declare_parameter<double>("cf_estimation", dc_.Cf_);
     this->declare_parameter<bool>("debug", dc_.debug_);
 
-    this->declare_parameter<std::vector<double>>("solver_velocity", solver_velocity_);
-    this->declare_parameter<std::vector<double>>("solver_alpha", solver_alpha_);
+    this->declare_parameter<std::vector<double> >("solver_velocity", solver_velocity_);
+    this->declare_parameter<std::vector<double> >("solver_alpha", solver_alpha_);
 
     dc_.physics_rho_ = this->get_parameter_or("physics_rho", dc_.physics_rho_);
     dc_.physics_g_ = this->get_parameter_or("physics_g", dc_.physics_g_);
@@ -69,7 +70,9 @@ void DepthControlNode::init_parameters() {
     dc_.piston_hysteresis_ = this->get_parameter_or("piston_hysteresis", dc_.piston_hysteresis_);
     dc_.flow_max_ = this->get_parameter_or("piston_max_velocity", dc_.flow_max_);
     dc_.hold_depth_enable_ = this->get_parameter_or("hold_depth_enable", dc_.hold_depth_enable_);
-    dc_.hold_depth_validation_duration_ = rclcpp::Duration(std::chrono::seconds(this->get_parameter_or("hold_depth_validation_duration", static_cast<int>(dc_.hold_depth_validation_duration_.seconds()))));
+    dc_.hold_depth_validation_duration_ = rclcpp::Duration(std::chrono::seconds(
+        this->get_parameter_or("hold_depth_validation_duration",
+                               static_cast<int>(dc_.hold_depth_validation_duration_.seconds()))));
     dc_.hold_depth_value_enter_ = this->get_parameter_or("hold_depth_value_enter", dc_.hold_depth_value_enter_);
     dc_.hold_depth_value_exit_ = this->get_parameter_or("hold_depth_value_exit", dc_.hold_depth_value_exit_);
     dc_.hold_velocity_enter_ = this->get_parameter_or("hold_velocity_enter", dc_.hold_velocity_enter_);
@@ -79,7 +82,8 @@ void DepthControlNode::init_parameters() {
     dc_.delta_position_lb_ = this->get_parameter_or("delta_position_lb", dc_.delta_position_lb_);
     dc_.delta_position_ub_ = this->get_parameter_or("delta_position_ub", dc_.delta_position_ub_);
     dc_.control_filter_ = this->get_parameter_or("control_filter", dc_.control_filter_);
-    dc_.piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage", dc_.piston_flow_security_percentage_);
+    dc_.piston_flow_security_percentage_ = this->get_parameter_or("piston_flow_security_percentage",
+                                                                  dc_.piston_flow_security_percentage_);
     dc_.Cf_ = this->get_parameter_or("cf_estimation", dc_.Cf_);
     dc_.debug_ = this->get_parameter_or("debug", dc_.debug_);
 
@@ -88,13 +92,13 @@ void DepthControlNode::init_parameters() {
     solver_velocity_ = this->get_parameter_or("solver_velocity", solver_velocity_);
     solver_alpha_ = this->get_parameter_or("solver_alpha", solver_alpha_);
 
-    if(solver_velocity_.size()!=0){
-        for(size_t i=0; i<solver_velocity_.size(); i++)
+    if (solver_velocity_.size() != 0) {
+        for (size_t i = 0; i < solver_velocity_.size(); i++)
             dc_.alpha_solver_.add_to_memory(solver_alpha_[i], solver_velocity_[i]);
     }
 }
 
-void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &msg) {
+void DepthControlNode::kalman_callback(const seabot2_msgs::msg::KalmanState &msg) {
     dc_.update_state(msg.velocity,
                      msg.depth,
                      msg.chi,
@@ -104,7 +108,7 @@ void DepthControlNode::kalman_callback(const seabot2_kalman::msg::KalmanState &m
                      msg.header.stamp);
 }
 
-void DepthControlNode::piston_callback(const seabot2_piston_driver::msg::PistonState &msg){
+void DepthControlNode::piston_callback(const seabot2_msgs::msg::PistonState &msg) {
     dc_.update_piston(msg.position,
                       msg.switch_top,
                       msg.switch_bottom,
@@ -112,15 +116,15 @@ void DepthControlNode::piston_callback(const seabot2_piston_driver::msg::PistonS
                       msg.header.stamp);
 }
 
-void DepthControlNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
+void DepthControlNode::depth_callback(const seabot2_msgs::msg::DepthPose &msg) {
     dc_.update_depth(msg.depth, msg.pressure);
 }
 
-void DepthControlNode::safety_callback(const seabot2_safety::msg::SafetyStatus &msg){
+void DepthControlNode::safety_callback(const seabot2_msgs::msg::SafetyStatus &msg) {
     dc_.update_safety(!msg.global_safety_valid, msg.limit_depth);
 }
 
-void DepthControlNode::depth_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg){
+void DepthControlNode::depth_set_point_callback(const seabot2_msgs::msg::DepthControlSetPoint &msg) {
     dc_.update_waypoint(msg.depth,
                         msg.limit_velocity,
                         msg.header.stamp,
@@ -128,41 +132,44 @@ void DepthControlNode::depth_set_point_callback(const seabot2_mission::msg::Dept
     enable_control_ = msg.enable_control;
 
     // Debug
-    seabot2_depth_control::msg::AlphaDebug msg_alpha_debug;
+    seabot2_msgs::msg::AlphaDebug msg_alpha_debug;
     msg_alpha_debug.approach_velocity = static_cast<float>(dc_.approach_velocity_);
     publisher_alpha_debug_->publish(msg_alpha_debug);
 }
 
 void DepthControlNode::init_interfaces() {
-    subscriber_kalman_data_ = this->create_subscription<seabot2_kalman::msg::KalmanState>(
-            "/observer/kalman", 10, std::bind(&DepthControlNode::kalman_callback, this, _1));
-    subscriber_state_data_ = this->create_subscription<seabot2_piston_driver::msg::PistonState>(
-            "/driver/piston", 10, std::bind(&DepthControlNode::piston_callback, this, _1));
-    subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
-            "/observer/depth", 10, std::bind(&DepthControlNode::depth_callback, this, _1));
-    subscriber_temperature_data_ = this->create_subscription<temperature_tsys01_driver::msg::TemperatureSensorData>(
-            "/observer/temperature", 10, std::bind(&DepthControlNode::temperature_callback, this, _1));
-    subscriber_mission_data_ = this->create_subscription<seabot2_mission::msg::DepthControlSetPoint>(
-            "/mission/depth_control_set_point", 10, std::bind(&DepthControlNode::depth_set_point_callback, this, _1));
-    subscriber_safety_data_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
-            "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
-    subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
-            "/observer/density", 10, std::bind(&DepthControlNode::density_callback, this, _1));
+    subscriber_kalman_data_ = this->create_subscription<seabot2_msgs::msg::KalmanState>(
+        "/observer/kalman", 10, std::bind(&DepthControlNode::kalman_callback, this, _1));
+    subscriber_state_data_ = this->create_subscription<seabot2_msgs::msg::PistonState>(
+        "/driver/piston", 10, std::bind(&DepthControlNode::piston_callback, this, _1));
+    subscriber_depth_data_ = this->create_subscription<seabot2_msgs::msg::DepthPose>(
+        "/observer/depth", 10, std::bind(&DepthControlNode::depth_callback, this, _1));
+    subscriber_temperature_data_ = this->create_subscription<seabot2_msgs::msg::TemperatureSensorData>(
+        "/observer/temperature", 10, std::bind(&DepthControlNode::temperature_callback, this, _1));
+    subscriber_mission_data_ = this->create_subscription<seabot2_msgs::msg::DepthControlSetPoint>(
+        "/mission/depth_control_set_point", 10, std::bind(&DepthControlNode::depth_set_point_callback, this, _1));
+    subscriber_safety_data_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus>(
+        "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
+    subscriber_density_ = this->create_subscription<seabot2_msgs::msg::Density>(
+        "/observer/density", 10, std::bind(&DepthControlNode::density_callback, this, _1));
 
-    publisher_piston_ = this->create_publisher<seabot2_piston_driver::msg::PistonSetPoint>("/driver/piston_set_point", 10);
-    publisher_debug_ = this->create_publisher<seabot2_depth_control::msg::DepthControlDebug>("depth_control_debug", 10);
-    publisher_alpha_debug_ = this->create_publisher<seabot2_depth_control::msg::AlphaDebug>("alpha_debug", 10);
+    publisher_piston_ = this->create_publisher<seabot2_msgs::msg::PistonSetPoint>("/driver/piston_set_point", 10);
+    publisher_debug_ = this->create_publisher<seabot2_msgs::msg::DepthControlDebug>("depth_control_debug", 10);
+    publisher_alpha_debug_ = this->create_publisher<seabot2_msgs::msg::AlphaDebug>("alpha_debug", 10);
 
-    service_alpha_computation_ = this->create_service<seabot2_mission::srv::AlphaMission>("alpha_mission",
-                                                                           bind(&DepthControlNode::alpha_mission_pre_computation, this, _1, _2, _3));
+    service_alpha_computation_ = this->create_service<seabot2_srvs::srv::AlphaMission>("alpha_mission",
+        bind(&DepthControlNode::alpha_mission_pre_computation, this, _1, _2, _3));
 
     service_alpha_generation_ = this->create_service<std_srvs::srv::Trigger>("alpha_generation",
-                                                                             bind(&DepthControlNode::alpha_generation, this, _1, _2, _3));
+                                                                             bind(&DepthControlNode::alpha_generation,
+                                                                                 this, _1, _2, _3));
 }
 
 void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
-                                      const std::shared_ptr<seabot2_mission::srv::AlphaMission::Request> request,
-                                      std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response){
+                                                     const std::shared_ptr<seabot2_srvs::srv::AlphaMission::Request>
+                                                     request,
+                                                     std::shared_ptr<seabot2_srvs::srv::AlphaMission::Response>
+                                                     response) {
     RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Received velocity computation request");
 
     velocity_limits_requests_.clear();
@@ -172,28 +179,30 @@ void DepthControlNode::alpha_mission_pre_computation(const std::shared_ptr<rmw_r
 
 void DepthControlNode::alpha_generation(const std::shared_ptr<rmw_request_id_t> request_header,
                                         const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
-                                        std::shared_ptr<std_srvs::srv::Trigger::Response> response){
+                                        std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
     generate_velocity_pairs();
 }
 
-void DepthControlNode::density_callback(const seabot2_density::msg::Density &msg){
+void DepthControlNode::density_callback(const seabot2_msgs::msg::Density &msg) {
     dc_.update_density(msg.density);
 }
 
-void DepthControlNode::temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg){
+void DepthControlNode::temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg) {
     dc_.update_temperature(msg.temperature);
 }
 
-void DepthControlNode::timer_callback() { /// ToDo bug to be check
-    if(velocity_limits_computations_){
+void DepthControlNode::timer_callback() {
+    /// ToDo bug to be check
+    if (velocity_limits_computations_) {
         velocity_limits_computations_ = false;
         timer_->cancel();
         dc_.regulation_state_ = DepthControl::STATE_COMPUTE_ALPHA;
         publish_message();
-        for(auto velocity: velocity_limits_requests_) {
+        for (const auto velocity: velocity_limits_requests_) {
             //publish_message();
-            auto result = dc_.alpha_solver_.compute_alpha(velocity);
-            RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Velocity was computed for beta = %f, alpha = %f", velocity,
+            const auto result = dc_.alpha_solver_.compute_alpha(velocity);
+            RCLCPP_INFO(this->get_logger(), "[Depth_control_node] Velocity was computed for beta = %f, alpha = %f",
+                        velocity,
                         result);
         }
         dc_.regulation_state_ = DepthControl::STATE_SURFACE;
@@ -202,41 +211,38 @@ void DepthControlNode::timer_callback() { /// ToDo bug to be check
 
     dc_.state_machine_step(loop_dt_, this->now());
     publish_message();
-
 }
 
-#include <iostream>
-#include <fstream>
-void DepthControlNode::generate_velocity_pairs(){
+void DepthControlNode::generate_velocity_pairs() {
     dc_.alpha_solver_.set_test_in_memory(false);
-    for(double velocity = 0.0; velocity<0.3; velocity+=0.001) {
+    for (double velocity = 0.0; velocity < 0.3; velocity += 0.001) {
         dc_.alpha_solver_.compute_alpha(velocity);
     }
 
     std::ofstream file("alpha_values.txt");
 
 
-    for (const auto& value : dc_.alpha_solver_.get_computed_memory()) {
+    for (const auto &value: dc_.alpha_solver_.get_computed_memory()) {
         file << value[0] << " ";
     }
     file << '\n';
-    for (const auto& value : dc_.alpha_solver_.get_computed_memory()) {
+    for (const auto &value: dc_.alpha_solver_.get_computed_memory()) {
         file << value[1] << " ";
     }
     dc_.alpha_solver_.set_test_in_memory(true);
     file.close();
 }
 
-void DepthControlNode::publish_message(){
+void DepthControlNode::publish_message() {
     /// Piston message
-    seabot2_piston_driver::msg::PistonSetPoint msg_piston;
+    seabot2_msgs::msg::PistonSetPoint msg_piston;
     msg_piston.position = round(dc_.piston_set_point_);
     msg_piston.exit = dc_.is_exit_;
-    if(enable_control_)
+    if (enable_control_)
         publisher_piston_->publish(msg_piston);
 
     /// Debug message
-    seabot2_depth_control::msg::DepthControlDebug debug_msg_;
+    seabot2_msgs::msg::DepthControlDebug debug_msg_;
     debug_msg_.mode = dc_.regulation_state_;
     debug_msg_.u = dc_.u_debug_;
     debug_msg_.dy = dc_.dy_debug_;

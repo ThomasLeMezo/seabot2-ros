@@ -1,5 +1,4 @@
 #include "gpsd_client/gpsd_node.h"
-#include "gpsd_client/msg/gps_fix.hpp"
 
 using namespace placeholders;
 
@@ -43,7 +42,7 @@ void GpsdNode::init_parameters() {
 }
 
 void GpsdNode::init_interfaces() {
-    publisher_fix_ = this->create_publisher<gpsd_client::msg::GpsFix>("fix", 1);
+    publisher_fix_ = this->create_publisher<seabot2_msgs::msg::GpsFix>("fix", 1);
 }
 
 void GpsdNode::timer_callback(){
@@ -58,7 +57,7 @@ void GpsdNode::timer_callback(){
 }
 
 void GpsdNode::process_data(struct gps_data_t* p) {
-    gpsd_client::msg::GpsFix msg;
+    seabot2_msgs::msg::GpsFix msg;
 
     msg.header.stamp = this->now();
 

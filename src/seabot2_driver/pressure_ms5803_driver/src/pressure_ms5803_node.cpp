@@ -1,5 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
-#include "seabot2_depth_filter/msg/pressure_sensor_data.hpp"
+#include "seabot2_msgs/msg/pressure_sensor_data.hpp"
 #include "pressure_ms5803_driver/pressure_ms5803.h"
 
 using namespace std::chrono_literals;
@@ -24,7 +24,7 @@ private:
 
     /// Variables
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<seabot2_depth_filter::msg::PressureSensorData>::SharedPtr publisher_sensor_;
+    rclcpp::Publisher<seabot2_msgs::msg::PressureSensorData>::SharedPtr publisher_sensor_;
 
     Pressure_ms5803 pressure_sensor_;
 
@@ -50,7 +50,7 @@ private:
 
 void PressureMS5803Node::timer_callback() {
     if(pressure_sensor_.measure()){ /// Process the measurement
-        seabot2_depth_filter::msg::PressureSensorData msg;
+        seabot2_msgs::msg::PressureSensorData msg;
         msg.temperature = pressure_sensor_.get_temperature();
         msg.pressure = pressure_sensor_.get_pression();
         msg.header.stamp = this->get_clock()->now();
@@ -70,7 +70,7 @@ void PressureMS5803Node::init_parameters() {
 }
 
 void PressureMS5803Node::init_interfaces() {
-    publisher_sensor_ = this->create_publisher<seabot2_depth_filter::msg::PressureSensorData>("pressure_external", 10);
+    publisher_sensor_ = this->create_publisher<seabot2_msgs::msg::PressureSensorData>("pressure_external", 10);
 }
 
 

@@ -33,10 +33,9 @@ void Bme280Node::init_parameters() {
 }
 
 void Bme280Node::timer_callback() {
-    auto msg = pressure_bme280_driver::msg::Bme280Data();
+    auto msg = seabot2_msgs::msg::Bme280Data();
     struct bme280_data comp_data{};
-    int8_t rslt = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev_);
-    if(rslt==0) {
+    if(const int8_t result = bme280_get_sensor_data(BME280_ALL, &comp_data, &dev_); result==0) {
         pressure_ = comp_data.pressure / 100.0;
         humidity_ = comp_data.humidity;
         temperature_ = comp_data.temperature;
@@ -47,12 +46,12 @@ void Bme280Node::timer_callback() {
         publisher_sensor_->publish(msg);
     }
     else
-        RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error reading data (%i)", rslt);
+        RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error reading data (%i)", result);
 }
 
 void Bme280Node::sensor_init() {
 // Sensor initialization
-    int8_t rslt = BME280_OK;
+    int8_t result = BME280_OK;
 
     if (primary_i2c_address_)
         dev_.dev_id = BME280_I2C_ADDR_PRIM;
@@ -75,8 +74,8 @@ void Bme280Node::sensor_init() {
     dev_.write = user_i2c_write;
     dev_.delay_ms = user_delay_ms;
 
-    rslt = bme280_init(&dev_); // Get Calib data
-    if(rslt!=0)
+    result = bme280_init(&dev_); // Get Calib data
+    if(result!=0)
         RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error init the sensor : wrong device add ?");
     print_calib_settings();
 
@@ -87,29 +86,28 @@ void Bme280Node::sensor_init() {
     dev_.settings.filter = BME280_FILTER_COEFF_2; /// 16
     dev_.settings.standby_time = BME280_STANDBY_TIME_125_MS;
 
-    uint8_t settings_sel;
-    settings_sel = BME280_OSR_PRESS_SEL;
+    uint8_t settings_sel = BME280_OSR_PRESS_SEL;
     settings_sel |= BME280_OSR_TEMP_SEL;
     settings_sel |= BME280_OSR_HUM_SEL;
     settings_sel |= BME280_STANDBY_SEL;
     settings_sel |= BME280_FILTER_SEL;
 
-    rslt = bme280_set_sensor_settings(settings_sel, &dev_);
-    if(rslt!=0)
+    result = bme280_set_sensor_settings(settings_sel, &dev_);
+    if(result!=0)
         RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error reading the settings");
     print_settings();
 
-    rslt = bme280_set_sensor_mode(BME280_NORMAL_MODE, &dev_);
-    if(rslt!=0)
+    result = bme280_set_sensor_mode(BME280_NORMAL_MODE, &dev_);
+    if(result!=0)
         RCLCPP_WARN(this->get_logger(), "[Pressure_BME280] Error setting the sensor mode");
     print_sensor_mode();
 
     user_delay_ms(1500);
-    if(rslt==0)
+    if(result==0)
         RCLCPP_INFO(this->get_logger(), "[Pressure_BME280] Start Ok");
 }
 
-void Bme280Node::print_calib_settings() {
+void Bme280Node::print_calib_settings() const {
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] dig_T1 = %i", dev_.calib_data.dig_T1);
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] dig_T2 = %i", dev_.calib_data.dig_T2);
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] dig_T3 = %i", dev_.calib_data.dig_T3);
@@ -132,7 +130,7 @@ void Bme280Node::print_calib_settings() {
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] dig_H6 = %i", dev_.calib_data.dig_H6);
 }
 
-void Bme280Node::print_settings() {
+void Bme280Node::print_settings() const {
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] dev__id = %i", dev_.dev_id);
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] chip_id = %i", dev_.chip_id);
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] settings.filter = %i", dev_.settings.filter);
@@ -142,14 +140,14 @@ void Bme280Node::print_settings() {
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] settings.standby_time = %i", dev_.settings.standby_time);
 }
 
-void Bme280Node::print_sensor_mode() {
+void Bme280Node::print_sensor_mode() const {
     uint8_t sensor_mode;
     bme280_get_sensor_mode(&sensor_mode, &dev_);
     RCLCPP_DEBUG(this->get_logger(), "[Pressure_BME280] Sensor Mode = %i", sensor_mode);
 }
 
 void Bme280Node::init_interfaces() {
-    publisher_sensor_ = this->create_publisher<pressure_bme280_driver::msg::Bme280Data>("pressure_internal", 10);
+    publisher_sensor_ = this->create_publisher<seabot2_msgs::msg::Bme280Data>("pressure_internal", 10);
 }
 
 int main(int argc, char *argv[]) {

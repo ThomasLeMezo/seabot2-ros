@@ -1,0 +1,4 @@
+std_msgs/Header header
+float64 profile_slope
+float64 profile_intercept
+bool valid

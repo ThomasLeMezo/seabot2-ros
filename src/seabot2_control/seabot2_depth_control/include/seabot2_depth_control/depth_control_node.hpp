@@ -6,23 +6,24 @@
 #define BUILD_DEPTH_CONTROL_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include "seabot2_mission/msg/depth_control_set_point.hpp"
-#include "seabot2_kalman/msg/kalman_state.hpp"
-#include "seabot2_piston_driver/msg/piston_state.hpp"
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "seabot2_depth_control/msg/depth_control_debug.hpp"
-#include "seabot2_piston_driver/msg/piston_set_point.hpp"
-#include "std_srvs/srv/set_bool.hpp"
-#include <eigen3/Eigen/Dense>
-#include "seabot2_safety/msg/safety_status.hpp"
-#include "seabot2_density/msg/density.hpp"
-#include "temperature_tsys01_driver/msg/temperature_sensor_data.hpp"
+
 #include "seabot2_depth_control/alpha_solver.h"
-#include "seabot2_depth_control/msg/alpha_debug.hpp"
-#include "seabot2_mission/srv/alpha_mission.hpp"
+#include "seabot2_depth_control/depth_control.h"
+
+#include "seabot2_msgs/msg/depth_control_set_point.hpp"
+#include "seabot2_msgs/msg/kalman_state.hpp"
+#include "seabot2_msgs/msg/piston_state.hpp"
+#include "seabot2_msgs/msg/depth_pose.hpp"
+#include "seabot2_msgs/msg/depth_control_debug.hpp"
+#include "seabot2_msgs/msg/piston_set_point.hpp"
+#include "seabot2_msgs/msg/safety_status.hpp"
+#include "seabot2_msgs/msg/density.hpp"
+#include "seabot2_msgs/msg/temperature_sensor_data.hpp"
+#include "seabot2_msgs/msg/alpha_debug.hpp"
+
+#include "seabot2_srvs/srv/alpha_mission.hpp"
 #include "std_srvs/srv/trigger.hpp"
 
-#include "seabot2_depth_control/depth_control.h"
 
 #define NB_STATES 8
 #define PISTON_STATE_OK 2
@@ -60,19 +61,19 @@ private:
     std::vector<double> solver_velocity_, solver_alpha_;
 
     /// Interfaces
-    rclcpp::Subscription<seabot2_kalman::msg::KalmanState>::SharedPtr subscriber_kalman_data_;
-    rclcpp::Subscription<seabot2_piston_driver::msg::PistonState>::SharedPtr subscriber_state_data_;
-    rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
-    rclcpp::Subscription<seabot2_mission::msg::DepthControlSetPoint>::SharedPtr subscriber_mission_data_;
-    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
-    rclcpp::Subscription<seabot2_density::msg::Density>::SharedPtr subscriber_density_;
-    rclcpp::Subscription<temperature_tsys01_driver::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::KalmanState>::SharedPtr subscriber_kalman_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::PistonState>::SharedPtr subscriber_state_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthPose>::SharedPtr subscriber_depth_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthControlSetPoint>::SharedPtr subscriber_mission_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::Density>::SharedPtr subscriber_density_;
+    rclcpp::Subscription<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
 
-    rclcpp::Publisher<seabot2_piston_driver::msg::PistonSetPoint>::SharedPtr publisher_piston_;
-    rclcpp::Publisher<seabot2_depth_control::msg::DepthControlDebug>::SharedPtr publisher_debug_;
-    rclcpp::Publisher<seabot2_depth_control::msg::AlphaDebug>::SharedPtr publisher_alpha_debug_;
+    rclcpp::Publisher<seabot2_msgs::msg::PistonSetPoint>::SharedPtr publisher_piston_;
+    rclcpp::Publisher<seabot2_msgs::msg::DepthControlDebug>::SharedPtr publisher_debug_;
+    rclcpp::Publisher<seabot2_msgs::msg::AlphaDebug>::SharedPtr publisher_alpha_debug_;
 
-    rclcpp::Service<seabot2_mission::srv::AlphaMission>::SharedPtr service_alpha_computation_;
+    rclcpp::Service<seabot2_srvs::srv::AlphaMission>::SharedPtr service_alpha_computation_;
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr service_alpha_generation_;
 
     /**
@@ -94,43 +95,43 @@ private:
      *
      * @param msg
      */
-    void kalman_callback(const seabot2_kalman::msg::KalmanState &msg);
+    void kalman_callback(const seabot2_msgs::msg::KalmanState &msg);
 
     /**
      *
      * @param msg
      */
-    void density_callback(const seabot2_density::msg::Density &msg);
+    void density_callback(const seabot2_msgs::msg::Density &msg);
 
     /**
      *
      * @param msg
      */
-    void piston_callback(const seabot2_piston_driver::msg::PistonState &msg);
+    void piston_callback(const seabot2_msgs::msg::PistonState &msg);
 
     /**
      *
      * @param msg
      */
-    void depth_callback(const seabot2_depth_filter::msg::DepthPose &msg);
+    void depth_callback(const seabot2_msgs::msg::DepthPose &msg);
 
     /**
      *
      * @param msg
      */
-    void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
+    void safety_callback(const seabot2_msgs::msg::SafetyStatus &msg);
 
     /**
      *
      * @param msg
      */
-    void depth_set_point_callback(const seabot2_mission::msg::DepthControlSetPoint &msg);
+    void depth_set_point_callback(const seabot2_msgs::msg::DepthControlSetPoint &msg);
 
     /**
      *
      * @param msg
      */
-    void temperature_callback(const temperature_tsys01_driver::msg::TemperatureSensorData &msg);
+    void temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg);
 
     /**
      * Compute the alpha values
@@ -139,8 +140,8 @@ private:
      * @param response
      */
     void alpha_mission_pre_computation(const std::shared_ptr<rmw_request_id_t> request_header,
-                                                         const std::shared_ptr<seabot2_mission::srv::AlphaMission::Request> request,
-                                                         std::shared_ptr<seabot2_mission::srv::AlphaMission::Response> response);
+                                                         const std::shared_ptr<seabot2_srvs::srv::AlphaMission::Request> request,
+                                                         std::shared_ptr<seabot2_srvs::srv::AlphaMission::Response> response);
 
     /**
      *

@@ -8,24 +8,9 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
+find_package(seabot2_msgs REQUIRED)
 
 add_subdirectory(Fusion)
-
-### Interfaces
-### Interfaces
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/RPY.msg"
-        "msg/RawData.msg"
-        "msg/DebugFusion.msg"
-        DEPENDENCIES std_msgs geometry_msgs
-)
-
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp"
-)
 
 ### Executable
 add_executable(icm20948
@@ -35,9 +20,7 @@ add_executable(icm20948
 
 ament_target_dependencies(icm20948
         rclcpp
-        rosidl_default_generators
-        std_msgs
-        geometry_msgs
+        seabot2_msgs
 )
 
 target_link_libraries(icm20948

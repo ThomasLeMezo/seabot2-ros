@@ -1,7 +1,6 @@
 #include "pressure_ms5837_driver/pressure_ms5837.h"
 #include <sys/ioctl.h>
 
-
 #define T_MIN 0.0
 #define T_MAX 50.0
 #define T_REF 20.0
@@ -15,8 +14,8 @@ Pressure_ms5837::~Pressure_ms5837(){
         close(file_);
 }
 
-int Pressure_ms5837::reset(){
-    int res = i2c_smbus_write_byte(file_, CMD_RESET);
+int Pressure_ms5837::reset() const {
+    const int res = i2c_smbus_write_byte(file_, CMD_RESET);
     usleep(30000); // 28ms reload for the sensor (?)
     //  usleep(30000);
     if (res < 0)
@@ -48,8 +47,8 @@ int Pressure_ms5837::init_sensor(){
 
     unsigned char buff[2] = {0, 0};
     for(size_t i=0; i<C_.size(); i++){
-        __u8 add = CMD_PROM + (char) 2*i;
-        if (i2c_smbus_read_i2c_block_data(file_, add, 2, buff) != 2){
+        if (const __u8 add = CMD_PROM + static_cast<char>(2)*i;
+            i2c_smbus_read_i2c_block_data(file_, add, 2, buff) != 2){
             RCLCPP_WARN(n_->get_logger(), "[Pressure_ms5837] Error Reading 0x%X", add);
             return_val = 1;
         }
@@ -72,11 +71,11 @@ bool Pressure_ms5837::measure(){
 }
 
 bool Pressure_ms5837::compute() {
-    int64_t dT = (int32_t)D2_ - ((int32_t)C_[5] << 8);
-    int64_t TEMP = 2000+((dT * (int32_t)C_[6]) >> 23);
+    const int64_t dT = static_cast<int32_t>(D2_) - (static_cast<int32_t>(C_[5]) << 8);
+    int64_t TEMP = 2000+((dT * static_cast<int32_t>(C_[6])) >> 23);
 
-    int64_t OFF = ((int64_t)C_[2] << 16) + (((int64_t)C_[4] * dT) >> 7);
-    int64_t SENS = ((int64_t)C_[1] << 15) + (((int64_t)C_[3] * dT) >> 8);
+    int64_t OFF = (static_cast<int64_t>(C_[2]) << 16) + ((static_cast<int64_t>(C_[4]) * dT) >> 7);
+    int64_t SENS = (static_cast<int64_t>(C_[1]) << 15) + ((static_cast<int64_t>(C_[3]) * dT) >> 8);
 
     /// Accurate temperature
     int64_t Ti;
@@ -100,7 +99,7 @@ bool Pressure_ms5837::compute() {
     OFF -= OFFi;
     SENS -= SENSi;
 
-    int64_t P = (((D1_ * SENS) >> 21) - OFF) >> 13;
+    const int64_t P = (((D1_ * SENS) >> 21) - OFF) >> 13;
 
     temperature_ = static_cast<double>(TEMP) / 100.;
     pressure_ = static_cast<double>(P) / 10000.; /// in bar (/10 if in mbar)
@@ -118,7 +117,7 @@ int Pressure_ms5837::getI2CAddr() const {
     return i2c_addr_;
 }
 
-void Pressure_ms5837::setI2CAddr(int i2CAddr) {
+void Pressure_ms5837::setI2CAddr(const int i2CAddr) {
     i2c_addr_ = i2CAddr;
 }
 
@@ -130,10 +129,10 @@ void Pressure_ms5837::setI2CPeriph(const string &i2CPeriph) {
     i2c_periph_ = i2CPeriph;
 }
 
-void Pressure_ms5837::setD1(u_int32_t d1) {
+void Pressure_ms5837::setD1(const u_int32_t d1) {
     D1_ = d1;
 }
 
-void Pressure_ms5837::setD2(u_int32_t d2) {
+void Pressure_ms5837::setD2(const u_int32_t d2) {
     D2_ = d2;
 }

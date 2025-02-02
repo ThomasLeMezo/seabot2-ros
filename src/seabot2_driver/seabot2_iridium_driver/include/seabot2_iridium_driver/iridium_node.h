@@ -11,17 +11,17 @@
 #include "seabot2_iridium_driver/sbd/log_data.h"
 #include "seabot2_iridium_driver/sbd/mission_xml.h"
 
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
-#include "seabot2_power_driver/msg/power_state.hpp"
-#include "seabot2_safety/msg/safety_status.hpp"
-#include "gpsd_client/msg/gps_fix.hpp"
-#include "seabot2_mission/msg/mission_state.hpp"
-#include "seabot2_lambert/msg/gnss_pose.hpp"
+#include "seabot2_msgs/msg/depth_pose.hpp"
+#include "seabot2_msgs/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/power_state.hpp"
+#include "seabot2_msgs/msg/safety_status.hpp"
+#include "seabot2_msgs/msg/gps_fix.hpp"
+#include "seabot2_msgs/msg/mission_state.hpp"
+#include "seabot2_msgs/msg/gnss_pose.hpp"
+#include "seabot2_msgs/msg/iridium_session.hpp"
+#include "seabot2_msgs/msg/iridium_status.hpp"
 #include "std_msgs/msg/string.hpp"
 
-#include "seabot2_iridium_driver/msg/iridium_session.hpp"
-#include "seabot2_iridium_driver/msg/iridium_status.hpp"
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -68,16 +68,16 @@ private:
     bool sbd_debug_ = false;
 
     /// Topics
-    rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
-    rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
-    rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
-    rclcpp::Subscription<gpsd_client::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
-    rclcpp::Subscription<seabot2_lambert::msg::GnssPose>::SharedPtr subscriber_gnss_pose_;
-    rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_;
-    rclcpp::Subscription<seabot2_mission::msg::MissionState >::SharedPtr subscriber_mission;
+    rclcpp::Subscription<seabot2_msgs::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
+    rclcpp::Subscription<seabot2_msgs::msg::PowerState>::SharedPtr subscriber_power_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::GnssPose>::SharedPtr subscriber_gnss_pose_;
+    rclcpp::Subscription<seabot2_msgs::msg::DepthPose>::SharedPtr subscriber_depth_;
+    rclcpp::Subscription<seabot2_msgs::msg::MissionState >::SharedPtr subscriber_mission;
 
-    rclcpp::Publisher<seabot2_iridium_driver::msg::IridiumSession>::SharedPtr publisher_iridium_session_;
-    rclcpp::Publisher<seabot2_iridium_driver::msg::IridiumStatus>::SharedPtr publisher_iridium_status_;
+    rclcpp::Publisher<seabot2_msgs::msg::IridiumSession>::SharedPtr publisher_iridium_session_;
+    rclcpp::Publisher<seabot2_msgs::msg::IridiumStatus>::SharedPtr publisher_iridium_status_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_iridium_log_;
 
     /// Functions
@@ -105,43 +105,43 @@ private:
      * Internal sensor callback
      * @param msg
      */
-    void internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg);
+    void internal_sensor_callback(const seabot2_msgs::msg::Bme280Data &msg);
 
     /**
      * Power callback
      * @param msg
      */
-    void power_callback(const seabot2_power_driver::msg::PowerState &msg);
+    void power_callback(const seabot2_msgs::msg::PowerState &msg);
 
     /**
      * Safety callback
      * @param msg
      */
-    void safety_callback(const seabot2_safety::msg::SafetyStatus &msg);
+    void safety_callback(const seabot2_msgs::msg::SafetyStatus &msg);
 
     /**
      * Mission callback
      * @param msg
      */
-    void mission_callback(const seabot2_mission::msg::MissionState &msg);
+    void mission_callback(const seabot2_msgs::msg::MissionState &msg);
 
     /**
      * Depth callback
      * @param msg
      */
-    void depth_callback(const seabot2_depth_filter::msg::DepthPose &msg);
+    void depth_callback(const seabot2_msgs::msg::DepthPose &msg);
 
     /**
      * Gnss callback
      * @param msg
      */
-    void gpsd_callback(const gpsd_client::msg::GpsFix &msg);
+    void gpsd_callback(const seabot2_msgs::msg::GpsFix &msg);
 
     /**
      * Gnss pose callback
      * @param msg
      */
-    void gnss_pose_callback(const seabot2_lambert::msg::GnssPose &msg);
+    void gnss_pose_callback(const seabot2_msgs::msg::GnssPose &msg);
 
     /**
      * Decode data from iridium

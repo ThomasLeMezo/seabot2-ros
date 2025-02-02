@@ -19,7 +19,8 @@ LightNode::LightNode()
 }
 
 LightNode::~LightNode(){
-    light_.set_light_enable(false);
+    if (light_.set_light_enable(false) == EXIT_FAILURE)
+        RCLCPP_WARN(this->get_logger(), "[Light_node] Error turning off the light");
 }
 
 void LightNode::timer_callback() {
@@ -63,8 +64,8 @@ void LightNode::init_parameters() {
 }
 
 void LightNode::service_light_callback(const std::shared_ptr<rmw_request_id_t> request_header,
-                                       const std::shared_ptr<seabot2_light_driver::srv::Light::Request> request,
-                                       std::shared_ptr<seabot2_light_driver::srv::Light::Response> response){
+                                       const std::shared_ptr<seabot2_srvs::srv::Light::Request> request,
+                                       std::shared_ptr<seabot2_srvs::srv::Light::Response> response){
     if(request->flash_enable) {
         RCLCPP_INFO(this->get_logger(), "[Node_light] Received flash order");
         time_turn_off_light_ = this->now() + rclcpp::Duration::from_seconds(request->duration);
@@ -88,7 +89,7 @@ void LightNode::service_flash_surface_callback(const std::shared_ptr<rmw_request
 }
 
 void LightNode::init_interfaces(){
-    service_light_ = this->create_service<seabot2_light_driver::srv::Light>("light",
+    service_light_ = this->create_service<seabot2_srvs::srv::Light>("light",
                                                                             std::bind(&LightNode::service_light_callback, this, _1, _2, _3));
 
     service_flash_surface_ = this->create_service<std_srvs::srv::SetBool>("surface",

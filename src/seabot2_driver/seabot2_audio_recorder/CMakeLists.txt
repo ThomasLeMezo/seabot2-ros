@@ -8,20 +8,8 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(gpsd_client REQUIRED)
-
-# Message
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/SyncDspic.msg"
-        DEPENDENCIES std_msgs
-)
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-## Interfaces
+find_package(seabot2_msgs REQUIRED)
 
 ### Executable
 add_executable(audio_recorder
@@ -32,10 +20,8 @@ add_executable(audio_recorder
 
 ament_target_dependencies(audio_recorder
         rclcpp
-        rosidl_default_generators
+        seabot2_msgs
         std_srvs
-        std_msgs
-        gpsd_client
 )
 
 target_link_libraries(audio_recorder

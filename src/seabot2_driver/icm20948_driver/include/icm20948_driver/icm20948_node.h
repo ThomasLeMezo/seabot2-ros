@@ -8,10 +8,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
 #include "icm20948_driver/icm20948.h"
-#include "icm20948_driver/msg/raw_data.hpp"
-#include "icm20948_driver/msg/rpy.hpp"
-#include "icm20948_driver/msg/debug_fusion.hpp"
 #include "Fusion.h"
+
+#include "seabot2_msgs/msg/raw_data.hpp"
+#include "seabot2_msgs/msg/rpy.hpp"
+#include "seabot2_msgs/msg/debug_fusion.hpp"
+
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -29,10 +31,10 @@ private:
     ICM20948 icm20948_;
 
     /// Topics
-    rclcpp::Publisher<icm20948_driver::msg::RawData>::SharedPtr publisher_raw_data_;
-    rclcpp::Publisher<icm20948_driver::msg::RawData>::SharedPtr publisher_calibrated_data_;
-    rclcpp::Publisher<icm20948_driver::msg::RPY>::SharedPtr publisher_rpy_;
-    rclcpp::Publisher<icm20948_driver::msg::DebugFusion>::SharedPtr publisher_debug_fusion_;
+    rclcpp::Publisher<seabot2_msgs::msg::RawData>::SharedPtr publisher_raw_data_;
+    rclcpp::Publisher<seabot2_msgs::msg::RawData>::SharedPtr publisher_calibrated_data_;
+    rclcpp::Publisher<seabot2_msgs::msg::RPY>::SharedPtr publisher_rpy_;
+    rclcpp::Publisher<seabot2_msgs::msg::DebugFusion>::SharedPtr publisher_debug_fusion_;
 
     bool publish_raw_data_ = true;
     bool publish_calibrated_data_ = false;

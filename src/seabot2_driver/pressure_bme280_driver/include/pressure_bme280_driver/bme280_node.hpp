@@ -2,7 +2,7 @@
 #define BUILD_BME280_NODE_HPP
 
 #include "rclcpp/rclcpp.hpp"
-#include "pressure_bme280_driver/msg/bme280_data.hpp"
+#include "seabot2_msgs/msg/bme280_data.hpp"
 #include <chrono>
 #include <functional>
 #include <cstring>
@@ -39,7 +39,7 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::milliseconds  loop_dt_ = 200ms; // loop dt
 
-    rclcpp::Publisher<pressure_bme280_driver::msg::Bme280Data>::SharedPtr publisher_sensor_;
+    rclcpp::Publisher<seabot2_msgs::msg::Bme280Data>::SharedPtr publisher_sensor_;
 
     double pressure_ = 0.0;
     double temperature_ = 0.0;
@@ -59,7 +59,7 @@ private:
     /**
      *
      */
-    void print_sensor_mode();
+    void print_sensor_mode() const;
 
     /**
      *
@@ -69,12 +69,12 @@ private:
     /**
      *
      */
-    void print_calib_settings();
+    void print_calib_settings() const;
 
     /**
      *
      */
-    void print_settings();
+    void print_settings() const;
 
     /**
      *

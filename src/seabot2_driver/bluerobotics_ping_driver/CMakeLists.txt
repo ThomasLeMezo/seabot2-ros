@@ -16,19 +16,9 @@ add_subdirectory(ping-cpp/src/)
 
 #### find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_srvs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(seabot2_density REQUIRED)
-
-### Interfaces
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/Profile.msg"
-        DEPENDENCIES std_msgs
-        )
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp")
+find_package(seabot2_msgs REQUIRED)
 
 ### Excutable
 add_executable(bluerobotics_ping_node src/ping_node.cpp)
@@ -37,7 +27,7 @@ ament_target_dependencies(bluerobotics_ping_node
         rclcpp
         std_msgs
         std_srvs
-        seabot2_density
+        seabot2_msgs
         )
 
 target_link_libraries(bluerobotics_ping_node "${cpp_typesupport_target}"

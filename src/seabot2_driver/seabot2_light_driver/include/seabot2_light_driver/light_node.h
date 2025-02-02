@@ -4,8 +4,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
 #include "seabot2_light_driver/light.h"
-#include "seabot2_light_driver/srv/light.hpp"
-#include "seabot2_depth_filter/msg/depth_pose.hpp"
+#include "seabot2_srvs/srv/light.hpp"
 #include "std_srvs/srv/set_bool.hpp"
 
 using namespace std::chrono_literals;
@@ -14,7 +13,7 @@ using namespace std;
 class LightNode : public rclcpp::Node {
 public:
     LightNode();
-    ~LightNode();
+    ~LightNode() override;
 
 private:
 
@@ -26,7 +25,7 @@ private:
     Light light_;
 
     /// Topics / Services
-    rclcpp::Service<seabot2_light_driver::srv::Light>::SharedPtr service_light_ ;
+    rclcpp::Service<seabot2_srvs::srv::Light>::SharedPtr service_light_ ;
     rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr service_flash_surface_ ;
 
     /// Variables
@@ -65,8 +64,8 @@ private:
      * @param response
      */
     void service_light_callback(const std::shared_ptr<rmw_request_id_t> request_header,
-                                const std::shared_ptr<seabot2_light_driver::srv::Light::Request> request,
-                                           std::shared_ptr<seabot2_light_driver::srv::Light::Response> response);
+                                const std::shared_ptr<seabot2_srvs::srv::Light::Request> request,
+                                           std::shared_ptr<seabot2_srvs::srv::Light::Response> response);
 
 };
 

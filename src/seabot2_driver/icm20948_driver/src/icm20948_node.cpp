@@ -116,10 +116,10 @@ void ICM20948Node::init_parameters() {
 }
 
 void ICM20948Node::init_interfaces() {
-    publisher_raw_data_ = this->create_publisher<icm20948_driver::msg::RawData>("raw_data", 1);
-    publisher_calibrated_data_ = this->create_publisher<icm20948_driver::msg::RawData>("calibrated_data", 1);
-    publisher_rpy_ = this->create_publisher<icm20948_driver::msg::RPY>("rpy", 1);
-    publisher_debug_fusion_ = this->create_publisher<icm20948_driver::msg::DebugFusion>("debug_fusion", 1);
+    publisher_raw_data_ = this->create_publisher<seabot2_msgs::msg::RawData>("raw_data", 1);
+    publisher_calibrated_data_ = this->create_publisher<seabot2_msgs::msg::RawData>("calibrated_data", 1);
+    publisher_rpy_ = this->create_publisher<seabot2_msgs::msg::RPY>("rpy", 1);
+    publisher_debug_fusion_ = this->create_publisher<seabot2_msgs::msg::DebugFusion>("debug_fusion", 1);
 }
 
 void ICM20948Node::timer_callback() {
@@ -133,7 +133,7 @@ void ICM20948Node::timer_callback() {
 
     // Publish raw data
     if(publish_raw_data_) {
-        auto msg = icm20948_driver::msg::RawData();
+        auto msg = seabot2_msgs::msg::RawData();
         msg.header.stamp = this->now();
         msg.accel.x = icm20948_.acc_x_;
         msg.accel.y = icm20948_.acc_y_;
@@ -186,7 +186,7 @@ void ICM20948Node::compute_ahrs() {
 
     // Publish message
     if(publish_rpy_) {
-        auto msg = icm20948_driver::msg::RPY();
+        auto msg = seabot2_msgs::msg::RPY();
         msg.header.stamp = this->now();
         msg.roll = euler.angle.roll;
         msg.pitch = euler.angle.pitch;
@@ -202,7 +202,7 @@ void ICM20948Node::compute_ahrs() {
 
     // Debug Fusion
     if(publish_debug_fusion_) {
-        auto msg_debug_fusion = icm20948_driver::msg::DebugFusion();
+        auto msg_debug_fusion = seabot2_msgs::msg::DebugFusion();
         msg_debug_fusion.header.stamp = this->now();
         msg_debug_fusion.acceleration_error = int_states.accelerationError;
         msg_debug_fusion.accelerometer_ignored = int_states.accelerometerIgnored;
@@ -222,7 +222,7 @@ void ICM20948Node::compute_ahrs() {
 
     // Debug calibrated data
     if(publish_calibrated_data_) {
-        auto msg_calibrated_data = icm20948_driver::msg::RawData();
+        auto msg_calibrated_data = seabot2_msgs::msg::RawData();
         msg_calibrated_data.header.stamp = this->now();
         msg_calibrated_data.accel.x = accelerometer.axis.x;
         msg_calibrated_data.accel.y = accelerometer.axis.y;

@@ -1,20 +1,17 @@
 #ifndef PRESSURE_H
 #define PRESSURE_H
 
-#include <sys/types.h>
-#include <iostream>
+#include "rclcpp/rclcpp.hpp"
 #include <fstream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <deque>
+#include <sys/types.h>
 
 extern "C" {
 #include <linux/i2c-dev.h>
 #include <i2c/smbus.h>
 }
-
-#include <unistd.h>
-#include <fcntl.h>
-
-#include "rclcpp/rclcpp.hpp"
-#include <deque>
 
 #define CMD_RESET 0x1E /// reset command
 #define CMD_ADC_READ 0x00 /// ADC read command
@@ -29,9 +26,9 @@ class Pressure_ms5803
 public:
     /**
      * Constructor of the object
-     * @param node Pointer to the rclcpp node for RCLCPP_INFO
+     * @param n Pointer to the rclcpp node for RCLCPP_INFO
      */
-    Pressure_ms5803(rclcpp::Node *n){
+    explicit Pressure_ms5803(rclcpp::Node *n): C_(){
         n_ = n;
     }
 
@@ -47,7 +44,7 @@ public:
     int init_sensor();
 
     /**
-     * Ask to sensor to measure pressure and temperature
+     * Ask sensor to measure pressure and temperature
      * @return true if successful
      */
     bool measure();
@@ -56,19 +53,19 @@ public:
      * Ask the sensor to reset
      * @return
      */
-    int reset();
+    int reset() const;
 
     /**
      * Getter to the pressure measured by measure()
      * @return
      */
-    float get_pression();
+    float get_pression() const;
 
     /**
      * Getter to the temperature measured by measure()
      * @return
      */
-    float get_temperature();
+    float get_temperature() const;
 
     /**
      * Compute the pressure and temperature from the measured values
@@ -86,7 +83,7 @@ public:
      *
      * @param i2CAddr
      */
-    void setI2CAddr(int i2CAddr);
+    void setI2CAddr(const int i2CAddr);
 
     /**
      *
@@ -107,13 +104,13 @@ public:
 
     /**
      *
-     * @param numericalPressure Set D1 value
+     * @param d1 numericalPressure Set D1 value
      */
     void setD1(u_int32_t d1);
 
     /**
      *
-     * @param numericalTemperature Set D2 value
+     * @param d2 numericalTemperature Set D2 value
      */
     void setD2(u_int32_t d2);
 
@@ -138,7 +135,7 @@ private:
 
     std::array<u_int16_t, 7>  C_; /// Factory calibration coefficients
 
-    u_int32_t D1_, D2_; /// Digital pressure and temperature value
+    u_int32_t D1_ = 0, D2_ = 0; /// Digital pressure and temperature value
 
     float pressure_ = 1.0; /// in bar
     float temperature_ = 10.0; // in degree
@@ -181,7 +178,7 @@ inline bool Pressure_ms5803::measure_D2(){
  * Getter to the pression measured by the sensor
  * @return pressure in bar
  */
-inline float Pressure_ms5803::get_pression(){
+inline float Pressure_ms5803::get_pression() const {
     return pressure_;
 }
 
@@ -189,7 +186,7 @@ inline float Pressure_ms5803::get_pression(){
  * Getter to the temperature measured by the sensor
  * @return temperature in degree
  */
-inline float Pressure_ms5803::get_temperature(){
+inline float Pressure_ms5803::get_temperature() const {
     return temperature_;
 }
 

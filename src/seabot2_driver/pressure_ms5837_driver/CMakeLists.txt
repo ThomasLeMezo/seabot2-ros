@@ -8,19 +8,25 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(seabot2_depth_filter REQUIRED)
+find_package(seabot2_msgs REQUIRED)
 
 ### Interfaces
 
 ### Executable
-add_executable(pressure_ms5837_node src/pressure_ms5837_node.cpp src/pressure_ms5837.cpp)
+add_executable(pressure_ms5837_node
+        src/pressure_ms5837_node.cpp
+        src/pressure_ms5837.cpp
+)
+
 ament_target_dependencies(pressure_ms5837_node
   rclcpp
-  rosidl_default_generators
-  seabot2_depth_filter
+  seabot2_msgs
 )
-target_link_libraries(pressure_ms5837_node "${cpp_typesupport_target}" i2c)
+
+target_link_libraries(pressure_ms5837_node
+        "${cpp_typesupport_target}"
+        i2c
+)
 
 ### Includes
 target_include_directories(pressure_ms5837_node PUBLIC

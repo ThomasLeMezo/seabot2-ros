@@ -69,7 +69,7 @@ void PingNode::wait_message() {
             //RCLCPP_INFO(this->get_logger(),"[Ping_mode] Msg received");
             ping1d_profile profile_msg(*ping_msg);
 
-            bluerobotics_ping_driver::msg::Profile msg;
+            seabot2_msgs::msg::Profile msg;
             msg.header.stamp = this->now();
             msg.confidence = profile_msg.confidence();
 
@@ -107,7 +107,7 @@ void PingNode::init_parameters() {
     enable_ping_ = this->get_parameter_or("enable_ping", enable_ping_);
 }
 
-void PingNode::sound_speed_callback(const seabot2_density::msg::Density &msg){
+void PingNode::sound_speed_callback(const seabot2_msgs::msg::Density &msg){
     if(msg.sound_speed != speed_of_sound_){
         speed_of_sound_ = msg.sound_speed;
         device_->set_speed_of_sound(static_cast<int>(round(speed_of_sound_*1e3))); /// Set speed of sound
@@ -133,14 +133,14 @@ void PingNode::ping_enable_callback(const std::shared_ptr<rmw_request_id_t> requ
 }
 
 void PingNode::init_interfaces() {
-    publisher_profile_ = this->create_publisher<bluerobotics_ping_driver::msg::Profile>("profile", 1);
+    publisher_profile_ = this->create_publisher<seabot2_msgs::msg::Profile>("profile", 1);
 
     service_ping_enable_ = this->create_service<std_srvs::srv::SetBool>("ping_enable",
                                                                        std::bind(&PingNode::ping_enable_callback, this,
                                                                                  std::placeholders::_1,
                                                                                  std::placeholders::_2,
                                                                                  std::placeholders::_3));
-    subscriber_density_ = this->create_subscription<seabot2_density::msg::Density>(
+    subscriber_density_ = this->create_subscription<seabot2_msgs::msg::Density>(
             "/observer/density", 10, std::bind(&PingNode::sound_speed_callback, this, std::placeholders::_1));
 }
 

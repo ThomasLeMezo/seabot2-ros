@@ -1,0 +1,3 @@
+string node_name
+string param_name
+rcl_interfaces/ParameterValue value

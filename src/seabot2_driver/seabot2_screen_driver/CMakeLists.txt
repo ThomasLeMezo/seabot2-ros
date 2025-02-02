@@ -13,15 +13,6 @@ find_package(seabot2_mission REQUIRED)
 find_package(seabot2_power_driver REQUIRED)
 find_package(seabot2_safety REQUIRED)
 
-#find_package(rosidl_default_generators REQUIRED)
-
-### Interfaces
-#rosidl_generate_interfaces(${PROJECT_NAME}
-#
-#        )
-#rosidl_get_typesupport_target(cpp_typesupport_target
-#        ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
 ### Executable
 add_executable(screen_node src/screen_node.cpp src/screen.cpp)
 ament_target_dependencies(screen_node
@@ -30,7 +21,6 @@ ament_target_dependencies(screen_node
         seabot2_mission
         seabot2_power_driver
         seabot2_safety
-#        rosidl_default_generators
         )
 target_link_libraries(screen_node "${cpp_typesupport_target}" i2c)
 

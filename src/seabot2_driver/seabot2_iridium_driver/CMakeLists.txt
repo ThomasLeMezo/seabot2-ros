@@ -8,29 +8,10 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(OpenMP REQUIRED)
 
-find_package(seabot2_depth_filter REQUIRED)
-find_package(pressure_bme280_driver REQUIRED)
-find_package(seabot2_power_driver REQUIRED)
-find_package(seabot2_piston_driver REQUIRED)
-find_package(seabot2_mission REQUIRED)
-find_package(gpsd_client REQUIRED)
-find_package(seabot2_safety REQUIRED)
-find_package(seabot2_lambert REQUIRED)
+find_package(seabot2_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-
-### Interfaces
-### Interfaces
-rosidl_generate_interfaces(${PROJECT_NAME}
-        "msg/IridiumSession.msg"
-        "msg/IridiumStatus.msg"
-        )
-
-rosidl_get_typesupport_target(cpp_typesupport_target
-        ${PROJECT_NAME} "rosidl_typesupport_cpp"
-        )
 
 ### Executable
 add_executable(iridium_node
@@ -44,15 +25,7 @@ add_executable(iridium_node
 
 ament_target_dependencies(iridium_node
         rclcpp
-        rosidl_default_generators
-        seabot2_depth_filter
-        pressure_bme280_driver
-        seabot2_power_driver
-        seabot2_piston_driver
-        seabot2_mission
-        gpsd_client
-        seabot2_safety
-        seabot2_lambert
+        seabot2_msgs
         std_msgs
         )
 

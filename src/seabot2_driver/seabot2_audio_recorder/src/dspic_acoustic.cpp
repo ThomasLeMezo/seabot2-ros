@@ -25,11 +25,10 @@ int DspicAcoustic::i2c_open() {
     return 0;
 }
 
-int DspicAcoustic::wait_recompute_signal() const {
+void DspicAcoustic::wait_recompute_signal() const {
     while (i2c_smbus_read_byte_data(file_, 0x05) != 0) {
         usleep(100000); // 100 ms
     }
-    return EXIT_SUCCESS;
 }
 
 void DspicAcoustic::sync_pps() const {
@@ -97,7 +96,9 @@ int DspicAcoustic::set_robot_data(const int &data_size, const uint64_t &data) co
     return EXIT_SUCCESS;
 }
 
-int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint16_t &frequency_range) const {
+int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle,
+                                   const uint16_t &frequency_range,
+                                   const uint8_t &signal_function) const {
     // Set frequency middle
     if (i2c_smbus_write_word_data(file_, 0x01, frequency_middle) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set frequency_middle");
@@ -114,7 +115,7 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
     RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Set frequency_range");
 
     // Set chirp function
-    if (i2c_smbus_write_byte_data(file_, 0x0D, 0x00) < 0) {
+    if (i2c_smbus_write_byte_data(file_, 0x0D, signal_function) < 0) {
         RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Set signal function");
         return EXIT_FAILURE;
     }
@@ -128,6 +129,18 @@ int DspicAcoustic::recompute_chirp(const uint16_t &frequency_middle, const uint1
     RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Recompute signal");
 
     return EXIT_SUCCESS;
+}
+
+int DspicAcoustic::get_frequency_middle() const {
+    return i2c_smbus_read_word_data(file_, 0x01);
+}
+
+int DspicAcoustic::get_frequency_range() const {
+    return i2c_smbus_read_word_data(file_, 0x03);
+}
+
+int DspicAcoustic::get_signal_function() const {
+    return i2c_smbus_read_byte_data(file_, 0x0D);
 }
 
 int DspicAcoustic::set_robot_code(const uint8_t &robot_code) const {

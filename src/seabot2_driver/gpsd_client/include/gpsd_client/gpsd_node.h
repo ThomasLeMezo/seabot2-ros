@@ -3,9 +3,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
-#include "gpsd_client/msg/gps_fix.hpp"
+#include "seabot2_msgs/msg/gps_fix.hpp"
 #include <libgpsmm.h>
-#include <cmath>
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -28,7 +27,7 @@ private:
     std::chrono::milliseconds loop_dt_ = 100ms; // loop dt
 
     /// Topics / Services
-    rclcpp::Publisher<gpsd_client::msg::GpsFix>::SharedPtr publisher_fix_;
+    rclcpp::Publisher<seabot2_msgs::msg::GpsFix>::SharedPtr publisher_fix_;
 
     /**
      *  Init and get parameters of the Node

@@ -1,7 +1,3 @@
-//
-// Created by lemezoth on 06/06/23.
-//
-
 #include "seabot2_audio_recorder/audio_recorder_node.h"
 #include <iostream>
 #include <fstream>
@@ -28,18 +24,41 @@ AudioRecorderNode::AudioRecorderNode()
 
     dspic_.i2c_open();
     dspic_.wait_recompute_signal();
-    dspic_.set_robot_code(robot_code_);
+    if (dspic_.set_robot_code(robot_code_) != 0) {
+        RCLCPP_ERROR(this->get_logger(), "[audio_recorder_node] Error setting robot code");
+        exit(EXIT_FAILURE);
+    }
     dspic_.sync_pps();
-    dspic_.set_duration_between_shoot(duration_between_shoot_);
-    dspic_.set_shoot_offset_from_posix_zero(robot_code_ * time_slot_duration_);
-    dspic_.enable_chirp(enable_chirp_);
-    dspic_.recompute_chirp(frequency_middle_, frequency_range_);
+    if (dspic_.set_duration_between_shoot(duration_between_shoot_) != 0) {
+        RCLCPP_ERROR(this->get_logger(), "[audio_recorder_node] Error setting duration between shoot");
+        exit(EXIT_FAILURE);
+    }
+    if (dspic_.set_shoot_offset_from_posix_zero(robot_code_ * time_slot_duration_) != 0) {
+        RCLCPP_ERROR(this->get_logger(), "[audio_recorder_node] Error setting shoot offset from posix zero");
+        exit(EXIT_FAILURE);
+    }
+    if (dspic_.enable_chirp(enable_chirp_) != 0) {
+        RCLCPP_ERROR(this->get_logger(), "[audio_recorder_node] Error setting enable chirp");
+        exit(EXIT_FAILURE);
+    }
+
+    const uint16_t frequency_middle_current = dspic_.get_frequency_middle();
+    const uint16_t frequency_range_current = dspic_.get_frequency_range();
+    const uint8_t signal_function_current = dspic_.get_signal_function();
+    if(frequency_middle_current != frequency_middle_
+        || frequency_range_current != frequency_range_
+        || signal_function_current != signal_function_) {
+        if (dspic_.recompute_chirp(frequency_middle_, frequency_range_, signal_function_) != 0) {
+            RCLCPP_ERROR(this->get_logger(), "[audio_recorder_node] Error recompute chirp");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     // Find home directory and append log folder
-    struct passwd *pw = getpwuid(getuid());
+    const struct passwd *pw = getpwuid(getuid());
     const char *homedir = pw->pw_dir;
     workingDirectory_.append(homedir);
-    workingDirectory_.append("/audio/");
+    workingDirectory_.append(audio_save_directory_);
 
     // Create log folder if it does not exist
     if (!filesystem::exists(workingDirectory_)) {
@@ -59,7 +78,9 @@ AudioRecorderNode::AudioRecorderNode()
 
 AudioRecorderNode::~AudioRecorderNode() {
     wait_kill();
-    dspic_.enable_chirp(false);
+    if (dspic_.enable_chirp(false) != 0) {
+        RCLCPP_ERROR(this->get_logger(), "[audio_recorder_node] Error disabling chirp");
+    }
 }
 
 std::string AudioRecorderNode::get_arecord_command() const {
@@ -108,7 +129,7 @@ void AudioRecorderNode::timer_callback(){
     }
 
     // Read pps_sync value and publish
-    seabot2_audio_recorder::msg::SyncDspic msg;
+    seabot2_msgs::msg::SyncDspic msg;
     msg.posix_time = dspic_.get_posix_time();
     msg.signal_number = dspic_.get_signal_number();
     publisher_dspic_debug_->publish(msg);
@@ -141,6 +162,7 @@ void AudioRecorderNode::init_parameters() {
 
     this->declare_parameter<int>("frequency_middle", frequency_middle_);
     this->declare_parameter<int>("frequency_range", frequency_range_);
+    this->declare_parameter<int>("signal_function", signal_function_);
 
     this->declare_parameter<long>("loop_safety_dt", loop_safety_dt_.count());
     this->declare_parameter<std::string>("audio_device", audio_device_);
@@ -149,6 +171,7 @@ void AudioRecorderNode::init_parameters() {
     this->declare_parameter<int>("audio_frequency", audio_frequency_);
     this->declare_parameter<int>("audio_max_file_time", audio_max_file_time_);
     this->declare_parameter<int>("audio_hdd_space_limit_stop", audio_hdd_space_limit_stop_);
+    this->declare_parameter<std::string>("audio_save_directory", audio_save_directory_);
 
     gain_ch1_ = this->get_parameter_or("gain_ch1", gain_ch1_);
     gain_ch2_ = this->get_parameter_or("gain_ch2", gain_ch2_);
@@ -157,6 +180,7 @@ void AudioRecorderNode::init_parameters() {
     time_slot_duration_ = this->get_parameter_or("time_slot_duration", time_slot_duration_);
     frequency_middle_ = this->get_parameter_or("frequency_middle", frequency_middle_);
     frequency_range_ = this->get_parameter_or("frequency_range", frequency_range_);
+    signal_function_ = this->get_parameter_or("signal_function", signal_function_);
 
     enable_chirp_ = this->get_parameter_or("enable_chirp", enable_chirp_);
 
@@ -167,6 +191,7 @@ void AudioRecorderNode::init_parameters() {
     audio_frequency_ = this->get_parameter_or("audio_frequency", audio_frequency_);
     audio_max_file_time_ = this->get_parameter_or("audio_max_file_time", audio_max_file_time_);
     audio_hdd_space_limit_stop_ = this->get_parameter_or("audio_hdd_space_limit_stop", audio_hdd_space_limit_stop_);
+    audio_save_directory_ = this->get_parameter_or("audio_save_directory", audio_save_directory_);
 }
 
 void AudioRecorderNode::init_interfaces() {
@@ -180,14 +205,14 @@ void AudioRecorderNode::init_interfaces() {
 
     publisher_record_ = this->create_publisher<std_msgs::msg::Bool>("audio_record_sync", 10);
 
-    subscriber_gnss_data_ = this->create_subscription<gpsd_client::msg::GpsFix>(
+    subscriber_gnss_data_ = this->create_subscription<seabot2_msgs::msg::GpsFix>(
             "/driver/fix", 10, std::bind(&AudioRecorderNode::gpsd_callback, this, _1));
 
-    publisher_dspic_debug_ = this->create_publisher<seabot2_audio_recorder::msg::SyncDspic>("dspic_debug", 10);
+    publisher_dspic_debug_ = this->create_publisher<seabot2_msgs::msg::SyncDspic>("dspic_debug", 10);
 }
 
-void AudioRecorderNode::gpsd_callback(const gpsd_client::msg::GpsFix &msg){
-    if(msg.mode>=gpsd_client::msg::GpsFix::MODE_2D){
+void AudioRecorderNode::gpsd_callback(const seabot2_msgs::msg::GpsFix &msg){
+    if(msg.mode>=seabot2_msgs::msg::GpsFix::MODE_2D){
         gnss_fix_once_ = true;
     }
 }
