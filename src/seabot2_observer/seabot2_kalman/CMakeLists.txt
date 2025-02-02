@@ -23,10 +23,6 @@ ament_target_dependencies(kalman_node
         std_msgs
 )
 
-target_link_libraries(kalman_node
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(kalman_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -53,22 +49,25 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
             include/seabot2_kalman
     )
 
-    set_target_properties(kalman PROPERTIES PUBLIC_HEADER
+#[[    set_target_properties(kalman PROPERTIES PUBLIC_HEADER
             include/seabot2_kalman/kalman.h
-    )
+    )]]
 
     ament_target_dependencies(kalman
             rclcpp
     )
 
-    target_link_libraries(kalman "${cpp_typesupport_target}")
-
     #ament_export_targets(kalman HAS_LIBRARY_TARGET)
 
+    # Install the library
     install(TARGETS kalman
             LIBRARY DESTINATION lib
-            PUBLIC_HEADER DESTINATION include/seabot2_kalman/seabot2_kalman/
+            PUBLIC_HEADER DESTINATION include
     )
+    # Install the headers
+    install(FILES include/seabot2_kalman/kalman.h
+            DESTINATION include/kalman/)
+
 endif ()
 
 ament_package()

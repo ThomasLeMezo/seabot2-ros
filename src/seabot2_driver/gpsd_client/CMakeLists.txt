@@ -20,7 +20,6 @@ ament_target_dependencies(gpsd_node
         seabot2_msgs
 )
 target_link_libraries(gpsd_node
-        "${cpp_typesupport_target}"
         gps
 )
 

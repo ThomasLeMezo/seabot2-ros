@@ -30,7 +30,6 @@ ament_target_dependencies(iridium_node
         )
 
 target_link_libraries(iridium_node
-        "${cpp_typesupport_target}"
         OpenMP::OpenMP_CXX
         )
 

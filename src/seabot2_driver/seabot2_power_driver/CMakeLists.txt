@@ -22,7 +22,6 @@ ament_target_dependencies(power_node
 )
 
 target_link_libraries(power_node
-        "${cpp_typesupport_target}"
         i2c
 )
 

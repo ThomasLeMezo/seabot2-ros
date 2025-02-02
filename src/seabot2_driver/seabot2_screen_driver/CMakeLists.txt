@@ -21,7 +21,7 @@ ament_target_dependencies(screen_node
         seabot2_msgs
 )
 
-target_link_libraries(screen_node "${cpp_typesupport_target}"
+target_link_libraries(screen_node
         i2c
 )
 

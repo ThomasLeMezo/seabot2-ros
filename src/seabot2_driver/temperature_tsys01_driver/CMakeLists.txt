@@ -21,7 +21,6 @@ ament_target_dependencies(temperature_tsys01_node
         seabot2_msgs
 )
 target_link_libraries(temperature_tsys01_node
-        "${cpp_typesupport_target}"
         i2c
 )
 

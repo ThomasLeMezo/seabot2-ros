@@ -23,7 +23,6 @@ ament_target_dependencies(light_node
         std_srvs
 )
 target_link_libraries(light_node
-        "${cpp_typesupport_target}"
         i2c
 )
 

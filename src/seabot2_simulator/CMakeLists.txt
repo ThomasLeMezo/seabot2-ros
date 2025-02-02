@@ -16,14 +16,23 @@ find_package(seabot2_density REQUIRED)
 find_package(seabot2_kalman REQUIRED)
 find_package(seabot2_depth_control REQUIRED)
 find_package(seabot2_mission REQUIRED)
-find_package(rosbag2_cpp REQUIRED)
-find_package(seabot2_piston_driver REQUIRED)
+find_package(seabot2_temperature_profile REQUIRED)
 
 find_library(LIBTEOS teos REQUIRED)
 find_library(LIBKALMAN kalman REQUIRED)
 find_library(LIBDEPTHCONTROL depth_control REQUIRED)
 find_library(LIBMISSION mission REQUIRED)
 find_library(LIBTEMPERATUREPROFILE temperature_profile REQUIRED)
+
+find_path(LIBKALMAN_INCLUDE_DIR NAMES kalman.h PATH_SUFFIXES kalman)
+
+# print value of LIBKALMAN
+message("LibKalman = " ${LIBKALMAN})
+
+get_cmake_property(_vars VARIABLES)
+foreach (_var ${_vars})
+    message(STATUS "${_var} = ${${_var}}")
+endforeach()
 
 ### Executable
 add_executable(simulator_node
@@ -38,9 +47,9 @@ ament_target_dependencies(simulator_node
         seabot2_kalman
         seabot2_depth_control
         seabot2_mission
+        seabot2_temperature_profile
 )
 target_link_libraries(simulator_node
-        ${cpp_typesupport_target}
         ${LIBTEOS}
         ${LIBKALMAN}
         ${LIBDEPTHCONTROL}

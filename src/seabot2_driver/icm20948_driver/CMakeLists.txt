@@ -24,7 +24,6 @@ ament_target_dependencies(icm20948
 )
 
 target_link_libraries(icm20948
-        "${cpp_typesupport_target}"
         Fusion
 )
 

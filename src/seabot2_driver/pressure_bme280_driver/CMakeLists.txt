@@ -22,7 +22,6 @@ ament_target_dependencies(bme280_node
 )
 
 target_link_libraries(bme280_node
-        "${cpp_typesupport_target}"
         i2c
 )
 

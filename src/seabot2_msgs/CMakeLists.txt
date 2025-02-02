@@ -30,6 +30,7 @@ set(msg_files
         "msg/Engine.msg"
         "msg/GnssPose.msg"
         "msg/GpsFix.msg"
+        "msg/GpsPps.msg"
         "msg/IridiumSession.msg"
         "msg/IridiumStatus.msg"
         "msg/KalmanState.msg"

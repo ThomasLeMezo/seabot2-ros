@@ -5,7 +5,7 @@
 #include "seabot2_msgs/msg/density.hpp"
 #include "seabot2_msgs/msg/depth_pose.hpp"
 #include "seabot2_msgs/msg/temperature_sensor_data.hpp"
-#include "TeosSea.h"
+#include "TeosCpp/TeosSea.h"
 
 using namespace std::chrono_literals;
 using namespace std;

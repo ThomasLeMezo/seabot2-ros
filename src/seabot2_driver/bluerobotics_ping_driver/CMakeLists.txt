@@ -21,7 +21,9 @@ find_package(std_srvs REQUIRED)
 find_package(seabot2_msgs REQUIRED)
 
 ### Excutable
-add_executable(bluerobotics_ping_node src/ping_node.cpp)
+add_executable(bluerobotics_ping_node
+        src/ping_node.cpp
+)
 
 ament_target_dependencies(bluerobotics_ping_node
         rclcpp
@@ -30,7 +32,7 @@ ament_target_dependencies(bluerobotics_ping_node
         seabot2_msgs
         )
 
-target_link_libraries(bluerobotics_ping_node "${cpp_typesupport_target}"
+target_link_libraries(bluerobotics_ping_node
         DEVICE
         HAL
         PING_MESSAGES

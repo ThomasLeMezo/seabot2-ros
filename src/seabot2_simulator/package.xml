@@ -15,17 +15,8 @@
   <depend>seabot2_density</depend>
   <depend>seabot2_kalman</depend>
   <depend>seabot2_mission</depend>
-  <depend>rosbag2_cpp</depend>
-  <depend>seabot2_piston_driver</depend>
-  <depend>gpsd_client</depend>
-  <depend>bluerobotics_ping_driver</depend>
-  <depend>seabot2_depth_filter</depend>
+  <depend>seabot2_temeprature_profile</depend>
   <depend>seabot2_depth_control</depend>
-  <depend>seabot2_log_parameters</depend>
-  <depend>seabot2_power_driver</depend>
-  <depend>pressure_bme280_driver</depend>
-  <depend>temperature_tsys01_driver</depend>
-  <depend>seabot2_safety</depend>
   <depend>seabot2_temperature_profile</depend>
 
   <export>

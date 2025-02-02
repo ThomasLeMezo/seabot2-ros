@@ -25,7 +25,6 @@ ament_target_dependencies(audio_recorder
 )
 
 target_link_libraries(audio_recorder
-        "${cpp_typesupport_target}"
         i2c
 )
 

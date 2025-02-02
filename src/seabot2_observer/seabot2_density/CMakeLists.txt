@@ -12,19 +12,19 @@ find_package(seabot2_msgs REQUIRED)
 
 ### Library
 add_library(teos SHARED
-        lib/TeosCpp/src/SaarDataHandler.cpp
-        lib/TeosCpp/src/TeosBase.cpp
-        lib/TeosCpp/src/TeosIce.cpp
-        lib/TeosCpp/src/TeosSea.cpp
+        TeosCpp/src/SaarDataHandler.cpp
+        TeosCpp/src/TeosBase.cpp
+        TeosCpp/src/TeosIce.cpp
+        TeosCpp/src/TeosSea.cpp
 )
 target_include_directories(teos PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/TeosCpp/include>
         $<INSTALL_INTERFACE:include>
-        lib/TeosCpp/include
+        TeosCpp/include/TeosCpp
 )
 
 file(GLOB_RECURSE TEOS_PUBLIC_HEADERS
-        "${PROJECT_SOURCE_DIR}/lib/TeosCpp/include/*.h"
+        "${PROJECT_SOURCE_DIR}/TeosCpp/include/*.h"
 )
 
 set_target_properties(teos PROPERTIES PUBLIC_HEADER
@@ -41,20 +41,19 @@ ament_target_dependencies(density_node
         seabot2_msgs
 )
 target_link_libraries(density_node
-        "${cpp_typesupport_target}"
         teos
 )
 
 ### Includes
 target_include_directories(density_node PUBLIC
-        lib/TeosCpp/include
+        TeosCpp/include
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
 ### Install
 install(TARGETS teos
         LIBRARY DESTINATION lib
-        PUBLIC_HEADER DESTINATION include/seabot2_density/seabot2_density/teos
+        PUBLIC_HEADER DESTINATION include/seabot2_density/teos
 )
 install(TARGETS density_node
         DESTINATION lib/${PROJECT_NAME})

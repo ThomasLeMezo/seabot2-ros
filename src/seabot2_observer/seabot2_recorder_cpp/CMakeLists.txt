@@ -22,10 +22,6 @@ ament_target_dependencies(recorder
         std_srvs
 )
 
-target_link_libraries(recorder
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(recorder PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

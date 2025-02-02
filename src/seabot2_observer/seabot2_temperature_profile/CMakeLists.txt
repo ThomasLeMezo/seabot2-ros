@@ -21,10 +21,6 @@ ament_target_dependencies(temperature_profile_node
         seabot2_msgs
 )
 
-target_link_libraries(temperature_profile_node
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(temperature_profile_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -51,7 +47,7 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     ament_target_dependencies(temperature_profile
             rclcpp
     )
-    target_link_libraries(temperature_profile "${cpp_typesupport_target}")
+#    target_link_libraries(temperature_profile "${cpp_typesupport_target}")
 
     #ament_export_targets(temperature_profile HAS_LIBRARY_TARGET)
 

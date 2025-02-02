@@ -27,7 +27,6 @@ ament_target_dependencies(wtf_node
         )
 
 target_link_libraries(wtf_node
-        "${cpp_typesupport_target}"
         ${CURSES_LIBRARIES}
 )
 

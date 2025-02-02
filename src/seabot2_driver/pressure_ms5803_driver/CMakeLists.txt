@@ -22,7 +22,6 @@ ament_target_dependencies(pressure_ms5803_node
 )
 
 target_link_libraries(pressure_ms5803_node
-        "${cpp_typesupport_target}"
         i2c
 )
 

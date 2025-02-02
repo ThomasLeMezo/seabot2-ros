@@ -6,8 +6,9 @@
 #define BUILD_SIMULATOR_H
 
 #include <eigen3/Eigen/Dense>
-#include "seabot2_density/teos/TeosSea.h"
+#include "seabot2_kalman/kalman/kalman.h"
 #include "seabot2_kalman/kalman.h"
+#include "seabot2_density/teos/TeosSea.h"
 #include "seabot2_depth_control/depth_control.h"
 #include "seabot2_mission/mission.hpp"
 #include <random>

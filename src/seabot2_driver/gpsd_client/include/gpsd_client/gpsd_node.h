@@ -4,6 +4,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
 #include "seabot2_msgs/msg/gps_fix.hpp"
+#include "seabot2_msgs/msg/gps_pps.hpp"
 #include <libgpsmm.h>
 
 using namespace std::chrono_literals;
@@ -28,6 +29,7 @@ private:
 
     /// Topics / Services
     rclcpp::Publisher<seabot2_msgs::msg::GpsFix>::SharedPtr publisher_fix_;
+    rclcpp::Publisher<seabot2_msgs::msg::GpsPps>::SharedPtr publisher_pps_;
 
     /**
      *  Init and get parameters of the Node
@@ -43,7 +45,7 @@ private:
      * Process the data recevied from gpsd to send a ros message
      * @param p
      */
-    void process_data(struct gps_data_t* p);
+    void process_data(const struct gps_data_t* p);
 
     /**
      * Callback of the timer

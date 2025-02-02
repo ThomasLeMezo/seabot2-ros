@@ -22,10 +22,6 @@ ament_target_dependencies(depth_pose_node
         std_srvs
 )
 
-target_link_libraries(depth_pose_node
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(depth_pose_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

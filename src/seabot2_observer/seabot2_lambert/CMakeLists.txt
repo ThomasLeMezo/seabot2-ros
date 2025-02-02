@@ -19,7 +19,6 @@ ament_target_dependencies(lambert_node
 )
 
 target_link_libraries(lambert_node
-        "${cpp_typesupport_target}"
         proj
 )
 

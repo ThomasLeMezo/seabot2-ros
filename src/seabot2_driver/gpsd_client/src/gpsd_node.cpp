@@ -10,7 +10,7 @@ GpsdNode::GpsdNode()
 
     gps_ = new gpsmm("localhost", DEFAULT_GPSD_PORT);
 
-    if(gps_->stream(WATCH_ENABLE | WATCH_JSON) == nullptr){
+    if(gps_->stream(WATCH_ENABLE | WATCH_JSON | WATCH_PPS ) == nullptr){
         RCLCPP_WARN(this->get_logger(), "[gpsd_node] Failed to open GPSd");
         exit(EXIT_FAILURE);
     }
@@ -43,26 +43,26 @@ void GpsdNode::init_parameters() {
 
 void GpsdNode::init_interfaces() {
     publisher_fix_ = this->create_publisher<seabot2_msgs::msg::GpsFix>("fix", 1);
+    publisher_pps_ = this->create_publisher<seabot2_msgs::msg::GpsPps>("pps", 1);
 }
 
 void GpsdNode::timer_callback(){
-    struct gps_data_t *p;
     if (!gps_->waiting(2000000)) // us ? => 2s
         return;
 
-    if((p = gps_->read()) == nullptr)
+    if(gps_data_t *p; (p = gps_->read()) == nullptr)
         RCLCPP_WARN(this->get_logger(), "[gpsd_node] Error reading gpsd");
     else
         process_data(p);
 }
 
-void GpsdNode::process_data(struct gps_data_t* p) {
+void GpsdNode::process_data(const gps_data_t* p) {
+    if (! (p->set & PACKET_SET)) // ToDo : to be checked
+        return;
+
     seabot2_msgs::msg::GpsFix msg;
-
     msg.header.stamp = this->now();
-
     msg.header.frame_id = frame_id_;
-
     msg.status = p->fix.status;
     msg.mode = p->fix.mode;
     msg.time = p->fix.time.tv_sec+p->fix.time.tv_nsec*1e-9;
@@ -105,9 +105,18 @@ void GpsdNode::process_data(struct gps_data_t* p) {
             publisher_fix_->publish(msg);
         last_msg_no_fix_ = true;
     }
+
+    if (p->set && PPS_SET) {
+        seabot2_msgs::msg::GpsPps msg_pps;
+        msg_pps.real_tv_sec = p->pps.real.tv_sec;
+        msg_pps.real_tv_nsec = p->pps.real.tv_nsec;
+        msg_pps.clock_tv_sec = p->pps.clock.tv_sec;
+        msg_pps.clock_tv_nsec = p->pps.clock.tv_nsec;
+        publisher_pps_->publish(msg_pps);
+    }
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<GpsdNode>());
     rclcpp::shutdown();

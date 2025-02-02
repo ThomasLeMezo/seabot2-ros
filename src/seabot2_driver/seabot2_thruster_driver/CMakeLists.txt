@@ -23,7 +23,6 @@ ament_target_dependencies(thruster_node
         geometry_msgs
 )
 target_link_libraries(thruster_node
-        "${cpp_typesupport_target}"
         i2c
 )
 

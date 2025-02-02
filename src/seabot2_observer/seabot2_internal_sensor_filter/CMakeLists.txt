@@ -20,10 +20,6 @@ ament_target_dependencies(filter_internal_sensor_node
         seabot2_msgs
 )
 
-target_link_libraries(filter_internal_sensor_node
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(filter_internal_sensor_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

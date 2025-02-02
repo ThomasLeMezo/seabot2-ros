@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 project(seabot2_log_parameters)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif ()
 
 ### find dependencies
 find_package(ament_cmake REQUIRED)
@@ -20,10 +20,6 @@ ament_target_dependencies(log_parameter_node
         rclcpp
         seabot2_msgs
         std_srvs
-        )
-
-target_link_libraries(log_parameter_node
-        "${cpp_typesupport_target}"
 )
 
 ### Includes

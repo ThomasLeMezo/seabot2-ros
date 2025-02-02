@@ -20,10 +20,6 @@ ament_target_dependencies(filter_temperature_node
         seabot2_msgs
 )
 
-target_link_libraries(filter_temperature_node
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(filter_temperature_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

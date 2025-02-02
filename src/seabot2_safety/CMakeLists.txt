@@ -19,10 +19,6 @@ ament_target_dependencies(safety_node
         std_srvs
 )
 
-target_link_libraries(safety_node
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(safety_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

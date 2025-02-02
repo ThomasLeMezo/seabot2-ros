@@ -24,10 +24,6 @@ ament_target_dependencies(mission_node
         std_srvs
 )
 
-target_link_libraries(mission_node
-        "${cpp_typesupport_target}"
-)
-
 target_include_directories(mission_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>

@@ -22,7 +22,6 @@ ament_target_dependencies(piston_node
 )
 
 target_link_libraries(piston_node
-        "${cpp_typesupport_target}"
         i2c
 )
 

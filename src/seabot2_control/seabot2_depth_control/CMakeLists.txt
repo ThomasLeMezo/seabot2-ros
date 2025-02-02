@@ -32,10 +32,6 @@ ament_target_dependencies(depth_control_node
         std_msgs
 )
 
-target_link_libraries(depth_control_node
-        "${cpp_typesupport_target}"
-)
-
 ### Includes
 target_include_directories(depth_control_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

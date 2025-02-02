@@ -1,0 +1,4 @@
+int64 real_tv_sec
+int64 real_tv_nsec
+int64 clock_tv_sec
+int64 clock_tv_nsec
