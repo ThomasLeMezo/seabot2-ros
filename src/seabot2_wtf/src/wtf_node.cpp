@@ -54,12 +54,10 @@ void WtfNode::create_windows(){
     windows_internal_pressure_  = create_new_sub_window(7, 40, "INTERNAL PRESSURE");
     windows_power_              = create_new_sub_window(11, 40, "POWER");
     windows_depth_control_      = create_new_sub_window(10, 40, "DEPTH CONTROL");
-
     windows_mission_            = create_new_sub_window(14, 40, "MISSION");
     windows_depth_              = create_new_sub_window(8, 40, "DEPTH");
     windows_piston_             = create_new_sub_window(15, 40, "PISTON");
     windows_gnss_               = create_new_sub_window(8, 40, "GNSS");
-
     windows_sensors_            = create_new_sub_window(8, 40, "SENSORS");
     windows_audio_              = create_new_sub_window(8, 40, "AUDIO");
 
@@ -70,19 +68,16 @@ WtfNode::~WtfNode(){
     endwin();
 }
 
-WINDOW *WtfNode::create_new_sub_window(int height, int width, const string &name){
-    WINDOW *local_win;
-
-    int end_y = windows_current_y_ + height;
-    if(end_y > windows_max_y_){
+WINDOW *WtfNode::create_new_sub_window(const int height, int width, const string &name){
+    if(const int end_y = windows_current_y_ + height; end_y > windows_max_y_){
         windows_current_y_ = windows_default_y_;
         windows_current_x_ += windows_width_max_ + 1;
         windows_width_max_ = 0;
     }
 
-    int start_x = windows_current_x_;
+    const int start_x = windows_current_x_;
 
-    local_win = subwin(stdscr,height, width, windows_current_y_, start_x);
+    WINDOW *local_win = subwin(stdscr, height, width, windows_current_y_, start_x);
 
     windows_width_max_ = max(windows_width_max_, width);
     windows_current_y_ += height;
@@ -501,7 +496,7 @@ void WtfNode::update_gnss(){
         mvwprintw(windows_gnss_, 5, 25, "%f", msg_gnss_.longitude);
 
         mvwprintw(windows_gnss_, 6, 1, "time (GNSS)");
-        time_t t = round(msg_gnss_.time);
+        const time_t t = round(msg_gnss_.time);
         auto tm = *std::gmtime(&t); // localtime
         stringstream ss;
         ss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
@@ -513,6 +508,8 @@ void WtfNode::update_gnss(){
 
 void WtfNode::update_sensors(){
     if(msg_first_received_profile_){
+        mvwprintw(windows_gnss_, 1, 25, "%0.2f", (this->now() - time_last_profile_).seconds());
+
         mvwprintw(windows_sensors_, 3, 1, "ping distance");
         mvwprintw(windows_sensors_, 3, 25, "%3.1f", msg_profile_.distance/1e3);
         msg_profile_.distance = std::numeric_limits<uint32_t>::quiet_NaN();
@@ -537,14 +534,17 @@ void WtfNode::update_sensors(){
     wrefresh(windows_sensors_);
 }
 
-void WtfNode::update_audio() {
+void WtfNode::update_audio() const {
     if(msg_first_received_audio_dspic_) {
+        mvwprintw(windows_audio_, 1, 25, "%0.2f", (this->now() - time_last_audio_dspic_).seconds());
+
         mvwprintw(windows_audio_, 3, 1, "time dspic");
         mvwprintw(windows_audio_, 3, 25, "%u", msg_audio_dspic_.posix_time);
 
         mvwprintw(windows_audio_, 4, 1, "emission number");
         mvwprintw(windows_audio_, 4, 25, "%u", msg_audio_dspic_.signal_number);
     }
+    wrefresh(windows_audio_);
 }
 
 void WtfNode::update_log() const {
@@ -561,6 +561,7 @@ void WtfNode::update_log() const {
 }
 
 void WtfNode::timer_callback() {
+    update_log();
     update_safety_windows();
     update_mission_windows();
     update_internal_pressure_windows();
@@ -571,7 +572,6 @@ void WtfNode::timer_callback() {
     update_depth_control();
     update_gnss();
     update_sensors();
-    update_log();
     update_audio();
 }
 

@@ -24,10 +24,10 @@
 using namespace std::chrono_literals;
 using namespace std;
 
-class WtfNode : public rclcpp::Node {
+class WtfNode final : public rclcpp::Node {
 public:
     WtfNode();
-    ~WtfNode();
+    ~WtfNode() override;
 
 private:
     /// Rclcpp
@@ -305,7 +305,7 @@ private:
     /**
      * Update audio windows
      */
-    void update_audio();
+    void update_audio() const;
 
     /**
      * Update log windows
