@@ -28,7 +28,7 @@
 #include "seabot2_msgs/msg/power_state.hpp"
 #include "seabot2_msgs/msg/bme280_data.hpp"
 #include "seabot2_msgs/msg/temperature_sensor_data.hpp"
-#include "seabot2_msgs/msg/safety_status.hpp"
+#include "seabot2_msgs/msg/safety_status2.hpp"
 #include "seabot2_msgs/msg/temperature_profile.hpp"
 #include "seabot2_msgs/msg/simulation_debug.hpp"
 #include "seabot2_msgs/msg/simulation_thermocline.hpp"
@@ -126,7 +126,7 @@ void Simulator::init_bag_writer(){
                                 "temperature_tsys01_driver/msg/TemperatureSensorData",
                                 rmw_get_serialization_format(), ""});
     bag_writer_->create_topic( {"/safety/safety",
-                                "seabot2_safety/msg/SafetyStatus",
+                                "seabot2_safety/msg/SafetyStatus2",
                                 rmw_get_serialization_format(), ""});
     bag_writer_->create_topic( {"/observer/temperature_profile",
                                 "seabot2_temperature_profile/msg/TemperatureProfile",

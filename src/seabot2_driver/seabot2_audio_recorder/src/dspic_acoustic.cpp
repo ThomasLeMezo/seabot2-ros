@@ -187,15 +187,12 @@ void DspicAcoustic::setI2CPeriph(const std::string &i2CPeriph) {
 }
 
 int DspicAcoustic::enable_chirp(const bool enable) const {
-    while (i2c_smbus_read_byte_data(file_, 0x08) != enable) {
-        usleep(1000);
+    if (i2c_smbus_read_byte_data(file_, 0x08) != enable) {
         if (i2c_smbus_write_byte_data(file_, 0x08, enable ? 0x01 : 0x00) < 0) {
             RCLCPP_WARN(n_->get_logger(), "[DSPIC_ACOUSTIC] I2C bus Failure - Enable chirp");
-            break;
-        } else {
-            RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Chirp enable");
+            return EXIT_FAILURE;
         }
-        usleep(1000);
     }
-    return EXIT_FAILURE;
+    RCLCPP_INFO(n_->get_logger(), "[DSPIC_ACOUSTIC] Chirp enable");
+    return EXIT_SUCCESS;
 }

@@ -109,6 +109,7 @@ void AudioRecorderNode::manage_subprocess(bool start_new_audio) {
     if(start_new_audio) {
         audio_command_last_ = get_arecord_command();
         string command_tmp = audio_command_last_;
+        RCLCPP_INFO(this->get_logger(), "[audio_recorder_node] Command: %s", command_tmp.c_str());
         // Create a thread for the subprocess
         subprocessFuture_ = std::async(std::launch::async, [command_tmp] {
             // Call the subprocess using std::system

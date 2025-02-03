@@ -34,7 +34,7 @@ private:
     int audio_max_file_time_ = 600; // s
     int audio_nb_channels_ = 1;
     int audio_nb_bits_ = 32;
-    std::string audio_device_ = "hw:CARD=sndrpii2scard";
+    std::string audio_device_ = "plughw:CARD=sndrpii2scard";
     std::string audio_command_last_ = "";
     int audio_hdd_space_limit_stop_ = 500; // MB
 

@@ -16,7 +16,7 @@
 #include "seabot2_msgs/msg/depth_pose.hpp"
 #include "seabot2_msgs/msg/depth_control_debug.hpp"
 #include "seabot2_msgs/msg/piston_set_point.hpp"
-#include "seabot2_msgs/msg/safety_status.hpp"
+#include "seabot2_msgs/msg/safety_status2.hpp"
 #include "seabot2_msgs/msg/density.hpp"
 #include "seabot2_msgs/msg/temperature_sensor_data.hpp"
 #include "seabot2_msgs/msg/alpha_debug.hpp"
@@ -65,7 +65,7 @@ private:
     rclcpp::Subscription<seabot2_msgs::msg::PistonState>::SharedPtr subscriber_state_data_;
     rclcpp::Subscription<seabot2_msgs::msg::DepthPose>::SharedPtr subscriber_depth_data_;
     rclcpp::Subscription<seabot2_msgs::msg::DepthControlSetPoint>::SharedPtr subscriber_mission_data_;
-    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus2>::SharedPtr subscriber_safety_data_;
     rclcpp::Subscription<seabot2_msgs::msg::Density>::SharedPtr subscriber_density_;
     rclcpp::Subscription<seabot2_msgs::msg::TemperatureSensorData>::SharedPtr subscriber_temperature_data_;
 
@@ -119,7 +119,7 @@ private:
      *
      * @param msg
      */
-    void safety_callback(const seabot2_msgs::msg::SafetyStatus &msg);
+    void safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg);
 
     /**
      *

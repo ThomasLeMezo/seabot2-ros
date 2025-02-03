@@ -120,7 +120,7 @@ void DepthControlNode::depth_callback(const seabot2_msgs::msg::DepthPose &msg) {
     dc_.update_depth(msg.depth, msg.pressure);
 }
 
-void DepthControlNode::safety_callback(const seabot2_msgs::msg::SafetyStatus &msg) {
+void DepthControlNode::safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg) {
     dc_.update_safety(!msg.global_safety_valid, msg.limit_depth);
 }
 
@@ -148,7 +148,7 @@ void DepthControlNode::init_interfaces() {
         "/observer/temperature", 10, std::bind(&DepthControlNode::temperature_callback, this, _1));
     subscriber_mission_data_ = this->create_subscription<seabot2_msgs::msg::DepthControlSetPoint>(
         "/mission/depth_control_set_point", 10, std::bind(&DepthControlNode::depth_set_point_callback, this, _1));
-    subscriber_safety_data_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus>(
+    subscriber_safety_data_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus2>(
         "/safety/safety", 10, std::bind(&DepthControlNode::safety_callback, this, _1));
     subscriber_density_ = this->create_subscription<seabot2_msgs::msg::Density>(
         "/observer/density", 10, std::bind(&DepthControlNode::density_callback, this, _1));

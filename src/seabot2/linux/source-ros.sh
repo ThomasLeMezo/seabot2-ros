@@ -1,6 +1,6 @@
 # ROS2
 source /opt/ros/rolling/setup.zsh
-#export ROS_DOMAIN_ID=$HOST[-1]
+export ROS_DOMAIN_ID=$HOST[-1]
 export ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
 source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.zsh
 # argcomplete for ros2 & colcon

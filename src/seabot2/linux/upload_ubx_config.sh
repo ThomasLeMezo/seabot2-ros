@@ -3,6 +3,7 @@
 
 # GNSS device
 GNSS_DEVICE="/dev/serial0"
+FILENAME="/home/pi/config/default/ublox_m8n.txt"
 
 # Check if the file is provided
 FILENAME=$1

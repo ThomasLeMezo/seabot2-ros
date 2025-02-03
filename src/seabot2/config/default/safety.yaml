@@ -19,3 +19,4 @@ safety:
       max_depth_reset_zero: 2.0 #m
       gnss_fix_once_enable: true
       limit_depth_min: 2.0 #m
+      hdd_empty_space_limit: -1.0 #MB
