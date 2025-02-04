@@ -58,4 +58,16 @@ driver:
       loop_dt: 100 #ms
       i2c_address: 0x76
 
+  icm20948_node:
+    ros__parameters:
+      fusion_gain: 0.5
+      acceleration_rejection: 3.0
+      magnetic_rejection: 3.0
+      recovery_trigger_period: 1
+      hardIronOffset: [ 0.0, 0.0, 0.0 ]
+      softIronMatrix: [ 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ]
+      publish_raw_data: true
+      publish_calibrated_data: true
+      publish_rpy: true
+      publish_debug_fusion: true
 
