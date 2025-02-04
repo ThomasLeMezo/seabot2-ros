@@ -71,7 +71,7 @@ class XbeeNode(Node):
         self.xbee_node_id = self.hostname
         self.time_between_communication = 5
         self.serial_baudrate = 9600
-        self.tx_power = 0
+        self.tx_power = 4 # 0=2mW, 1=5mW, 2=10mW, 3=16mW, 4=32mW
         self.routing_node = 2
 
         self.serial_port = "/dev/ttyMAX0" if self.hostname_is_seabot else "/dev/ttyUSB0"

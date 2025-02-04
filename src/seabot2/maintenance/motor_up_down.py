@@ -3,7 +3,7 @@ import os
 import rclpy
 from rclpy.node import Node
 
-from seabot2_piston_driver.msg import PistonState, PistonSetPoint
+from seabot2_msgs.msg import PistonState, PistonSetPoint
 
 class Seabot2Maintenance(Node):
 

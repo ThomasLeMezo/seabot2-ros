@@ -71,3 +71,7 @@ driver:
       publish_rpy: true
       publish_debug_fusion: true
 
+  xbee_node:
+    ros__parameters:
+      tx_power: 4
+
