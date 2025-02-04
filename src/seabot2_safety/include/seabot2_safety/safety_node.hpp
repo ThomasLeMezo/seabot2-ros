@@ -25,6 +25,8 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     std::chrono::milliseconds loop_dt_ = 1s; /// loop dt
 
+    std::chrono::seconds delay_between_warning_msg_ = 2s;
+
     /// Variable
     bool global_safety_ok_ = true;
     bool safety_published_frequency_= false;
@@ -46,6 +48,7 @@ private:
     std::chrono::milliseconds internal_no_data_warning_ = 2s;
     double internal_humidity_limit_ = 70.0;
     double internal_pressure_limit_ = 800.0;
+    rclcpp::Time internal_last_rclcpp_warning_ = this->now();
 
     double depth_ = 0.0;
     double velocity_ = 1.0;

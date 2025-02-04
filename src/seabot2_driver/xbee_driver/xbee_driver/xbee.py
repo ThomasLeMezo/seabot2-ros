@@ -4,13 +4,15 @@ from digi.xbee.devices import *
 import socket
 import math
 
-from seabot2_msgs.msg import SafetyStatus
+from seabot2_msgs.msg import SafetyStatus2
 from seabot2_msgs.msg import Bme280Data
 from seabot2_msgs.msg import PowerState
 from seabot2_msgs.msg import GpsFix
 from seabot2_msgs.msg import GnssPose
 from seabot2_msgs.msg import DepthPose
 from seabot2_msgs.msg import MissionState
+from seabot2_msgs.msg import XbeeMessageLogState
+from seabot2_msgs.msg import XbeeMessageHeader
 
 def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None, flag_debug=False):
     if flag_debug:
@@ -18,7 +20,7 @@ def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None,
         print("val init =", val)
     if value_min is not None and value_max is not None:
         scale = ((1 << nb_bit) - 1) / (value_max - value_min)
-        val = int(round((val - value_min) * scale))
+        val = int(round((min(max(val,value_min), value_max) - value_min) * scale))
     else:
         value_min = 0.0
         scale = 1.0
@@ -32,13 +34,13 @@ def serialize_data(data, val, nb_bit, start_bit, value_min=None, value_max=None,
     return data, nb_bit + start_bit, val / scale + value_min
 
 def deserialize_data(data, nb_bit, start_bit, value_min=None, value_max=None):
-    mask = ((1 << nb_bit) - 1) << start_bit
-    v = (data & mask) >> start_bit
+    mask = (1 << nb_bit) - 1
+    # data is byte array, convert to int
+    v = (data >> start_bit) & mask
     if value_min is not None and value_max is not None:
         scale = ((1 << nb_bit) - 1) / (value_max - value_min)
         v = v / scale + value_min
     return v, start_bit + nb_bit
-
 
 class XbeeNode(Node):
 
@@ -54,6 +56,7 @@ class XbeeNode(Node):
         self.subscription_power_data = None
         self.subscription_internal_sensor_filter = None
         self.subscription_safety_data = None
+        self.publisher_log_state = None
 
         # Get hostname of device
         self.hostname = socket.gethostname()
@@ -64,6 +67,7 @@ class XbeeNode(Node):
         self.hostname_is_seabot = True
         if not self.hostname.startswith("seabot"):
             self.hostname_is_seabot = False
+        print("Hostname : ", self.hostname)
 
         # Parameters
         self.xbee_network_id = 0x42
@@ -131,28 +135,28 @@ class XbeeNode(Node):
 
         ## MAC/PHY
         # Set network id
-        print("Set network ID")
+        self.get_logger().info(f'Set network ID {self.xbee_network_id}')
         self.xbee.set_parameter('ID', self.xbee_network_id.to_bytes(2, 'big'))
 
         # Set encryption key
-        print("Set encryption key")
+        self.get_logger().info(f'Set encryption key {self.xbee_encryption_key}')
         self.xbee.set_parameter('KY', bytearray(self.xbee_encryption_key, 'utf-8'))
 
         # Set encryption enable
-        print("Enable Encryption")
+        self.get_logger().info('Enable Encryption')
         self.xbee.set_parameter('EE', b'\x01')
 
         # TX Power Level
-        print("Set TX power level")
+        self.get_logger().info(f'Set TX power level = {self.tx_power}')
         self.xbee.set_parameter('PL', self.tx_power.to_bytes(2, 'big'))
 
         ## Set Network parameters
         # CE Routing/Messaging Mode
-        print("Set Routing node (Non-rounting module)")
+        self.get_logger().info(f'Set Routing node ({self.routing_node})')
         self.xbee.set_parameter('CE', self.routing_node.to_bytes(2, 'big'))
 
         # Apply changes.
-        print("Apply changes & write")
+        self.get_logger().info('Apply changes & write')
         self.xbee.apply_changes()
         # Write changes (to flash).
         self.xbee.write_changes()
@@ -161,9 +165,46 @@ class XbeeNode(Node):
 
     def data_received_callback(self, xbee_message):
         # ToDo : process the callback
-        address = xbee_message.remote_device.get_64bit_addr()
-        data = xbee_message.data.decode("utf8")
-        print("Received data from %s: %s" % (address, data))
+        node_address = xbee_message.remote_device.get_64bit_addr()
+        node_name = xbee_message.remote_device.get_node_id()
+        message_timestamp = xbee_message.timestamp
+        message_is_broadcast = xbee_message.is_broadcast
+
+        # Test if size of a message is correct
+        if 1 < len(xbee_message.data) < 20:
+            data = int.from_bytes(xbee_message.data, byteorder='little') # test if little or big endian
+            message_type = self.deserialize_log_type(data)
+            if message_type == self.CMD_MSG_TYPE["LOG_STATE"]:
+                data_decoded = self.deserialize_log_state(data)
+                if not self.hostname_is_seabot:
+                    self.get_logger().info(f'Received data from {node_name} ({node_address})\n {data_decoded}')
+                message_log_state = XbeeMessageLogState()
+                message_log_state.xbee_header = XbeeMessageHeader()
+                message_log_state.xbee_header.xbee_address = int.from_bytes(node_address, byteorder='big')
+                message_log_state.xbee_header.node_name = node_name if node_name else ""
+                message_log_state.xbee_header.is_broadcast = message_is_broadcast
+                message_log_state.xbee_header.message_type = message_type
+                message_log_state.safety_global_safety_valid = True if data_decoded["state"]["global_safety_valid"] == 1 else False
+                message_log_state.safety_published_frequency = True if data_decoded["state"]["published_frequency"] == 1 else False
+                message_log_state.safety_depth_limit = True if data_decoded["state"]["depth_limit"] == 1 else False
+                message_log_state.safety_batteries_limit = True if data_decoded["state"]["batteries_limit"] == 1 else False
+                message_log_state.safety_depressurization = True if data_decoded["state"]["depressurization"] == 1 else False
+                message_log_state.safety_seafloor = True if data_decoded["state"]["seafloor"] == 1 else False
+                message_log_state.safety_piston = True if data_decoded["state"]["piston"] == 1 else False
+                message_log_state.safety_zero_depth = True if data_decoded["state"]["zero_depth"] == 1 else False
+                message_log_state.fix_latitude = data_decoded["latitude"]
+                message_log_state.fix_longitude = data_decoded["longitude"]
+                message_log_state.gnss_speed = data_decoded["speed"]
+                message_log_state.gnss_heading = data_decoded["heading"]
+                message_log_state.battery = data_decoded["battery"]
+                message_log_state.internal_pressure = data_decoded["pressure"]
+                message_log_state.internal_temperature = data_decoded["temperature"]
+                message_log_state.internal_humidity = int(data_decoded["humidity"])
+                message_log_state.current_waypoint = data_decoded["waypoint"]
+                message_log_state.last_cmd_received = data_decoded["last_cmd_received"]
+                self.publisher_log_state.publish(message_log_state)
+            else:
+                self.get_logger().info(f'Received unknown message {node_name} ({node_address})')
 
     def init_parameters(self):
         self.declare_parameter('serial_port', self.serial_port)
@@ -186,7 +227,7 @@ class XbeeNode(Node):
         self.routing_node = self.get_parameter('routing_node').get_parameter_value().integer_value
 
     def init_interfaces(self):
-        self.subscription_safety_data = self.create_subscription(SafetyStatus,
+        self.subscription_safety_data = self.create_subscription(SafetyStatus2,
                                                                  '/safety/safety', self.safety_callback, 10)
         self.subscription_internal_sensor_filter = self.create_subscription(Bme280Data, '/observer/pressure_internal',
                                                                             self.internal_sensor_callback, 10)
@@ -197,6 +238,8 @@ class XbeeNode(Node):
         self.subscription_depth = self.create_subscription(DepthPose, '/observer/depth', self.depth_callback, 10)
         self.subscription_mission_state = self.create_subscription(MissionState, '/mission/mission_state',
                                                                     self.mission_callback, 10)
+
+        self.publisher_log_state = self.create_publisher(XbeeMessageLogState, '/com/xbee/log_state', 10)
 
     def safety_callback(self, msg):
         self.safety_global_safety_valid = msg.global_safety_valid
@@ -279,6 +322,47 @@ class XbeeNode(Node):
 
         return data.to_bytes(int(bit_position / 8), byteorder='little'), message_type
 
+    def deserialize_log_type(self, data):
+        bit_position = 0
+        message_type, bit_position = deserialize_data(data, 4, bit_position)
+        return message_type
+
+    def deserialize_log_state(self, data):
+        bit_position = 0
+        data_dict = {}
+        message_type, bit_position = deserialize_data(data, 4, bit_position)
+        data_dict["message_type"] = message_type
+        latitude, bit_position = deserialize_data(data, 25, bit_position, value_min=-90.0, value_max=90.0)
+        data_dict["latitude"] = latitude
+        longitude, bit_position = deserialize_data(data, 25, bit_position, value_min=-180.0, value_max=180.0)
+        data_dict["longitude"] = longitude
+        speed, bit_position = deserialize_data(data, 8, bit_position, value_min=0, value_max=5.0)
+        data_dict["speed"] = speed
+        heading, bit_position = deserialize_data(data, 8, bit_position, value_min=0, value_max=359.0)
+        data_dict["heading"] = heading
+        state, bit_position = deserialize_data(data, 8, bit_position)
+        data_dict["state"] = {}
+        data_dict["state"]["global_safety_valid"] = (state >> 0) & 0x1
+        data_dict["state"]["published_frequency"] = (state >> 1) & 0x1
+        data_dict["state"]["depth_limit"] = (state >> 2) & 0x1
+        data_dict["state"]["batteries_limit"] = (state >> 3) & 0x1
+        data_dict["state"]["depressurization"] = (state >> 4) & 0x1
+        data_dict["state"]["seafloor"] = (state >> 5) & 0x1
+        data_dict["state"]["piston"] = (state >> 6) & 0x1
+        data_dict["state"]["zero_depth"] = (state >> 7) & 0x1
+        battery, bit_position = deserialize_data(data, 8, bit_position, value_min=12.0, value_max=16.8)
+        data_dict["battery"] = battery
+        pressure, bit_position = deserialize_data(data, 6, bit_position, value_min=680.0, value_max=800.0)
+        data_dict["pressure"] = pressure
+        temperature, bit_position = deserialize_data(data, 6, bit_position, value_min=8.0, value_max=50.0)
+        data_dict["temperature"] = temperature
+        humidity, bit_position = deserialize_data(data, 6, bit_position, value_min=50.0, value_max=100.0)
+        data_dict["humidity"] = humidity
+        waypoint, bit_position = deserialize_data(data, 8, bit_position)
+        data_dict["waypoint"] = waypoint
+        last_cmd_received, bit_position = deserialize_data(data, 4, bit_position)
+        data_dict["last_cmd_received"] = last_cmd_received
+        return data_dict
 
 def main(args=None):
     rclpy.init(args=args)

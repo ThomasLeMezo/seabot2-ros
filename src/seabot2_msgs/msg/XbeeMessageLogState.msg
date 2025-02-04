@@ -1,0 +1,23 @@
+seabot2_msgs/XbeeMessageHeader xbee_header
+
+bool safety_global_safety_valid
+bool safety_published_frequency
+bool safety_depth_limit
+bool safety_batteries_limit
+bool safety_depressurization
+bool safety_seafloor
+bool safety_piston
+bool safety_zero_depth
+
+float32 fix_latitude
+float32 fix_longitude
+float32 gnss_speed
+float32 gnss_heading
+
+float32 battery
+float32 internal_pressure
+float32 internal_temperature
+uint8 internal_humidity
+
+uint16 current_waypoint
+uint8 last_cmd_received

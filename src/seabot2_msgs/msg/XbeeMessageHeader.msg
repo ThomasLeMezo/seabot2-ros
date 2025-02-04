@@ -1,0 +1,4 @@
+uint64 xbee_address
+string node_name
+bool is_broadcast
+uint8 message_type

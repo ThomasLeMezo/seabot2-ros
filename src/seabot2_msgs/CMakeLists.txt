@@ -53,6 +53,8 @@ set(msg_files
         "msg/TemperatureSensorData.msg"
         "msg/Velocity.msg"
         "msg/Waypoint.msg"
+        "msg/XbeeMessageHeader.msg"
+        "msg/XbeeMessageLogState.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
