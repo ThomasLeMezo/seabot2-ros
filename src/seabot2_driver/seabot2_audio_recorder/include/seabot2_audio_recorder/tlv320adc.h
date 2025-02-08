@@ -32,6 +32,12 @@ public:
      */
     int i2c_open();
 
+    int configure(uint8_t gain) const;
+
+    int set_channel_parameters() const;
+
+    int set_power_up() const;
+
     /**
      *
      * @return
@@ -59,14 +65,25 @@ public:
      *
      * @return
      */
-    int set_adc_gain(uint8_t gain_ch1, uint8_t gain_ch2);
+    int set_adc_gain(uint8_t gain_ch1, uint8_t gain_ch2) const;
 
-    /**
-     * @brief Set the signal id
-     * @param signal_id
-     * @return
-     */
-    int set_signal_id(uint8_t signal_id);
+    int set_wake_up() const;
+
+    int set_reset() const;
+
+    int set_page(uint8_t page) const;
+
+    int set_i2s_32bit() const;
+
+    int set_channel_slot() const;
+
+    int set_channel_enable() const;
+
+    int set_enable_channel() const;
+
+    int set_enable_input_ch1(uint8_t ch1, uint8_t ch2) const;
+
+    int set_enable_input(uint8_t ch1, uint8_t ch2) const;
 
 private:
     rclcpp::Node* n_= nullptr; /// Pointer to rclcpp Node

@@ -45,7 +45,7 @@ SBD::~SBD(){
 }
 
 void SBD::read(){
-  string result = serial_.readStringUntil(SBD_TOKEN_SEPARATOR);
+  const string result = serial_.readStringUntil(SBD_TOKEN_SEPARATOR);
 
   if(!result.empty()){
     if(debug_)
@@ -96,7 +96,7 @@ void SBD::read(){
       vector<string> fields;
       string result0 = result.substr(6);
       boost::split(fields, result0, boost::is_any_of(","), boost::token_compress_on);
-      int indicator = stoi(fields[0]);
+      const int indicator = stoi(fields[0]);
       omp_set_lock(&lock_data);
       switch(indicator){
       case 0:

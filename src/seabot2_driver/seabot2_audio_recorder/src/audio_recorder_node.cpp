@@ -19,8 +19,12 @@ AudioRecorderNode::AudioRecorderNode()
     timer_ = this->create_wall_timer(
             loop_safety_dt_, std::bind(&AudioRecorderNode::timer_callback, this));
 
-    tlv_.i2c_open();
-    tlv_.set_adc_gain(gain_ch1_, gain_ch2_);
+    // Init TLV
+    // tlv_.i2c_open();
+    // if (tlv_.configure(gain_ch1_) != 0) {
+    //     RCLCPP_ERROR(this->get_logger(), "[audio_recorder_node] Error configuring TLV320ADC");
+    //     exit(EXIT_FAILURE);
+    // }
 
     dspic_.i2c_open();
     dspic_.wait_recompute_signal();
@@ -135,7 +139,7 @@ void AudioRecorderNode::timer_callback(){
     msg.signal_number = dspic_.get_signal_number();
     publisher_dspic_debug_->publish(msg);
 
-    // Check amount of free space on the hard drive
+    // Check the amount of free space on the hard drive
     if(filesystem::space(workingDirectory_).available < audio_hdd_space_limit_stop_ * 1024 * 1024){
         if(thread_currently_running_) {
             RCLCPP_WARN(this->get_logger(), "[audio_recorder_node] Low disk space, stopping recording");

@@ -405,17 +405,11 @@ void SafetyNode::get_ram_cpu(){
 
 void SafetyNode::get_hard_drive_empty_space() {
     try {
-        // Specify the path of the filesystem
-        const std::filesystem::path path_to_check = "/"; // Root directory for Raspberry Pi Ubuntu
-
-        // Get space information
-        const std::filesystem::space_info space = std::filesystem::space(path_to_check);
-
         // Display space information
         // std::cout << "Total space: " << space.capacity / (1024 * 1024) << " MB\n";
         // std::cout << "Free space: " << space.free / (1024 * 1024) << " MB\n";
-        hdd_empty_space_ = static_cast<double>(space.available) / (1024.0 * 1024.0 * 1024.0); // in GB
-
+        hdd_empty_space_ = static_cast<double>(filesystem::space("/home/").available)
+                                                    / (1024.0 * 1024.0 * 1024.0); // in GB
     } catch (const std::filesystem::filesystem_error& e) {
         RCLCPP_ERROR(this->get_logger(), "[Safety_node] Error getting hard drive empty space (%s)", e.what());
     }

@@ -14,7 +14,7 @@
 #include "seabot2_msgs/msg/depth_pose.hpp"
 #include "seabot2_msgs/msg/bme280_data.hpp"
 #include "seabot2_msgs/msg/power_state.hpp"
-#include "seabot2_msgs/msg/safety_status.hpp"
+#include "seabot2_msgs/msg/safety_status2.hpp"
 #include "seabot2_msgs/msg/gps_fix.hpp"
 #include "seabot2_msgs/msg/mission_state.hpp"
 #include "seabot2_msgs/msg/gnss_pose.hpp"
@@ -49,7 +49,7 @@ private:
     std::string mission_file_name_ = "mission.xml";
 
     rclcpp::Time last_time_communication_ = rclcpp::Time(0., RCL_ROS_TIME);
-    std::chrono::seconds time_between_communication_ = 180s;
+    std::chrono::seconds time_between_communication_ = 900s;
     std::chrono::milliseconds  surface_wait_time_ = 5000ms;
     double surface_depth_limit_ = 0.5;
     bool surface_is_valid_ = false;
@@ -70,7 +70,7 @@ private:
     /// Topics
     rclcpp::Subscription<seabot2_msgs::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
     rclcpp::Subscription<seabot2_msgs::msg::PowerState>::SharedPtr subscriber_power_data_;
-    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus>::SharedPtr subscriber_safety_data_;
+    rclcpp::Subscription<seabot2_msgs::msg::SafetyStatus2>::SharedPtr subscriber_safety_data_;
     rclcpp::Subscription<seabot2_msgs::msg::GpsFix>::SharedPtr subscriber_gnss_data_;
     rclcpp::Subscription<seabot2_msgs::msg::GnssPose>::SharedPtr subscriber_gnss_pose_;
     rclcpp::Subscription<seabot2_msgs::msg::DepthPose>::SharedPtr subscriber_depth_;
@@ -117,7 +117,7 @@ private:
      * Safety callback
      * @param msg
      */
-    void safety_callback(const seabot2_msgs::msg::SafetyStatus &msg);
+    void safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg);
 
     /**
      * Mission callback

@@ -1,7 +1,3 @@
-//
-// Created by lemezoth on 06/06/23.
-//
-
 #include "seabot2_iridium_driver/iridium_node.h"
 
 using namespace placeholders;
@@ -13,14 +9,15 @@ IridiumNode::IridiumNode()
     init_parameters();
     init_interfaces();
 
-    int success = sbd_.init(serial_port_name_, serial_baud_rate_);
-    if (success == EXIT_FAILURE) {
+    if (const int success = sbd_.init(serial_port_name_, serial_baud_rate_); success == EXIT_FAILURE) {
         RCLCPP_WARN(this->get_logger(), "[Irdium_node] Init communication with SBD failed");
         exit(EXIT_FAILURE);
     }
     sbd_.set_debug(sbd_debug_);
     sbd_.cmd_enable_indicator_reporting(true);
     sbd_.cmd_enable_alert(true);
+    const long long imei = sbd_.cmd_get_imei();
+    RCLCPP_INFO(this->get_logger(), "[Irdium_node] IMEI = %lld", imei);
 
     timer_read_ = this->create_wall_timer(
         loop_serial_read_, std::bind(&IridiumNode::timer_read_callback, this));
@@ -72,7 +69,7 @@ void IridiumNode::init_parameters() {
 }
 
 void IridiumNode::init_interfaces() {
-    subscriber_safety_data_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus>(
+    subscriber_safety_data_ = this->create_subscription<seabot2_msgs::msg::SafetyStatus2>(
         "/safety/safety", 10, std::bind(&IridiumNode::safety_callback, this, _1));
 
     subscriber_internal_sensor_filter_ = this->create_subscription<seabot2_msgs::msg::Bme280Data>(
@@ -113,7 +110,7 @@ void IridiumNode::power_callback(const seabot2_msgs::msg::PowerState &msg) {
     log_state_.battery_ = msg.battery_volt;
 }
 
-void IridiumNode::safety_callback(const seabot2_msgs::msg::SafetyStatus &msg) {
+void IridiumNode::safety_callback(const seabot2_msgs::msg::SafetyStatus2 &msg) {
     log_state_.safety_global_safety_valid_ = msg.global_safety_valid;
     log_state_.safety_published_frequency_ = msg.published_frequency;
     log_state_.safety_depth_limit_ = msg.depth_limit;
@@ -195,7 +192,7 @@ void IridiumNode::process() {
         session_msg.waiting = sbd_.get_waiting();
         publisher_iridium_session_->publish(session_msg);
 
-        // Analyse success (sent message)
+        // Analyze success (sent message)
         bool flush_mo = false;
         if (const int session_mo_result = sbd_.get_session_mo(); session_mo_result >= 0 && session_mo_result <= 4) {
             last_time_communication_ = this->now();
@@ -204,7 +201,7 @@ void IridiumNode::process() {
             log_state_.last_cmd_received_ = LogData::LOG_STATE;
         }
 
-        // Look at received message
+        // Look at a received message
         bool flush_mt = false;
         if (sbd_.get_session_mt() == 1) {
             const std::string message_data = sbd_.cmd_read_message();
@@ -268,7 +265,7 @@ void IridiumNode::call_decode(const string &data_raw) {
     log_state_.last_cmd_received_ = log_cmd.msg_type_;
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<IridiumNode>();
 
