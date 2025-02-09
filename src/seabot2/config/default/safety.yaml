@@ -12,11 +12,13 @@ safety:
       internal_no_data_warning: 1000 # ms
       piston_no_data_warning: 1000 # ms
       ping_no_data_warning: 4000 # ms
-      limit_depth_default: 100.0 # m
       robot_height_ping: 1.1 # m (distance between pressure sensor and ping1D)
-      offset_max_depth: 2.0 # m (0.5 default, no go zone from seafloor)
       seabed_delay_detection: 30000 # ms
       max_depth_reset_zero: 2.0 #m
       gnss_fix_once_enable: true
-      limit_depth_min: 2.0 #m
       hdd_empty_space_limit: -1.0 #MB
+      enable_limit_depth: true
+      safety_distance_from_seabed: 2.0 # m (0.5 default, no go zone from seafloor)
+      depth_allowed_min: 2.0 #m
+      depth_allowed_max: 100.0 # m
+      enable_flash_underwater: false

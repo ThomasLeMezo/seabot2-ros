@@ -54,8 +54,9 @@ private:
     double velocity_ = 1.0;
     rclcpp::Time depth_last_received_ = this->now();
     std::chrono::milliseconds depth_no_data_warning_ = 2s;
+    rclcpp::Time depth_limit_live_last_update_ = this->now();
+    std::chrono::milliseconds depth_limit_live_last_update_warning_ = 20s;
     double depth_limit_max_ = 110.0;
-    double limit_depth_min_ = 2.0;
 
     double battery_volt_ = 0.0;
     rclcpp::Time battery_last_received_ = this->now();
@@ -96,15 +97,17 @@ private:
     bool is_zero_depth_once_ = false;
 
     double ping_altitude_ = 0.0;
-    uint16_t ping_confidence_ = 0;
+    int ping_confidence_ = 0;
+    int ping_confidence_threshold_ = 90;
     rclcpp::Time ping_last_time_received_ = this->now();
     double robot_height_ping_ = 1.1;
-    double offset_max_depth_ = 2.0;
+    double safety_distance_from_seabed_ = 2.0;
     double bathy_ = 0.0;
-    double limit_depth_default_ = 100.0;
-    double limit_depth_ = 100.0;
-    double limit_depth_filter_coeff = 0.9;
-    std::chrono::milliseconds ping_no_data_warning_ = 4s;
+    double depth_allowed_max_ = 100.0;
+    double depth_allowed_min_ = 2.0;
+    double depth_limit_live_ = 100.0;
+    double limit_depth_filter_coeff_ = 0.9;
+    std::chrono::milliseconds ping_no_data_warning_ = 10s;
 
     bool seabed_test_detected_ = false;
     rclcpp::Time seabed_test_first_detected_ = this->now();

@@ -21,7 +21,7 @@ public:
     /**
      *
      */
-    void wait_message();
+    void wait_message() const;
 
 private:
 

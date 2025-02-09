@@ -50,7 +50,7 @@ driver:
       ping_interval: 1000 #ms
       enable_ping: true
       mode_auto: true
-      speed_of_sound: 1440.0
+      default_speed_of_sound: 1500.0
       gain_setting: 1
 
   temperature_node:
