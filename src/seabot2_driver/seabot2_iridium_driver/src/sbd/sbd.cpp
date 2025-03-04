@@ -239,6 +239,14 @@ void SBD::disable_echo(){
   write("ATE0");
 }
 
+void SBD::ignore_dtr() {
+  write("AT&D0");
+}
+
+void SBD::disable_flow_control() {
+  write("AT&K0");
+}
+
 int SBD::cmd_CSQ(bool fast){
   omp_set_lock(&lock_data);
   CSQ_ = -1;

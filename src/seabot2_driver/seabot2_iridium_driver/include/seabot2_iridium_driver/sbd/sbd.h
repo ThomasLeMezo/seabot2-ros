@@ -37,6 +37,10 @@ public:
    */
   void disable_echo();
 
+  void ignore_dtr();
+
+  void disable_flow_control();
+
   /**
    * @brief cmd_CSQ
    */

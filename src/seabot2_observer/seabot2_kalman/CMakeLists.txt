@@ -46,27 +46,40 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     target_include_directories(kalman PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
-            include/seabot2_kalman
+            #include/seabot2_kalman
     )
-
-#[[    set_target_properties(kalman PROPERTIES PUBLIC_HEADER
-            include/seabot2_kalman/kalman.h
-    )]]
 
     ament_target_dependencies(kalman
             rclcpp
     )
 
+    ament_export_targets(kalman HAS_LIBRARY_TARGET)
+    ament_export_dependencies(rclcpp)
+
+    install(
+            DIRECTORY include/
+            DESTINATION include
+    )
+
+    install(
+            TARGETS kalman
+            EXPORT kalman
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib
+            RUNTIME DESTINATION bin
+            INCLUDES DESTINATION include
+    )
+
     #ament_export_targets(kalman HAS_LIBRARY_TARGET)
 
     # Install the library
-    install(TARGETS kalman
-            LIBRARY DESTINATION lib
-            PUBLIC_HEADER DESTINATION include
-    )
+#    install(TARGETS kalman
+#            LIBRARY DESTINATION lib
+#            PUBLIC_HEADER DESTINATION include
+#    )
     # Install the headers
-    install(FILES include/seabot2_kalman/kalman.h
-            DESTINATION include/kalman/)
+#    install(FILES include/seabot2_kalman/kalman.h
+#            DESTINATION include/kalman/)
 
 endif ()
 

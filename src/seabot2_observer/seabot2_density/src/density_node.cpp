@@ -20,6 +20,7 @@ void DensityNode::init_parameters() {
 
     this->declare_parameter<double>("physics_salinity", salinity_);
     salinity_ = this->get_parameter_or("physics_salinity", salinity_);
+    
 }
 //
 void DensityNode::temperature_callback(const seabot2_msgs::msg::TemperatureSensorData &msg){

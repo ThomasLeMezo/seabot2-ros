@@ -93,7 +93,7 @@ std::string AudioRecorderNode::get_arecord_command() const {
     command += " -f S" + to_string(audio_nb_bits_) + "_LE";
     command += " -c" + to_string(audio_nb_channels_);
     command += " -r " + to_string(audio_frequency_);
-    command += " -t wav -v --use-strftime %Y/%m/%d/listen_%Y-%m-%d_%H-%M-%S_%v.wav";
+    command += " -t wav -v --use-strftime listen_%Y-%m-%d_%H-%M-%S_%v.wav";
     command += " --max-file-time " + to_string(audio_max_file_time_);
 
     return command;
@@ -144,6 +144,13 @@ void AudioRecorderNode::timer_callback(){
         if(thread_currently_running_) {
             RCLCPP_WARN(this->get_logger(), "[audio_recorder_node] Low disk space, stopping recording");
             manage_subprocess(false);
+        }
+    }
+    else {
+        // Check if the process is still running
+        if(thread_currently_running_ && subprocessFuture_.wait_for(std::chrono::milliseconds(100)) == std::future_status::ready){
+            RCLCPP_INFO(this->get_logger(), "[audio_recorder_node] Subprocess crashed, restarting");
+            manage_subprocess(true);
         }
     }
 }
