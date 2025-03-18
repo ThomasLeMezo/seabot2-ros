@@ -46,7 +46,6 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     target_include_directories(kalman PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
-            #include/seabot2_kalman
     )
 
     ament_target_dependencies(kalman

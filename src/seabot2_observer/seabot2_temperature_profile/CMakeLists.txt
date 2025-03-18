@@ -34,26 +34,35 @@ install(TARGETS temperature_profile_node
 if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     ### Export library
     include_directories(include/seabot2_temperature_profile)
+
     add_library(temperature_profile SHARED
             src/temperature_profile.cpp
     )
+
     target_include_directories(temperature_profile PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
-            include/seabot2_temperature_profile)
-    set_target_properties(temperature_profile PROPERTIES
-            PUBLIC_HEADER include/seabot2_temperature_profile/temperature_profile.h)
+    )
 
     ament_target_dependencies(temperature_profile
             rclcpp
     )
-#    target_link_libraries(temperature_profile "${cpp_typesupport_target}")
 
-    #ament_export_targets(temperature_profile HAS_LIBRARY_TARGET)
+    ament_export_targets(temperature_profile HAS_LIBRARY_TARGET)
+    ament_export_dependencies(rclcpp)
 
-    install(TARGETS temperature_profile
+    install(
+            DIRECTORY include/
+            DESTINATION include
+    )
+
+    install(
+            TARGETS temperature_profile
+            EXPORT temperature_profile
             LIBRARY DESTINATION lib
-            PUBLIC_HEADER DESTINATION include/seabot2_temperature_profile/seabot2_temperature_profile/
+            ARCHIVE DESTINATION lib
+            RUNTIME DESTINATION bin
+            INCLUDES DESTINATION include
     )
 endif ()
 

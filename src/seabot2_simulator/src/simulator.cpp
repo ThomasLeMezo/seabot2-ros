@@ -2,13 +2,8 @@
 #include <cmath>
 #include <iostream>
 #include <chrono>
-
-#include "seabot2_kalman/msg/kalman_state.hpp"
-#include "seabot2_piston_driver/msg/piston_state.hpp"
 #include "rosbag2_storage/storage_options.hpp"
-
-#include "seabot2_temperature_profile/temperature_profile.h"
-
+// #include "seabot2_temperature_profile/temperature_profile.h"
 #include "seabot2_msgs/msg/alpha_debug.hpp"
 #include "seabot2_msgs/msg/depth_control_debug.hpp"
 #include "seabot2_msgs/msg/gps_fix.hpp"
@@ -32,6 +27,10 @@
 #include "seabot2_msgs/msg/temperature_profile.hpp"
 #include "seabot2_msgs/msg/simulation_debug.hpp"
 #include "seabot2_msgs/msg/simulation_thermocline.hpp"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/foreach.hpp>
+namespace pt = boost::property_tree;
 
 using namespace std::chrono;
 
@@ -156,14 +155,14 @@ void Simulator::init_bag_writer(){
 //    return thermocline_depth_;
 //}
 
-std::array<double, 3> Simulator::compute_wave(double t, bool water_velocity) {
+std::array<double, 3> Simulator::compute_wave(const double t, bool water_velocity) {
     double Dz_w = 0.0; // variation of z
     double dz_w = 0.0;
     double ddz_w = 0.0;
 
     // Obtenir vitesse et accélération
 
-    for(auto & wave_generator : wave_generators_){
+    for(const auto & wave_generator : wave_generators_){
         if(t >= wave_generator.starting_time_
                 && (wave_generator.starting_time_+wave_generator.duration_ < t || wave_generator.duration_==-1)){
 //            if(!wave_generator.is_contraction_) {
@@ -373,7 +372,7 @@ void Simulator::save_data(const rclcpp::Time &t){
 //    "/observer/temperature"
 //    "/safety/safety"
 
-    seabot2_simulator::msg::SimulationDebug msg_simu_debug;
+    seabot2_msgs::msg::SimulationDebug msg_simu_debug;
     msg_simu_debug.theta = x_(0);
     msg_simu_debug.dtheta = x_(1);
     msg_simu_debug.i = x_(2);
@@ -385,7 +384,7 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_simu_debug.volume_antenna = volume_antenna_;
     bag_writer_->write(msg_simu_debug, "/simulation/debug", t);
 
-    seabot2_simulator::msg::SimulationThermocline msg_thermocline;
+    seabot2_msgs::msg::SimulationThermocline msg_thermocline;
     std::shared_ptr<WaypointTemperatureKeeping> wpt = mission_.get_current_waypoint_temperature_keeping();
     if(wpt!= nullptr) {
         msg_thermocline.temperature_target = wpt->temperature_;
@@ -397,7 +396,7 @@ void Simulator::save_data(const rclcpp::Time &t){
         bag_writer_->write(msg_thermocline, "/simulation/thermocline", t);
     }
 
-    seabot2_depth_filter::msg::DepthPose msg_depth;
+    seabot2_msgs::msg::DepthPose msg_depth;
     msg_depth.depth = fusion_depth_;    /// Todo verify
     msg_depth.zero_depth_pressure = 0.0;
     msg_depth.pressure = pressure_sensor_;
@@ -405,12 +404,12 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_depth.header.stamp = t_;
     bag_writer_->write(msg_depth, "/observer/depth", t);
 
-    seabot2_density::msg::Density msg_density;
+    seabot2_msgs::msg::Density msg_density;
     msg_density.density = rho_;
     msg_density.header.stamp = t_;
     bag_writer_->write(msg_density, "/observer/density", t);
 
-    seabot2_mission::msg::MissionState msg_mission_state;
+    seabot2_msgs::msg::MissionState msg_mission_state;
     msg_mission_state.mode = mission_.get_mission_mode();
     msg_mission_state.waypoint_id = mission_.get_current_waypoint_id();
     msg_mission_state.waypoint_length = mission_.get_number_waypoints();
@@ -418,43 +417,43 @@ void Simulator::save_data(const rclcpp::Time &t){
             msg_mission_state.header.stamp = t_;
     bag_writer_->write(msg_mission_state, "/mission/state", t);
 
-    seabot2_mission::msg::DepthControlSetPoint msg_depth_control_set_point;
+    seabot2_msgs::msg::DepthControlSetPoint msg_depth_control_set_point;
     msg_depth_control_set_point.depth = mission_.get_depth_control_set_point().depth;
     msg_depth_control_set_point.header.stamp = t_;
     msg_depth_control_set_point.limit_velocity = mission_.get_depth_control_set_point().limit_velocity;
     msg_depth_control_set_point.enable_control = mission_.get_depth_control_set_point().enable_control;
     bag_writer_->write(msg_depth_control_set_point, "/mission/depth_control_set_point", t);
 
-    temperature_tsys01_driver::msg::TemperatureSensorData msg_temperature;
+    seabot2_msgs::msg::TemperatureSensorData msg_temperature;
     msg_temperature.temperature = temperature_sensor_;
     msg_temperature.header.stamp = t_;
     bag_writer_->write(msg_temperature, "/driver/temperature", t);
     bag_writer_->write(msg_temperature, "/observer/temperature", t);
 
-    pressure_bme280_driver::msg::Bme280Data msg_pressure_internal;
+    seabot2_msgs::msg::Bme280Data msg_pressure_internal;
     msg_pressure_internal.pressure = 0.7;
     msg_pressure_internal.temperature = 20.0;
     msg_pressure_internal.humidity = 0.4;
     bag_writer_->write(msg_pressure_internal, "/driver/pressure_internal", t);
 
-    seabot2_depth_filter::msg::PressureSensorData msg_pressure_external;
+    seabot2_msgs::msg::PressureSensorData msg_pressure_external;
     msg_pressure_external.pressure = pressure_sensor_;
     msg_pressure_external.temperature = temperature_sensor_;
     msg_pressure_external.header.stamp = t_;
     bag_writer_->write(msg_pressure_external, "/driver/pressure_external", t);
 
-    seabot2_power_driver::msg::PowerState msg_power;
+    seabot2_msgs::msg::PowerState msg_power;
     msg_power.battery_volt = (float)battery_tension_;
     msg_power.cell_volt = array<float, 2>{(float)battery_tension_, 0.0};
     msg_power.esc_current = array<float, 2>{0, 0.};
     msg_power.motor_current = (float)x_(2);
     bag_writer_->write(msg_power, "/driver/power", t);
 
-    seabot2_depth_control::msg::AlphaDebug msg_alpha;
+    seabot2_msgs::msg::AlphaDebug msg_alpha;
     msg_alpha.approach_velocity = dc_.approach_velocity_;
     bag_writer_->write(msg_alpha, "/control/alpha_debug", t);
 
-    seabot2_depth_control::msg::DepthControlDebug msg_control_debug;
+    seabot2_msgs::msg::DepthControlDebug msg_control_debug;
     msg_control_debug.mode = dc_.regulation_state_;
     msg_control_debug.dy = dc_.dy_debug_;
     msg_control_debug.y = dc_.y_debug_;
@@ -462,12 +461,12 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_control_debug.piston_set_point = dc_.piston_set_point_;
     bag_writer_->write(msg_control_debug, "/control/depth_control_debug", t);
 
-    seabot2_piston_driver::msg::PistonSetPoint  msg_piston_set_point;
+    seabot2_msgs::msg::PistonSetPoint  msg_piston_set_point;
     msg_piston_set_point.position = dc_.piston_set_point_;
     msg_piston_set_point.exit = dc_.is_exit_;
     bag_writer_->write(msg_piston_set_point, "/driver/piston_set_point", t);
 
-    seabot2_kalman::msg::KalmanState msg_kalman;
+    seabot2_msgs::msg::KalmanState msg_kalman;
     msg_kalman.velocity = k_.x_forcast_(0);
     msg_kalman.depth = k_.x_forcast_(1);
     msg_kalman.offset = k_.x_forcast_(2);
@@ -487,15 +486,15 @@ void Simulator::save_data(const rclcpp::Time &t){
     msg_kalman.valid = k_.is_valid_;
     bag_writer_->write(msg_kalman, "/observer/kalman", t);
 
-    seabot2_piston_driver::msg::PistonState msg_piston;
+    seabot2_msgs::msg::PistonState msg_piston;
     msg_piston.header.stamp = t_;
     msg_piston.position = piston_position_;
     msg_piston.position_set_point = dc_.piston_set_point_;
     msg_piston.switch_top = switch_top_;
     msg_piston.switch_bottom = switch_bottom_;
     msg_piston.enable = true;
-    msg_piston.motor_sens = (x_(1)>0)?1:0;
-    msg_piston.state = (int)DepthControl::PISTON_STATE_OK;
+    msg_piston.motor_sens = (x_(1)>0)?true:false;
+    msg_piston.state = static_cast<int>(DepthControl::PISTON_STATE_OK);
     msg_piston.motor_speed_set_point = motor_set_point_;
     msg_piston.motor_speed = motor_cmd_;
     msg_piston.battery_voltage = battery_tension_;
@@ -611,7 +610,7 @@ void Simulator::run_simulation() {
             dc_.update_piston(piston_position_,
                               switch_top_,
                               switch_bottom_,
-                              (int)DepthControl::PISTON_STATE_OK,
+                              static_cast<int>(DepthControl::PISTON_STATE_OK),
                               piston_last_time_);
             dc_.update_depth(fusion_depth_,
                              abs_pressure_/1e5);
@@ -633,14 +632,9 @@ void Simulator::run_simulation() {
         }
         nb_steps++;
     }
-    auto end = high_resolution_clock::now();
+    const auto end = high_resolution_clock::now();
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time exec = %ld ms", duration_cast<milliseconds>((end-start)).count());
 }
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/foreach.hpp>
-namespace pt = boost::property_tree;
 
 int Simulator::init_wave_file(){
     if(wave_file_name_.empty())

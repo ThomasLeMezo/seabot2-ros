@@ -10,6 +10,7 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     ### find dependencies
     find_package(ament_cmake REQUIRED)
     find_package(rclcpp REQUIRED)
+    find_package(rosbag2_cpp REQUIRED)
     find_package(seabot2_msgs REQUIRED)
     find_package(seabot2_density REQUIRED)
     find_package(seabot2_kalman REQUIRED)
@@ -42,6 +43,7 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
             seabot2_depth_control
             seabot2_mission
             seabot2_temperature_profile
+            rosbag2_cpp
     )
     target_link_libraries(simulator_node
             ${LIBTEOS}

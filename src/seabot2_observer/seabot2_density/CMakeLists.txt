@@ -11,6 +11,8 @@ find_package(rclcpp REQUIRED)
 find_package(seabot2_msgs REQUIRED)
 
 ### Library
+include_directories(TeosCpp/include/TeosCpp)
+
 add_library(teos SHARED
         TeosCpp/src/SaarDataHandler.cpp
         TeosCpp/src/TeosBase.cpp
@@ -20,15 +22,22 @@ add_library(teos SHARED
 target_include_directories(teos PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/TeosCpp/include>
         $<INSTALL_INTERFACE:include>
-        TeosCpp/include/TeosCpp
 )
 
-file(GLOB_RECURSE TEOS_PUBLIC_HEADERS
-        "${PROJECT_SOURCE_DIR}/TeosCpp/include/*.h"
+ament_export_targets(teos HAS_LIBRARY_TARGET)
+
+install(
+        DIRECTORY TeosCpp/include/
+        DESTINATION include
 )
 
-set_target_properties(teos PROPERTIES PUBLIC_HEADER
-        "${TEOS_PUBLIC_HEADERS}"
+install(
+        TARGETS teos
+        EXPORT teos
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
 )
 
 ### Executable

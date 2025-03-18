@@ -45,31 +45,31 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     target_include_directories(mission PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
-            include/seabot2_mission
     )
 
-    set(MISSION_HEADERS
-            include/seabot2_mission/mission.hpp
-            include/seabot2_mission/waypoint.hpp
-    )
-
-    set_target_properties(mission PROPERTIES
-            PUBLIC_HEADER "${MISSION_HEADERS}"
-    )
 
     ament_target_dependencies(mission
             rclcpp
             seabot2_msgs
     )
 
-    target_link_libraries(mission
-            "${cpp_typesupport_target}"
+    ament_export_targets(mission HAS_LIBRARY_TARGET)
+    ament_export_dependencies(rclcpp)
+
+    install(
+            DIRECTORY include/
+            DESTINATION include
     )
 
-    install(TARGETS mission
+    install(
+            TARGETS mission
+            EXPORT mission
             LIBRARY DESTINATION lib
-            PUBLIC_HEADER DESTINATION include/seabot2_mission/seabot2_mission/
+            ARCHIVE DESTINATION lib
+            RUNTIME DESTINATION bin
+            INCLUDES DESTINATION include
     )
+
 endif ()
 
 ament_package()
