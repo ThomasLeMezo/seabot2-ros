@@ -70,6 +70,8 @@ if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
     install(DIRECTORY config
             DESTINATION $ENV{HOME})
 
+    ament_package()
+
     #
     #########################################################################################################################
     #### Biding
