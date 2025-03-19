@@ -2,11 +2,12 @@ simulation_node:
   ros__parameters:
     simu_robot_mass: 12.0
     simu_salinity: 0.0
-    simu_cz: 3.0
     simu_chi: 0.0
     simu_chi2: 0.0
     simu_volume_air_V0: 15e-6 #m3
+    simu_volume_equilibrium: 110e-6 #m3
     simu_pressure_sensor_stddev: 1e-3 #2e-3 # bar
+    simu_time_step: 1000000 # ns # keep minimum 1ms to avoid issue with motor simulation
     seafloor_depth: 40.0 # m
     #temperature_profile_file: "temperature_profile_guerledan_2023_10_09.profile"
     temperature_profile_file: ""
@@ -17,26 +18,29 @@ simulation_node:
 
     kalman_robot_mass: 12.0
     kalman_enable_kalman_depth: 0.5
-    kalman_piston_volume_eq_init: 130.0e-6 #m3
+    kalman_piston_volume_eq_init: 110e-6 #m3
     kalman_init_chi: 0.0
     kalman_init_chi2: 0.0
-    kalman_init_cz: 3.0
-    kalman_init_volume_air: 5e-3
-    kalman_gamma_alpha_velocity: 1e-4
-    kalman_gamma_alpha_depth: 1e-5
-    kalman_gamma_alpha_offset: 1e-9
+    kalman_init_cz: 1.0
+    kalman_init_volume_air: 15e-6
+
+    kalman_gamma_alpha_velocity: 1e-6
+    kalman_gamma_alpha_depth: 1e-6
+    kalman_gamma_alpha_offset: 1e-7
     kalman_gamma_alpha_chi: 1e-15
     kalman_gamma_alpha_chi2: 1e-15
     kalman_gamma_alpha_cz: 1e-3
     kalman_gamma_alpha_volume_air: 1e-6
+
     kalman_gamma_init_velocity: 1e-3
     kalman_gamma_init_depth: 1e-3
-    kalman_gamma_init_offset: 1e-6
+    kalman_gamma_init_offset: 10e-6 #m3
     kalman_gamma_init_chi: 1e-10
     kalman_gamma_init_chi2: 1e-10
-    kalman_gamma_init_cz: 0.1
-    kalman_gamma_init_volume_air: 1e-6
-    kalman_gamma_beta_depth: 1e-2
+    kalman_gamma_init_cz: 1e-3
+    kalman_gamma_init_volume_air: 5e-6
+
+    kalman_gamma_beta_depth: 5e-3
 
     dc_robot_mass: 12.0
     dc_root_regulation: -0.25

@@ -83,13 +83,43 @@ void DepthControl::update_density(const float &density){
 }
 
 void DepthControl::update_AB(){
-    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    coeff_A_ = physics_g_ * physics_rho_ / (robot_added_mass_ + robot_mass_);
+    // coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    coeff_B_ = 1.0 / (robot_added_mass_ + robot_mass_);
+}
+
+double DepthControl::fz_computation(const double velocity) const {
+    // Compute the drag coefficient
+    // Inside the [-0.3, 0.3] range, the drag coefficient is computed using the cd_function provided by CFD analysis
+    // Outside this range, the drag coefficient is assumed to be constant
+
+    if (velocity <= fz_model_boundary_velocity_positive_ && velocity >= fz_model_boundary_velocity_negative_) {
+        return 119.9 * pow(velocity, 5)
+                   + 1.0928 * pow(velocity, 4)
+                   - 29.224 * pow(velocity, 3)
+                   - 0.0388 * pow(velocity, 2)
+                   - 0.4588 * velocity;
+    }
+    else{
+        if(velocity > fz_model_boundary_velocity_positive_)
+            return velocity * fz_derivative_at_model_boundary_positive_ + fz_offset_at_model_boundary_positive_;
+        else
+            return velocity * fz_derivative_at_model_boundary_negative_ + fz_offset_at_model_boundary_negative_;
+    }
+}
+
+double DepthControl::fz_derivative_computation(const double velocity) const {
+    const double velocity_clamped = std::clamp(velocity, fz_model_boundary_velocity_negative_, fz_model_boundary_velocity_positive_);
+    return 5.0 * 119.9 * pow(velocity_clamped, 4)
+           + 4.0 * 1.0928 * pow(velocity_clamped, 3)
+           - 3.0 * 29.224 * pow(velocity_clamped, 2)
+           - 2.0 * 0.0388 * velocity_clamped
+           - 0.4588;
 }
 
 void DepthControl::update_coeff(){
     /// Computed parameters
-    S_ = M_PI*pow(robot_diameter_/2.0, 2);
+    // S_ = M_PI*pow(robot_diameter_/2.0, 2);
     update_AB();
     flow_max_ = (motor_max_rpm_ / 60.) * screw_thread_ * pow(piston_diameter_/2.0, 2)*M_PI;
 
@@ -101,7 +131,7 @@ void DepthControl::update_temperature(const float &temperature){
     temperature_ = temperature + degree_to_kelvin_;
 }
 
-double DepthControl::compute_u(double set_point, double limit_velocity){
+double DepthControl::compute_u(const double set_point, const double limit_velocity){
     const double x1 = kalman_velocity_;
     const double x2 = kalman_depth_;
     const double x3 = piston_volume_;
@@ -114,21 +144,23 @@ double DepthControl::compute_u(double set_point, double limit_velocity){
     const double beta = limit_velocity;
     const double alpha = approach_velocity_;
 
-    double e = alpha*(set_point-x2);
-    double de = -alpha*x1;
-    double T = 1.0 - pow(tanh(e), 2);
-    double dde = -alpha*beta*de*T;
-    double dT = -2.*de*tanh(e)*T;
-    double dx1 = -A*(x3+kalman_total_offset_)-B*x7*abs(x1)*x1;
+    const double e = alpha*(set_point-x2);
+    const double de = -alpha*x1;
+    const double T = 1.0 - pow(tanh(e), 2);
+    const double dde = -alpha*beta*de*T;
+    const double dT = -2.*de*tanh(e)*T;
+    // double dx1 = -A*(x3+kalman_total_offset_)-B*x7*abs(x1)*x1;
+    const double dx1 = -A*(x3+kalman_total_offset_)+B*x7*fz_computation(x1);
 
-    double y = x1-beta*tanh(e);
-    double dy = dx1 - beta*de*T;
-    double s = root_regulation_;
+    const double y = x1-beta*tanh(e);
+    const double dy = dx1 - beta*de*T;
+    const double s = root_regulation_;
 
     y_debug_= y;
     dy_debug_ = dy;
 
-    double u = (1./A)* (-2.*s*dy+pow(s,2)*y-beta*(dde*T+de*dT)-2*B*x7*abs(x1)*dx1)+x1*(x5+2.*x6*x2);
+    // double u = (1./A)* (-2.*s*dy+pow(s,2)*y-beta*(dde*T+de*dT)-2*B*x7*abs(x1)*dx1)+x1*(x5+2.*x6*x2);
+    const double u = (1./A)* (-2.*s*dy+pow(s,2)*y-beta*(dde*T+de*dT)+B*x7*fz_derivative_computation(x1)*dx1)+x1*(x5+2.*x6*x2);
     return u;
 }
 

@@ -7,11 +7,9 @@ Kalman::Kalman() {
 void Kalman::init_parameters(const rclcpp::Time &init_time) {
     tick_to_volume_ = (screw_thread_ / tick_per_turn_) * pow(piston_diameter_ / 2.0, 2) * M_PI;
     piston_max_volume_ = piston_max_tick_ * tick_to_volume_;
-    gamma_init_offset_ = piston_max_tick_ * tick_to_volume_;
+    // gamma_init_offset_ = piston_max_tick_ * tick_to_volume_;
 
-    gamma_init_offset_ = piston_max_tick_ * tick_to_volume_;
-
-    S_ = M_PI * pow(robot_diameter_ / 2.0, 2);
+    // S_ = M_PI * pow(robot_diameter_ / 2.0, 2);
     tick_to_volume_ = (screw_thread_ / tick_per_turn_) * pow(piston_diameter_ / 2.0, 2) * M_PI;
     update_coeffAB();
 
@@ -20,13 +18,43 @@ void Kalman::init_parameters(const rclcpp::Time &init_time) {
 }
 
 void Kalman::update_coeffAB() {
-    coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    coeff_A_ = physics_g_ * physics_rho_ / (robot_added_mass_ + robot_mass_);
+    // coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    coeff_B_ = 1.0 / (robot_added_mass_ + robot_mass_);
 }
 
-void Kalman::update_density(double physics_rho) {
+void Kalman::update_density(const double physics_rho) {
     physics_rho_ = physics_rho;
     update_coeffAB();
+}
+
+double Kalman::fz_computation(const double velocity) const {
+    // Compute the drag coefficient
+    // Inside the [-0.3, 0.3] range, the drag coefficient is computed using the cd_function provided by CFD analysis
+    // Outside this range, the drag coefficient is assumed to be constant
+
+    if (velocity <= fz_model_boundary_velocity_positive_ && velocity >= fz_model_boundary_velocity_negative_) {
+        return 119.9 * pow(velocity, 5)
+                   + 1.0928 * pow(velocity, 4)
+                   - 29.224 * pow(velocity, 3)
+                   - 0.0388 * pow(velocity, 2)
+                   - 0.4588 * velocity;
+    }
+    else{
+        if(velocity > fz_model_boundary_velocity_positive_)
+            return velocity * fz_derivative_at_model_boundary_positive_ + fz_offset_at_model_boundary_positive_;
+        else
+            return velocity * fz_derivative_at_model_boundary_negative_ + fz_offset_at_model_boundary_negative_;
+    }
+}
+
+double Kalman::fz_derivative_computation(const double velocity) const {
+    const double velocity_clamped = std::clamp(velocity, fz_model_boundary_velocity_negative_, fz_model_boundary_velocity_positive_);
+    return 5.0 * 119.9 * pow(velocity_clamped, 4)
+           + 4.0 * 1.0928 * pow(velocity_clamped, 3)
+           - 3.0 * 29.224 * pow(velocity_clamped, 2)
+           - 2.0 * 0.0388 * velocity_clamped
+           - 0.4588;
 }
 
 Matrix<double, Kalman::NB_STATES, 1> Kalman::f_dyn(const Matrix<double, NB_STATES, 1> &x,
@@ -42,9 +70,12 @@ Matrix<double, Kalman::NB_STATES, 1> Kalman::f_dyn(const Matrix<double, NB_STATE
 
     // Masse ajoutée
     // Ma = 2.51kg
+    const double dFz = fz_computation(x(0));
 
-    dx(0) = -coeff_A_ * (u(0) + x(2) + x(6) * temperature_ / pressure_ - x(3) * x(1) - x(4) * pow(x(1), 2)) - coeff_B_ *
-            x(5) * copysign(x(0) * x(0), x(0));
+    // dx(0) = -coeff_A_ * (u(0) + x(2) + x(6) * temperature_ / pressure_ - x(3) * x(1) - x(4) * pow(x(1), 2)) - coeff_B_ *
+    //         x(5) * copysign(x(0) * x(0), x(0));
+    dx(0) = -coeff_A_ * (u(0) + x(2) + x(6) * temperature_ / pressure_ - x(3) * x(1) - x(4) * pow(x(1), 2))
+            + coeff_B_ * x(5) * dFz;
     dx(1) = x(0);
     dx(2) = 0.0;
     dx(3) = 0.0;
@@ -69,12 +100,14 @@ void Kalman::kalman_predict(Matrix<double, NB_STATES, 1> &x,
 
     Matrix<double, NB_STATES, NB_STATES> Ak_tmp = Matrix<double, NB_STATES, NB_STATES>::Identity();
     Matrix<double, NB_STATES, NB_STATES> Ak = Matrix<double, NB_STATES, NB_STATES>::Zero();
-    Ak(0, 0) = -2. * coeff_B_ * abs(x(0)) * x(5);
+    // Ak(0, 0) = -2. * coeff_B_ * abs(x(0)) * x(5);
+    Ak(0, 0) = coeff_B_ * fz_derivative_computation(x(0)) * x(5);
     Ak(0, 1) = coeff_A_ * (x(3) + 2. * x(4) * x(1));
     Ak(0, 2) = -coeff_A_;
-    Ak(0, 3) = x(1) * coeff_A_;
-    Ak(0, 4) = pow(x(1), 2) * coeff_A_;
-    Ak(0, 5) = -coeff_B_ * abs(x(0)) * x(0);
+    // Ak(0, 3) = x(1) * coeff_A_;
+    // Ak(0, 4) = pow(x(1), 2) * coeff_A_;
+    // Ak(0, 5) = -coeff_B_ * abs(x(0)) * x(0); // Old one
+    // Ak(0, 5) = coeff_B_ * fz_computation(x(0)); // New one
     Ak(0, 6) = -coeff_A_ * temperature_ / pressure_;
     Ak(1, 0) = 1.;
     Ak_tmp += Ak * dt;
@@ -106,7 +139,7 @@ void Kalman::init_kalman() {
     xhat_(2) = piston_volume_eq_init_; // Vp
     xhat_(3) = init_chi_; // chi
     xhat_(4) = init_chi2_; // chi2
-    xhat_(5) = init_cz_; // Cz
+    xhat_(5) = 1.0; // Cz factor
     xhat_(6) = init_volume_air_;
     x_forcast_ = xhat_;
 

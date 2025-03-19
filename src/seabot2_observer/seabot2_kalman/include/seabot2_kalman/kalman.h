@@ -35,12 +35,17 @@ public:
      */
     void update_density(double physics_rho);
 
+    double fz_computation(double velocity) const;
+
+    double fz_derivative_computation(double velocity) const;
+
 public:
 
     /// Physical characteristics
     double physics_rho_ =  1000.0;
     double physics_g_ =  9.81;
     double robot_mass_ =  12.0;
+    double robot_added_mass_ =  2.51;
     double robot_diameter_ =  0.125;
     double screw_thread_ =  1.e-3;
     double tick_per_turn_ =  2048*4;
@@ -48,10 +53,21 @@ public:
     double piston_max_tick_ =  1146880;
     const double degree_to_kelvin_ = 273.15;
 
-    double S_ = M_PI*pow(robot_diameter_/2.0, 2);
+    // double S_ = M_PI*pow(robot_diameter_/2.0, 2);
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    double coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    double coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    double coeff_A_ = physics_g_ * physics_rho_ / (robot_added_mass_ + robot_mass_);
+    // double coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    double coeff_B_ = 0.5 * physics_rho_ / (robot_added_mass_ + robot_mass_);
+
+    const double fz_model_boundary_velocity_positive_ = 0.267911611144239;
+    const double fz_model_boundary_velocity_negative_ = -0.272937623109179;
+
+    const double fz_derivative_at_model_boundary_positive_ = fz_derivative_computation(fz_model_boundary_velocity_positive_);
+    const double fz_offset_at_model_boundary_positive_ = fz_computation(fz_model_boundary_velocity_positive_)
+                                        - fz_derivative_at_model_boundary_positive_ * fz_model_boundary_velocity_positive_;
+    const double fz_derivative_at_model_boundary_negative_ = fz_derivative_computation(fz_model_boundary_velocity_negative_);
+    const double fz_offset_at_model_boundary_negative_ = fz_computation(fz_model_boundary_velocity_negative_)
+                                        - fz_derivative_at_model_boundary_negative_ * fz_model_boundary_velocity_negative_;
 
     double piston_max_volume_ = piston_max_tick_ * tick_to_volume_;
 
@@ -68,7 +84,7 @@ public:
     double gamma_alpha_offset_ =  1e-9;
     double gamma_alpha_chi_ =  1e-15; // 2e-8
     double gamma_alpha_chi2_ =  1e-15; // 2e-8
-    double gamma_alpha_cz_ =  1e-3;
+    double gamma_alpha_cz_ =  1e-5;
     double gamma_alpha_volume_air_ =  1e-6;
 
     double gamma_init_velocity_ =  1e-3;
@@ -76,7 +92,7 @@ public:
     double gamma_init_offset_ = 1e-6;
     double gamma_init_chi_ = 1e-10 ; // 20e-
     double gamma_init_chi2_ =  1e-10; // 1e-1
-    double gamma_init_cz_ =  0.1;
+    double gamma_init_cz_ =  0.01;
     double gamma_init_volume_air_ =  1e-6;
 
     double gamma_beta_depth_ =  1e-2; // 5e-4 (m)

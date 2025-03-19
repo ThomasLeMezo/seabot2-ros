@@ -29,6 +29,7 @@ public:
     double physics_rho_ =  1000.0;
     double physics_g_ =  9.81;
     double robot_mass_ =  12.0;
+    double robot_added_mass_ =  2.51;
     double robot_diameter_ =  0.125;
     double screw_thread_ =  1.e-3;
     double tick_per_turn_ =  2048*4;
@@ -36,11 +37,20 @@ public:
     double piston_max_tick_value_ =  1146880;
     const double degree_to_kelvin_ = 273.15;
 
-    double S_ = M_PI*pow(robot_diameter_/2.0, 2);
-    double Cf_ = 3.0;
     double tick_to_volume_ = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*M_PI;
-    double coeff_A_ = physics_g_ * physics_rho_ / (2.0 * robot_mass_);
-    double coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    double coeff_A_ = physics_g_ * physics_rho_ / (robot_added_mass_ + robot_mass_);
+    // double coeff_B_ = 0.5 * physics_rho_ * S_ / (2.0 * robot_mass_);
+    double coeff_B_ = 0.5 * physics_rho_ / (robot_added_mass_ + robot_mass_);
+
+    const double fz_model_boundary_velocity_positive_ = 0.267911611144239;
+    const double fz_model_boundary_velocity_negative_ = -0.272937623109179;
+
+    const double fz_derivative_at_model_boundary_positive_ = fz_derivative_computation(fz_model_boundary_velocity_positive_);
+    const double fz_offset_at_model_boundary_positive_ = fz_computation(fz_model_boundary_velocity_positive_)
+                                        - fz_derivative_at_model_boundary_positive_ * fz_model_boundary_velocity_positive_;
+    const double fz_derivative_at_model_boundary_negative_ = fz_derivative_computation(fz_model_boundary_velocity_negative_);
+    const double fz_offset_at_model_boundary_negative_ = fz_computation(fz_model_boundary_velocity_negative_)
+                                        - fz_derivative_at_model_boundary_negative_ * fz_model_boundary_velocity_negative_;
 
     /// Compute regulation constant
     double root_regulation_ = -0.2;
@@ -201,7 +211,7 @@ public:
      *  @brief Optimize the command to reduce power consumptionr
      * @param u_tab
      */
-    double optimize_u(std::array<double, 4> &u_tab);
+    static double optimize_u(std::array<double, 4> &u_tab);
 
     /**
      * @brief Update coefficients computed from parameters
@@ -226,6 +236,10 @@ public:
      * Update coefficients A and B
      */
     void update_AB();
+
+    double fz_computation(double velocity) const;
+
+    double fz_derivative_computation(double velocity) const;
 };
 
 

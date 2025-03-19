@@ -1,5 +1,7 @@
 #include "seabot2_simulator/simulator_node.hpp"
 
+#include <fstream>
+
 using namespace std::placeholders;
 
 SimulatorNode::SimulatorNode()
@@ -7,6 +9,7 @@ SimulatorNode::SimulatorNode()
 
     RCLCPP_INFO(this->get_logger(), "[Simulator_node] Init node simulation");
     init_parameters();
+
     s_.run_simulation();
 
     RCLCPP_INFO(this->get_logger(), "[Simulator_node] Simulation ended");
@@ -16,13 +19,14 @@ SimulatorNode::SimulatorNode()
 void SimulatorNode::init_parameters() {
     this->declare_parameter<double>("simu_robot_mass", s_.robot_mass_);
     this->declare_parameter<double>("simu_salinity", s_.salinity_cst_);
-    this->declare_parameter<double>("simu_cz", s_.Cz_);
     this->declare_parameter<double>("simu_chi", s_.chi_);
     this->declare_parameter<double>("simu_chi2", s_.chi2_);
     this->declare_parameter<double>("simu_volume_air_V0", s_.volume_air_V0_);
     this->declare_parameter<double>("simu_volume_air_T0", s_.volume_air_T0_);
     this->declare_parameter<double>("simu_pressure_sensor_stddev", s_.pressure_sensor_stddev_);
     this->declare_parameter<double>("simu_seafloor_depth", s_.seafloor_depth_);
+    this->declare_parameter<double>("simu_volume_equilibrium", s_.volume_equilibrium_);
+    this->declare_parameter<int>("simu_time_step", s_.dt_.nanoseconds());
 
     this->declare_parameter<double>("kalman_robot_mass", s_.k_.robot_mass_);
     this->declare_parameter<double>("kalman_enable_kalman_depth", s_.k_.enable_kalman_depth_);
@@ -74,7 +78,6 @@ void SimulatorNode::init_parameters() {
 
     s_.robot_mass_ = this->get_parameter_or("simu_robot_mass", s_.robot_mass_);
     s_.salinity_cst_ = this->get_parameter_or("simu_salinity", s_.salinity_cst_);
-    s_.Cz_ = this->get_parameter_or("simu_cz", s_.Cz_);
     s_.chi_ = this->get_parameter_or("simu_chi", s_.chi_);
     s_.chi2_ = this->get_parameter_or("simu_chi2", s_.chi2_);
     s_.volume_air_V0_ = this->get_parameter_or("simu_volume_air_V0", s_.volume_air_V0_);
@@ -84,6 +87,8 @@ void SimulatorNode::init_parameters() {
     s_.mission_path_ = this->get_parameter_or("simu_mission_path", s_.mission_path_);
     s_.bag_path_ = this->get_parameter_or("bag_path", s_.bag_path_);
     s_.seafloor_depth_ = this->get_parameter_or("simu_seafloor_depth", s_.seafloor_depth_);
+    s_.volume_equilibrium_ = this->get_parameter_or("simu_volume_equilibrium", s_.volume_equilibrium_);
+    s_.dt_ = rclcpp::Duration(std::chrono::nanoseconds(this->get_parameter_or("simu_time_step", s_.dt_.nanoseconds())));
 
     s_.k_.robot_mass_ = this->get_parameter_or("kalman_robot_mass", s_.k_.robot_mass_);
     s_.k_.enable_kalman_depth_ = this->get_parameter_or("kalman_enable_kalman_depth", s_.k_.enable_kalman_depth_);

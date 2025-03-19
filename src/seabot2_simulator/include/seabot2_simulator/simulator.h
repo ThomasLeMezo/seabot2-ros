@@ -63,6 +63,10 @@ public:
 
     double salinity_from_depth(double z);
 
+    double fz_computation(double velocity) const;
+
+    double fz_derivative_computation(double velocity) const;
+
     double temperature_from_depth(double z);
 
     double get_density_from_depth(double z, double sea_pressure);
@@ -74,6 +78,8 @@ public:
     void simulate_piston_position();
 
     void save_data(const rclcpp::Time &time);
+
+    void write_to_file_fz() const;
 
     void init_bag_writer();
 
@@ -130,9 +136,8 @@ public:
     double piston_max_tick_ =  1146880;
     double screw_Radius_ = 6e-3; /// m
     double screw_FrictionCoefficient_ = 0.2; /// To be correctly evaluated ! Copper-Copper = 1.2
-    double S_ = M_PI*pow(robot_diameter_/2.0, 2);
+    // double S_ = M_PI*pow(robot_diameter_/2.0, 2);
 
-    double Cz_ = 3.0;
     double battery_tension_ = 16.0; /// V
     double volume_equilibrium_ = 90e-6; /// m3
     double chi_ = 0.0;
@@ -143,22 +148,34 @@ public:
 
     double volume_air_nR_ = 0.0;
 
+    /// ************** Physics ************** ///
+    ///
+    const double fz_model_boundary_velocity_positive_ = 0.267911611144239;
+    const double fz_model_boundary_velocity_negative_ = -0.272937623109179;
+
+    const double fz_derivative_at_model_boundary_positive_ = fz_derivative_computation(fz_model_boundary_velocity_positive_);
+    const double fz_offset_at_model_boundary_positive_ = fz_computation(fz_model_boundary_velocity_positive_)
+                                        - fz_derivative_at_model_boundary_positive_ * fz_model_boundary_velocity_positive_;
+    const double fz_derivative_at_model_boundary_negative_ = fz_derivative_computation(fz_model_boundary_velocity_negative_);
+    const double fz_offset_at_model_boundary_negative_ = fz_computation(fz_model_boundary_velocity_negative_)
+                                        - fz_derivative_at_model_boundary_negative_ * fz_model_boundary_velocity_negative_;
+
     /// ************** Maxon motor ************** ///
-    double maxon_RotorInertia_ = 9.0; /// gcm2
-    double maxon_SpeedConstant_ = 416; /// rpm/V
-    double maxon_TorqueConstant_ = 22.9; /// mNm/A
-    double maxon_TerminalResistance_ = 1.84; /// Ohms
-    double maxon_TerminalInductance_ = 0.198; /// mH
-    double maxon_Reduction_ = 103; /// 103:1
-    double seabot_AddedInductance_ = 1.619e-3; /// H
-    double seabot_AddedInductanceResistance_ = 480e-3; /// Ohms
-    double rpm_to_rad_s_ = M_PI/30.;
-    double J_ = maxon_RotorInertia_ * 1e-7; /// Moment of inertia (kg.m^2)
-    double Ke_ = 1./(maxon_SpeedConstant_*rpm_to_rad_s_); /// Electromotive force constant  (V/rad/sec)
-    double Kt_ = maxon_TorqueConstant_*1e-3; /// Motor torque constant (N.m/Amp)
-    double R_ = maxon_TerminalResistance_ + seabot_AddedInductanceResistance_; /// Electric resistance (Ohm)
-    double L_ = maxon_TerminalInductance_*1e-3 + seabot_AddedInductance_; /// Electric inductance (H)
-    double rad_to_tick_ = tick_per_turn_/(2*M_PI*maxon_Reduction_);
+    const double maxon_RotorInertia_ = 9.0; /// gcm2
+    const double maxon_SpeedConstant_ = 416; /// rpm/V
+    const double maxon_TorqueConstant_ = 22.9; /// mNm/A
+    const double maxon_TerminalResistance_ = 1.84; /// Ohms
+    const double maxon_TerminalInductance_ = 0.198; /// mH
+    const double maxon_Reduction_ = 103; /// 103:1
+    const double seabot_AddedInductance_ = 1.619e-3; /// H
+    const double seabot_AddedInductanceResistance_ = 480e-3; /// Ohms
+    const double rpm_to_rad_s_ = M_PI/30.;
+    const double J_ = maxon_RotorInertia_ * 1e-7; /// Moment of inertia (kg.m^2)
+    const double Ke_ = 1./(maxon_SpeedConstant_*rpm_to_rad_s_); /// Electromotive force constant  (V/rad/sec)
+    const double Kt_ = maxon_TorqueConstant_*1e-3; /// Motor torque constant (N.m/Amp)
+    const double R_ = maxon_TerminalResistance_ + seabot_AddedInductanceResistance_; /// Electric resistance (Ohm)
+    const double L_ = maxon_TerminalInductance_*1e-3 + seabot_AddedInductance_; /// Electric inductance (H)
+    const double rad_to_tick_ = tick_per_turn_/(2*M_PI*maxon_Reduction_);
     // const double Tfstatic_ = Kt_*20e-3; /// 20mA
     const double pistonSurface_ = M_PI*pow(piston_diameter_/2.,2);
     const double i_screw_=screw_thread_/(2*screw_Radius_); /// # Note : error in the thesis formula : diam and not radius
@@ -174,6 +191,8 @@ public:
     rclcpp::Duration control_pwm_dt = 20ms; /// 50Hz
     bool switch_top_ = false, switch_bottom_ = true;
     int motor_set_point_ = 0;
+    const int motor_regulation_dead_zone_ = 50;
+    const double motor_regulation_K_ = 0.3;
 
     /// ******* Teos *******  ///
     TeosSea ts;
