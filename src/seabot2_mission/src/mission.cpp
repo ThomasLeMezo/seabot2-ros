@@ -1,5 +1,4 @@
 #include "seabot2_mission/mission.hpp"
-#include <iostream>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -93,19 +92,16 @@ bool Mission::update_state(const rclcpp::Time &t_now){
     return is_new_waypoint;
 }
 
-bool Mission::is_current_waypoint_of_type(const WAYPOINT_TYPE &type){
+bool Mission::is_current_waypoint_of_type(const WAYPOINT_TYPE &type) const {
     if(current_waypoint_id_ < waypoints_.size()){
         if(waypoints_[current_waypoint_id_].second == type)
             return true;
-        else
-            return false;
-    }
-    else{
         return false;
     }
+    return false;
 }
 
-std::shared_ptr<WaypointTemperatureKeeping> Mission::get_current_waypoint_temperature_keeping(){
+std::shared_ptr<WaypointTemperatureKeeping> Mission::get_current_waypoint_temperature_keeping() const {
     if(current_waypoint_id_ < waypoints_.size()){
         if(waypoints_[current_waypoint_id_].second == WP_TEMPERATURE_KEEPING){
             return std::dynamic_pointer_cast<WaypointTemperatureKeeping>(waypoints_[current_waypoint_id_].first);
@@ -123,15 +119,14 @@ void Mission::idle_state_configuration(const rclcpp::Time &t_now){
 
 bool Mission::is_new_mission_file(const std::string &file_xml, const std::string &folder_path){
     try {
-        fs::path p1 = folder_path + "/" + file_xml;
-        std::filesystem::file_time_type ft = std::filesystem::last_write_time(p1);
-        if ((ft.time_since_epoch() - file_time_.time_since_epoch()).count() != 0) {
+        const fs::path p1 = folder_path + "/" + file_xml;
+        if (const std::filesystem::file_time_type ft = std::filesystem::last_write_time(p1);
+            (ft.time_since_epoch() - file_time_.time_since_epoch()).count() != 0) {
             file_time_ = ft;
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "[Seabot_Mission] New mission file detected");
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
     catch (...){
         return false;
@@ -175,7 +170,7 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
         const int hour = tree.get_child("mission.offset.start_time_utc.hour").get_value<int>();
         const int min = tree.get_child("mission.offset.start_time_utc.min").get_value<int>();
 
-        bt::ptime t1(gt::date(year,month,day),bt::time_duration(hour,min,0));
+        const bt::ptime t1(gt::date(year,month,day),bt::time_duration(hour,min,0));
         time_start_ = rclcpp::Time(to_time_t(t1), 0, RCL_ROS_TIME);
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Start time = %f", time_start_.seconds());
@@ -196,7 +191,7 @@ int Mission::load_mission(const std::string &file_xml, const std::string &folder
     return return_code;
 }
 
-void Mission::decode_waypoint(std::shared_ptr<Waypoint> w, pt::ptree::value_type &v, rclcpp::Time &last_time){
+void Mission::decode_waypoint(const std::shared_ptr<Waypoint> &w, const pt::ptree::value_type &v, rclcpp::Time &last_time) const {
     // Duration
     boost::optional<double> t = v.second.get_optional<double>("duration_since_start");
     boost::optional<double> d = v.second.get_optional<double>("duration");
@@ -209,8 +204,8 @@ void Mission::decode_waypoint(std::shared_ptr<Waypoint> w, pt::ptree::value_type
         throw(std::runtime_error("(No time or duration founded for a waypoint)"));
 
     // Regulation parameters
-    boost::optional<double> vel = v.second.get_optional<double>("limit_velocity");
-    if(vel.is_initialized())
+    if(boost::optional<double> vel = v.second.get_optional<double>("limit_velocity");
+        vel.is_initialized())
         w->velocity = vel.value();
     else
         w->velocity = limit_velocity_default_;
@@ -218,9 +213,11 @@ void Mission::decode_waypoint(std::shared_ptr<Waypoint> w, pt::ptree::value_type
     last_time = w->time_end;
 }
 
-void Mission::decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, pt::ptree::value_type &v, const double &depth_offset){
-    boost::optional<double> depth = v.second.get_optional<double>("depth");
-    if(depth.is_initialized()){
+void Mission::decode_waypoint_depth(const std::shared_ptr<WaypointDepth> &w,
+                                    const pt::ptree::value_type &v,
+                                    const double &depth_offset) const {
+    if(boost::optional<double> depth = v.second.get_optional<double>("depth");
+        depth.is_initialized()){
         w->depth = depth.value() + depth_offset;
     }
     else{
@@ -229,48 +226,50 @@ void Mission::decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, pt::ptree:
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Depth Waypoint %zu (t_end=%li, d=%lf, vel=%f)",
                 waypoints_.size(),
-                (long int)w->time_end.seconds(),
+                static_cast<long int>(w->time_end.seconds()),
                 w->depth,
                 w->velocity);
 }
 
-void Mission::decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w, pt::ptree::value_type &v){
-    boost::optional<double> temperature = v.second.get_optional<double>("temperature");
-    if(temperature.is_initialized()){
+void Mission::decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w,
+    const pt::ptree::value_type &v) const {
+    if(boost::optional<double> temperature = v.second.get_optional<double>("temperature"); temperature.is_initialized()){
         w->temperature_ = temperature.value();
     }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Temperature Keeping Waypoint %zu (t_end=%li, temp=%lf, vel=%f)",
                 waypoints_.size(),
-                (long int)w->time_end.seconds(),
+                static_cast<long int>(w->time_end.seconds()),
                 w->temperature_,
                 w->velocity);
 }
 
-void Mission::decode_waypoint_temperature_profile(const std::shared_ptr<WaypointTemperatureProfile>& w, pt::ptree::value_type &v){
-    boost::optional<double> temperature_high = v.second.get_optional<double>("temperature_high");
-    if(temperature_high.is_initialized())
+void Mission::decode_waypoint_temperature_profile(const std::shared_ptr<WaypointTemperatureProfile>& w,
+    const pt::ptree::value_type &v) const {
+    if(boost::optional<double> temperature_high = v.second.get_optional<double>("temperature_high");
+        temperature_high.is_initialized())
         w->temperature_high_ = temperature_high.value();
 
-    boost::optional<double> temperature_low = v.second.get_optional<double>("temperature_low");
-    if(temperature_low.is_initialized())
+    if(boost::optional<double> temperature_low = v.second.get_optional<double>("temperature_low");
+        temperature_low.is_initialized())
         w->temperature_low_ = temperature_low.value();
 
-    boost::optional<double> depth_min = v.second.get_optional<double>("depth_min");
-    if(depth_min.is_initialized())
+    if(boost::optional<double> depth_min = v.second.get_optional<double>("depth_min");
+        depth_min.is_initialized())
         w->depth_min_ = depth_min.value();
 
-    boost::optional<double> depth_max = v.second.get_optional<double>("depth_max");
-    if(depth_max.is_initialized())
+    if(boost::optional<double> depth_max = v.second.get_optional<double>("depth_max");
+        depth_max.is_initialized())
         w->depth_max_ = depth_max.value();
 
-    boost::optional<double> max_delay = v.second.get_optional<double>("max_delay");
-    if(max_delay.is_initialized())
+    if(boost::optional<double> max_delay = v.second.get_optional<double>("max_delay");
+        max_delay.is_initialized())
         w->max_delay_ = rclcpp::Duration::from_seconds(max_delay.value());
 
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),"[Seabot_Mission] Load Temperature Profiling Waypoint %zu (t_end=%li, vel=%f)",
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"),
+        "[Seabot_Mission] Load Temperature Profiling Waypoint %zu (t_end=%li, vel=%f)",
                 waypoints_.size(),
-                (long int)w->time_end.seconds(),
+                static_cast<long int>(w->time_end.seconds()),
                 w->velocity);
 }
 
@@ -278,7 +277,7 @@ int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, con
     try{
         if(std::find(std::begin(XML_TYPE), std::end(XML_TYPE), v.first) != std::end(XML_TYPE)){
             if(v.first == XML_DEPTH || v.first == XML_DEPTH_LEGACY){ // "waypoint for leagcy
-                std::shared_ptr<WaypointDepth> w = std::make_shared<WaypointDepth>(this);
+                auto w = std::make_shared<WaypointDepth>(this);
                 decode_waypoint(w, v, last_time);
                 decode_waypoint_depth(w, v, depth_offset);
                 waypoints_.emplace_back(w, WP_DEPTH);
@@ -287,13 +286,13 @@ int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, con
 
             }
             else if(v.first == XML_TEMPERATURE_KEEPING){
-                std::shared_ptr<WaypointTemperatureKeeping> w = std::make_shared<WaypointTemperatureKeeping>(this);
+                auto w = std::make_shared<WaypointTemperatureKeeping>(this);
                 decode_waypoint(w, v, last_time);
                 decode_waypoint_temperature_keeping(w, v);
                 waypoints_.emplace_back(w, WP_TEMPERATURE_KEEPING);
             }
             else if(v.first == XML_TEMPERATURE_PROFILE){
-                std::shared_ptr<WaypointTemperatureProfile> w = std::make_shared<WaypointTemperatureProfile>(this);
+                auto w = std::make_shared<WaypointTemperatureProfile>(this);
                 decode_waypoint(w, v, last_time);
                 decode_waypoint_temperature_profile(w, v);
                 waypoints_.emplace_back(w, WP_TEMPERATURE_PROFILE);
@@ -336,14 +335,15 @@ int Mission::decode_paths(pt::ptree::value_type &v, rclcpp::Time &last_time, con
     return EXIT_SUCCESS;
 }
 
-vector<float> Mission::get_velocity_list(){
+vector<float> Mission::get_velocity_list() const {
     vector<float> velocity_list;
-    for(auto & waypoint : waypoints_){
-        if(waypoint.second!=WP_GNSS_PROFILE) {
-            bool found = (find(velocity_list.begin(), velocity_list.end(), (float) waypoint.first->velocity) !=
-                          velocity_list.end());
+    for(const auto &[waypoint, waypoint_type] : waypoints_){
+        if(waypoint_type!=WP_GNSS_PROFILE) {
+            const bool found = find(velocity_list.begin(),
+                                        velocity_list.end(),
+                                        static_cast<float>(waypoint->velocity)) != velocity_list.end();
             if (!found)
-                velocity_list.push_back(waypoint.first->velocity);
+                velocity_list.push_back(waypoint->velocity);
         }
     }
     return velocity_list;

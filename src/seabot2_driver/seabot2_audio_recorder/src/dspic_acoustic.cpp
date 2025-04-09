@@ -13,8 +13,8 @@ int DspicAcoustic::i2c_open() {
         exit(1);
     }
 
-    int result = ioctl(file_, I2C_SLAVE, i2c_addr_);
-    if (result < 0) {
+    if (const int result = ioctl(file_, I2C_SLAVE, i2c_addr_);
+        result < 0) {
         RCLCPP_WARN(n_->get_logger(),
                     "[DspicAcoustic_driver] Failed to acquire bus access and/or talk to slave (0x%X) - %s", I2C_SLAVE,
                     strerror(result));

@@ -52,3 +52,11 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# Add clion project files
+.idea/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo

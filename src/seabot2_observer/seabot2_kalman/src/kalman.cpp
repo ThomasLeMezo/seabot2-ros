@@ -106,8 +106,7 @@ void Kalman::kalman_predict(Matrix<double, NB_STATES, 1> &x,
     Ak(0, 2) = -coeff_A_;
     // Ak(0, 3) = x(1) * coeff_A_;
     // Ak(0, 4) = pow(x(1), 2) * coeff_A_;
-    // Ak(0, 5) = -coeff_B_ * abs(x(0)) * x(0); // Old one
-    // Ak(0, 5) = coeff_B_ * fz_computation(x(0)); // New one
+    // Ak(0, 5) = coeff_B_ * fz_computation(x(0));
     Ak(0, 6) = -coeff_A_ * temperature_ / pressure_;
     Ak(1, 0) = 1.;
     Ak_tmp += Ak * dt;

@@ -62,7 +62,7 @@ public:
      * @brief get_velocity_list
      * @return
      */
-    std::vector<float> get_velocity_list();
+    std::vector<float> get_velocity_list() const;
 
     /**
      * @brief get_start_time
@@ -193,7 +193,7 @@ private:
      * @param last_time
      * @return
      */
-    void decode_waypoint(std::shared_ptr<Waypoint> w, boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time);
+    void decode_waypoint(const std::shared_ptr<Waypoint> &w, const boost::property_tree::ptree::value_type &v, rclcpp::Time &last_time) const;
 
     /**
      * Decode a depth waypoint
@@ -202,21 +202,21 @@ private:
      * @param depth_offset
      * @return
      */
-    void decode_waypoint_depth(std::shared_ptr<WaypointDepth> w, boost::property_tree::ptree::value_type &v, const double &depth_offset);
+    void decode_waypoint_depth(const std::shared_ptr<WaypointDepth> &w, const boost::property_tree::ptree::value_type &v, const double &depth_offset) const;
 
     /**
      * decode waypoint temp keeping
      * @param w
      * @param v
      */
-    void decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w, boost::property_tree::ptree::value_type &v);
+    void decode_waypoint_temperature_keeping(const std::shared_ptr<WaypointTemperatureKeeping>& w, const boost::property_tree::ptree::value_type &v) const;
 
     /**
      * Decode Temperature profile waypoint
      * @param w
      * @param v
      */
-    void decode_waypoint_temperature_profile(const std::shared_ptr<WaypointTemperatureProfile>& w, boost::property_tree::ptree::value_type &v);
+    void decode_waypoint_temperature_profile(const std::shared_ptr<WaypointTemperatureProfile>& w, const boost::property_tree::ptree::value_type &v) const;
 
     /**
      *
@@ -300,13 +300,13 @@ public:
      * @param type
      * @return
      */
-    bool is_current_waypoint_of_type(const WAYPOINT_TYPE &type);
+    bool is_current_waypoint_of_type(const WAYPOINT_TYPE &type) const;
 
     /**
      *
      * @return
      */
-    std::shared_ptr<WaypointTemperatureKeeping> get_current_waypoint_temperature_keeping();
+    std::shared_ptr<WaypointTemperatureKeeping> get_current_waypoint_temperature_keeping() const;
 
     /**
      *
