@@ -8,6 +8,6 @@ cp -r -p /home/src .
 # clean install directory
 #rm -r install
 
-colcon build
+colcon build #--packages-select seabot2_msgs seabot2_latlon_control
 
 echo "All done building"
